@@ -1,0 +1,180 @@
+.hamburger-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Overlay có hiệu ứng fade mờ */
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 998;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+    
+}
+
+.hamburger-btn-open {
+    position: fixed;
+    width: 40px;
+    top: -70px;
+    left: 210px;
+    z-index: 1101;
+    background-color: #FFC371;
+}
+
+/* Thay đổi màu của icon khi mở (màu đen) */
+.hamburger-btn-open .hamburger-icon {
+    color: #000;
+}
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* Hamburger button */
+.hamburger-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1100;
+    position: absolute;
+    top: -29px;
+    transition: transform 0.2s ease;
+}
+.hamburger-btn:active {
+    transform: scale(0.95);
+}
+.hamburger-icon {
+    width: 30px;
+    height: 30px;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+.close-sidebar-btn {
+    background-color: #FFC371;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    position: absolute;
+    top: -80px;
+    left: 212px;
+    z-index: 1102;
+    animation: slideInLeft 0.3s ease-out forwards;
+  }
+  
+  .close-sidebar-btn .hamburger-icon {
+    width: 30px;
+    height: 30px;
+    color: #000;
+    
+  }
+/* Sidebar Menu với slide-in animation */
+.sidebar-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100%;
+    background-color: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 1rem 0;
+    overflow-y: auto;
+    overflow-x: visible;
+    animation: slideInLeft 0.3s ease-out forwards;
+}
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+/* Reset danh sách cho các menu levels */
+.menu-level-1,
+.menu-level-2,
+.menu-level-3 {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Style cho menu item */
+.menu-item {
+    padding: 0.8rem 1.5rem;
+    font-size: 15px;
+    color: #333;
+    background-color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease;
+    outline: none;
+    margin-bottom: 0.3rem;
+}
+
+/* Khi hover đổi màu nhạt hơn */
+.menu-item:hover,
+.menu-item:focus {
+    background-color: #f2f2f2;
+}
+
+/* Khi item đang được focus (active) */
+.menu-item.active {
+    background-color: #e6e6e6;
+}
+
+/* Arrow style */
+.arrow {
+    float: right;
+    font-size: 12px;
+    margin-top: 2px;
+    transition: transform 0.3s ease;
+}
+
+/* Xoay arrow khi menu item đang active hoặc focus */
+.menu-item.active > .arrow,
+.menu-item:hover > .arrow,
+.menu-item:focus-within > .arrow {
+    transform: rotate(180deg);
+}
+
+/* Detached submenu (level 2 hoặc 3) – hiển thị bên ngoài sidebar */
+.detached-submenu {
+    position: fixed;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    padding: 0.5rem 0;
+    border-radius: 6px;
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+/* Khi focus/active ở menu item thì hiển thị detached submenu */
+.menu-item:focus-within + .detached-submenu,
+.menu-item.active + .detached-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* Nếu dùng inline style để định vị thì không cần điều chỉnh vị trí ở đây */
+
+/* Điều chỉnh padding cho các mục con trong submenu */
+.menu-level-2 .menu-item,
+.menu-level-3 .menu-item {
+    padding: 0.7rem 1.2rem;
+    margin-bottom: 0.2rem;
+}
+
+/* Scrollbar tùy chỉnh cho sidebar */
+.sidebar-menu::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
