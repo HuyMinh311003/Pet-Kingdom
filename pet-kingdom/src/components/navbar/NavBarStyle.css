@@ -1,4 +1,6 @@
+/* Container cơ bản của navbar */
 .navbar-container {
+  --navbar-height: 50px;
   background-color: #FFC371;
   padding: 0.75rem 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -9,9 +11,11 @@
   transition: all 0.3s ease;
 }
 
+/* Khi cuộn xuống > 50px thì sticky */
 .navbar-container.sticky {
   position: fixed;
-  top: 55px; 
+  /* Điều chỉnh top để nằm ngay dưới header */
+  top: 55px; /* thay đổi tùy chiều cao header, có thể là 60px, 70px, v.v. */
   left: 0;
   right: 0;
   z-index: 1999;
@@ -19,12 +23,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-
-
 .navbar-left {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
 }
 
+/* Khu vực nav */
 .main-nav {
   flex: 1;
   display: flex;
@@ -33,21 +38,72 @@
   justify-content: center;
 }
 
+/* Mỗi nút nav */
 .nav-link {
   padding: 0.5rem 1rem;
+  overflow: visible;
+  position: relative;
   background-color: transparent;
   border: 2px solid transparent;
   color: #ffffff;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 4px;
   transition: background-color 0.3s, border-color 0.3s, color 0.3s;
   cursor: pointer;
-  font-weight: 600;
+  display: flex; 
+  align-items: center; 
+  gap: 0.5rem; /* Khoảng cách icon - text */
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Tính toán bottom để khi mở rộng, pseudo-element “tràn ra” tới đáy của navbar */
+  bottom: calc(-1 * (var(--navbar-height) - 100%));
+  height: var(--navbar-height);
+  background-color: #ffffff;
+  z-index: -1;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.3s ease;
+}
+/* Icon trong nav */
+.nav-link-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Text hiển thị ở desktop, ẩn ở mobile */
+.nav-link-text {
+  display: inline-block;
+}
+
+.nav-link:hover::after {
+  transform: scaleY(1);
 }
 
 .nav-link:hover {
-  background-color: #ffffff;
   color: black;
-  font-weight: 600;
-  border-color: #ffffff;
+}
+
+/* Media Query Mobile */
+@media (max-width: 768px) {
+  /* Vẫn giữ nav 1 dòng */
+  .main-nav {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  /* Ẩn text, chỉ chừa icon */
+  .nav-link-text {
+    display: none;
+  }
+
+  /* Tùy chỉnh lại khoảng cách padding nút cho gọn */
+  .nav-link {
+    padding: 0.5rem 0.5rem;
+  }
 }

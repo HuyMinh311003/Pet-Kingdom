@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { PawPrint as Paw, User, ShoppingCart, Search } from "lucide-react";
 import "./HeaderStyle.css";
 import { useNavigate } from "react-router-dom";
@@ -9,28 +9,56 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cartItems }) => {
     const [isSticky, setIsSticky] = useState(false);
-    const navigate = useNavigate()
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
+    const [searchValue, setSearchValue] = useState("");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => {
-            const scrollTop = window.scrollY;
-            setIsSticky(scrollTop > 50);
+            setIsSticky(window.scrollY > 50);
         };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+                setIsSearchOpen(false);
+                setSearchValue("");
+            }
+        };
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
+    const toggleSearch = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isSearchOpen) {
+            setIsSearchOpen(true);
+        }
+    };
+
+
     return (
-        <header className={`main-header ${isSticky ? 'sticky' : ''}`}>
+        <header className={`main-header ${isSticky ? "sticky" : ""}`}>
             <div className="header-inner">
-                <div className="logo" onClick={() => navigate('')}>
+                <div className="logo" onClick={() => navigate("")}>
                     <Paw className="logo-icon" />
                     <span className="logo-title">Pally</span>
                 </div>
-                <div className="search-bar">
-                    <div className="search-wrapper">
+
+                <div className="search-bar" ref={searchRef}>
+                    <div
+                        className={`search-wrapper ${isSearchOpen ? "active" : ""}`}
+                        onClick={toggleSearch}
+                    >
                         <Search className="search-icon" />
-                        <input type="text" placeholder="Search..." />
+                        <input type="text" placeholder="Search..."
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                        />
                     </div>
                 </div>
 
@@ -38,11 +66,7 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
                     <User className="user-icon" />
                     <div className="cart-icon-container">
                         <ShoppingCart className="cart-icon" />
-                        {cartItems > 0 && (
-                            <span className="cart-count">
-                                {cartItems}
-                            </span>
-                        )}
+                        {cartItems > 0 && <span className="cart-count">{cartItems}</span>}
                     </div>
                 </div>
             </div>
