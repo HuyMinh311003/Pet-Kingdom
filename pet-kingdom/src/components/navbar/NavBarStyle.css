@@ -41,6 +41,7 @@
 /* Mỗi nút nav */
 .nav-link {
   padding: 0.5rem 1rem;
+  z-index: 0;
   overflow: visible;
   position: relative;
   background-color: transparent;

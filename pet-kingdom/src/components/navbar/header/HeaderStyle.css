@@ -49,26 +49,55 @@
     position: relative;
 }
 
+/* Phần Desktop - Search */
 .search-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 70%;
-    padding: 9px 12px;
-    border: 1px solid #575756;
-    border-radius: 50px;
-    transition: all 250ms ease-in-out;
-    background-color: transparent;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 70%;
+  padding: 9px 12px;
+  border: 1px solid #575756;
+  border-radius: 50px;
+  background-color: transparent;
+  /* Chỉ transition những thuộc tính không ảnh hưởng đến box model */
+  transition: border 250ms ease-in-out, border-radius 250ms ease-in-out;
 }
 
+.search-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  /* Hiệu ứng nền dưới giống như border-bottom mở rộng */
+  background-color: #ffffff;
+  border-bottom: 1px solid #575756;
+  transition: height 250ms ease-in-out;
+  z-index: -1;
+}
+
+/* Khi hover hoặc focus, không thay đổi padding để không làm thay đổi kích thước */
 .search-wrapper:hover,
 .search-wrapper:focus-within {
-    padding: 12px 0;
-    border: 1px solid transparent;
-    border-bottom: 1px solid #575756;
-    border-radius: 0;
+  /* Chỉ thay đổi border-radius để tạo hiệu ứng “bình” */
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
 }
 
+/* Kích hoạt pseudo-element mở rộng từ bottom */
+.search-wrapper:hover::after,
+.search-wrapper:focus-within::after {
+  /* Mở rộng xuống đủ để “điền” phần dưới của header (giá trị này bạn có thể điều chỉnh sao cho phù hợp) */
+  
+  height: calc(100% + 9px);
+}
+
+  
 .search-icon {
     margin: 0 10px;
     width: 18px;

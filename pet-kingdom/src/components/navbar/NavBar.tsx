@@ -37,6 +37,10 @@ const NavBar: React.FC = () => {
                     <Home className="nav-link-icon" />
                     <span className="nav-link-text">Home</span>
                 </button>
+                <button className="nav-link" onClick={() => scrollToSection("intro-section")}>
+                    <Info className="nav-link-icon" />
+                    <span className="nav-link-text">Intro</span>
+                </button>
                 <button className="nav-link" onClick={() => scrollToSection("breeds-section")}>
                     <PawPrint className="nav-link-icon" />
                     <span className="nav-link-text">Breeds</span>
