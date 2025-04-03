@@ -9,7 +9,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cartItems }) => {
     const [isSticky, setIsSticky] = useState(false);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -20,6 +20,11 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const handleCartClick = () => {
+        navigate('/cart'); // Navigates to the Cart page
+    };
+
     return (
         <header className={`main-header ${isSticky ? 'sticky' : ''}`}>
             <div className="header-inner">
@@ -36,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
 
                 <div className="header-icons">
                     <User className="user-icon" />
-                    <div className="cart-icon-container">
+                    <div className="cart-icon-container" onClick={handleCartClick}>
                         <ShoppingCart className="cart-icon" />
                         {cartItems > 0 && (
                             <span className="cart-count">
