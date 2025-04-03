@@ -1,0 +1,137 @@
+.main-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #eaeaea;
+    padding: 0.5rem 2rem;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .logo{
+        cursor: pointer;
+    }
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    color: #FFC371;
+}
+
+.logo-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2A292A;
+    margin-left: 0.5rem;
+}
+
+.search-bar {
+    flex: 1;
+    text-align: center;
+    margin: 0 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.search-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 70%;
+    padding: 9px 12px;
+    border: 1px solid #575756;
+    border-radius: 50px;
+    transition: all 250ms ease-in-out;
+    background-color: transparent;
+}
+
+.search-wrapper:hover,
+.search-wrapper:focus-within {
+    padding: 12px 0;
+    border: 1px solid transparent;
+    border-bottom: 1px solid #575756;
+    border-radius: 0;
+}
+
+.search-icon {
+    margin: 0 10px;
+    width: 18px;
+    height: 18px;
+    color: #575756;
+    flex-shrink: 0;
+}
+
+.search-wrapper input {
+    flex: 1;
+    font-size: 14px;
+    line-height: 18px;
+    color: #575756;
+    border: none;
+    background: transparent;
+    outline: none;
+}
+
+.search-wrapper input::placeholder {
+    color: rgba(87, 87, 86, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+
+.header-icons {
+    display: flex;
+    align-items: center;
+}
+
+.user-icon {
+    width: 24px;
+    height: 24px;
+    color: #2A292A;
+    margin-right: 1rem;
+}
+
+.cart-icon-container {
+    position: relative;
+}
+
+.cart-icon {
+    width: 24px;
+    height: 24px;
+    color: #2A292A;
+}
+
+.cart-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: red;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+.main-header {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.main-header.sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    z-index: 999;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+

@@ -1,0 +1,574 @@
+ /* Header Icons */
+ .header-icons {
+     display: flex;
+     align-items: center;
+     gap: 1.5rem;
+ }
+
+ .user-icon,
+ .cart-icon {
+     width: 24px;
+     height: 24px;
+     color: #2A292A;
+     cursor: pointer;
+ }
+
+ .cart-icon-container {
+     position: relative;
+ }
+
+ .cart-count {
+     position: absolute;
+     top: -0.5rem;
+     right: -0.5rem;
+     background-color: #FFC371;
+     color: #ffffff;
+     font-size: 0.75rem;
+     border-radius: 50%;
+     width: 1.25rem;
+     height: 1.25rem;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+ }
+
+ /* Hero Section */
+ .hero-section {
+     position: relative;
+     height: 70vh;
+ }
+
+ .hero-slide {
+     position: absolute;
+     top: 0;
+     right: 0;
+     bottom: 0;
+     left: 0;
+     transition: opacity 0.5s;
+ }
+
+ .hero-overlay {
+     position: absolute;
+     top: 0;
+     right: 0;
+     bottom: 0;
+     left: 0;
+     background-color: rgba(0, 0, 0, 0.4);
+ }
+
+ .hero-content {
+     max-width: 1200px;
+     margin: 0 auto;
+     padding: 1rem;
+     height: 100%;
+     display: flex;
+     align-items: center;
+ }
+
+ .hero-text {
+     max-width: 672px;
+     color: #ffffff;
+ }
+
+ .hero-title {
+     font-size: 3rem;
+     font-weight: bold;
+     margin-bottom: 1rem;
+ }
+
+ .hero-subtitle {
+     font-size: 1.25rem;
+     margin-bottom: 2rem;
+ }
+
+ .hero-button {
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.75rem 2rem;
+     border: none;
+     border-radius: 9999px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background-color 0.3s;
+ }
+
+ .hero-button:hover {
+     background-color: rgba(255, 195, 113, 0.9);
+ }
+
+ /* Hero Navigation Buttons */
+ .hero-nav-btn {
+     position: absolute;
+     top: 50%;
+     transform: translateY(-50%);
+     background-color: transparent;
+     color: white;
+     padding: 0.5rem;
+     border: none;
+     border-radius: 9999px;
+     cursor: pointer;
+ }
+
+ .hero-nav-btn--left {
+     left: 1rem;
+ }
+
+ .hero-nav-btn--right {
+     right: 1rem;
+ }
+
+ .nav-icon {
+     width: 24px;
+     height: 24px;
+ }
+
+ /* Hero Indicators */
+ .hero-indicators {
+     position: absolute;
+     bottom: 1rem;
+     left: 50%;
+     transform: translateX(-50%);
+     display: flex;
+     gap: 0.5rem;
+ }
+
+ .hero-indicator {
+     width: 0.75rem;
+     height: 0.75rem;
+     border-radius: 50%;
+     background-color: rgba(255, 255, 255, 0.5);
+     border: none;
+     cursor: pointer;
+ }
+
+ .hero-indicator.active {
+     background-color: #FFC371;
+ }
+
+ /* Section Container */
+ .section-container {
+     max-width: 1200px;
+     margin: 0 auto;
+     padding: 0 1rem;
+ }
+
+ /* Introductory Section */
+ .intro-section {
+     padding: 4rem 0;
+     background-color: #ffffff;
+ }
+
+ .intro-grid {
+     display: grid;
+     gap: 3rem;
+ }
+
+ .intro-item {
+     text-align: center;
+ }
+
+ .intro-icon {
+     width: 4rem;
+     height: 4rem;
+     color: #FFC371;
+     display: block;
+     margin: 0 auto 1.5rem;
+ }
+
+ .intro-title {
+     font-size: 1.5rem;
+     font-weight: bold;
+     color: #2A292A;
+     margin-bottom: 1rem;
+ }
+
+ .intro-text {
+     color: #718096;
+ }
+
+ /* Hai cột cho màn hình trung trở lên */
+ @media (min-width: 768px) {
+     .intro-grid {
+         grid-template-columns: repeat(2, 1fr);
+     }
+ }
+
+ /* Dog Breed Section */
+ .dog-breed-section {
+     padding: 4rem 0;
+     background-color: #F5F5F5;
+ }
+
+ .section-title {
+     font-size: 1.875rem;
+     font-weight: bold;
+     color: #2A292A;
+     text-align: center;
+     margin-bottom: 3rem;
+ }
+
+ .breed-grid {
+     display: grid;
+     gap: 2rem;
+ }
+
+ @media (min-width: 768px) {
+     .breed-grid {
+         grid-template-columns: repeat(3, 1fr);
+     }
+ }
+
+ .breed-card {
+     background-color: #ffffff;
+     border-radius: 0.5rem;
+     overflow: hidden;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+ }
+
+ .breed-image {
+     width: 100%;
+     height: 16rem;
+     object-fit: cover;
+ }
+
+ .breed-card-content {
+     padding: 1.5rem;
+ }
+
+ .breed-card-title {
+     font-size: 1.25rem;
+     font-weight: bold;
+     color: #2A292A;
+     margin-bottom: 0.5rem;
+ }
+
+ .breed-card-text {
+     color: #718096;
+     margin-bottom: 1rem;
+ }
+
+ .breed-card-button {
+     background: none;
+     border: none;
+     color: #FFC371;
+     font-weight: 500;
+     cursor: pointer;
+     transition: text-decoration 0.3s;
+ }
+
+ .breed-card-button:hover {
+     text-decoration: underline;
+ }
+
+ .breed-view-button {
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.75rem 2rem;
+     border: none;
+     border-radius: 9999px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background-color 0.3s;
+ }
+
+ .breed-view-button:hover {
+     background-color: rgba(255, 195, 113, 0.9);
+ }
+
+ /* Pet Care Section */
+ .pet-care-section {
+     padding: 4rem 0;
+     background-color: #ffffff;
+ }
+
+ .pet-care-grid {
+     display: grid;
+     gap: 2rem;
+ }
+
+ @media (min-width: 768px) {
+     .pet-care-grid {
+         grid-template-columns: repeat(4, 1fr);
+     }
+ }
+
+ .product-card {
+     background-color: #ffffff;
+     border-radius: 0.5rem;
+     overflow: hidden;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+     transition: box-shadow 0.3s;
+ }
+
+ .product-card:hover {
+     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+ }
+
+ .product-image-container {
+     position: relative;
+ }
+
+ .product-image {
+     width: 100%;
+     height: 12rem;
+     object-fit: cover;
+ }
+
+ .product-overlay {
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background-color: rgba(0, 0, 0, 0.4);
+     opacity: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     transition: opacity 0.3s;
+ }
+
+ .product-card:hover .product-overlay {
+     opacity: 1;
+ }
+
+ .product-view-button {
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.5rem 1.5rem;
+     border: none;
+     border-radius: 9999px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background-color 0.3s;
+ }
+
+ .product-view-button:hover {
+     background-color: rgba(255, 195, 113, 0.9);
+ }
+
+ .product-card-content {
+     padding: 1rem;
+ }
+
+ .product-card-title {
+     font-size: 1.125rem;
+     font-weight: bold;
+     color: #2A292A;
+     margin-bottom: 0.5rem;
+ }
+
+ .product-price {
+     color: #FFC371;
+     font-weight: bold;
+ }
+
+ .product-add-button {
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.75rem 2rem;
+     border: none;
+     border-radius: 9999px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background-color 0.3s;
+ }
+
+ .product-add-button:hover {
+     background-color: rgba(255, 195, 113, 0.9);
+ }
+
+ /* Sale Section */
+ .sale-section {
+     padding: 4rem 0;
+     background-color: #F5F5F5;
+ }
+
+ .sale-grid {
+     display: grid;
+     gap: 2rem;
+ }
+
+ @media (min-width: 768px) {
+     .sale-grid {
+         grid-template-columns: repeat(4, 1fr);
+     }
+ }
+
+ .sale-card {
+     background-color: #ffffff;
+     border-radius: 0.5rem;
+     overflow: hidden;
+     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+     transition: box-shadow 0.3s;
+ }
+
+ .sale-card:hover {
+     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+ }
+
+ .sale-image-container {
+     position: relative;
+ }
+
+ .sale-image {
+     width: 100%;
+     height: 12rem;
+     object-fit: cover;
+ }
+
+ .sale-badge {
+     position: absolute;
+     top: 1rem;
+     right: 1rem;
+     background-color: #EF4444;
+     color: #ffffff;
+     padding: 0.25rem 0.75rem;
+     border-radius: 9999px;
+     font-size: 0.875rem;
+     font-weight: 500;
+ }
+
+ .sale-card-content {
+     padding: 1rem;
+ }
+
+ .sale-card-title {
+     font-size: 1.125rem;
+     font-weight: bold;
+     color: #2A292A;
+     margin-bottom: 0.5rem;
+ }
+
+ .sale-price-container {
+     display: flex;
+     align-items: center;
+     gap: 0.5rem;
+     margin-bottom: 1rem;
+ }
+
+ .sale-original-price {
+     color: #A0AEC0;
+     text-decoration: line-through;
+ }
+
+ .sale-price {
+     color: #EF4444;
+     font-weight: bold;
+ }
+
+ .sale-add-button {
+     width: 100%;
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.5rem;
+     border: none;
+     border-radius: 9999px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background-color 0.3s;
+ }
+
+ .sale-add-button:hover {
+     background-color: rgba(255, 195, 113, 0.9);
+ }
+
+ .sale-view-button {
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.75rem 2rem;
+     border: none;
+     border-radius: 9999px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background-color 0.3s;
+ }
+
+ .sale-view-button:hover {
+     background-color: rgba(255, 195, 113, 0.9);
+ }
+
+ /* Categories Section */
+ .categories-section {
+     padding: 4rem 0;
+     background-color: #ffffff;
+ }
+
+ .categories-grid {
+     display: grid;
+     gap: 2rem;
+ }
+
+ @media (min-width: 768px) {
+     .categories-grid {
+         grid-template-columns: repeat(3, 1fr);
+     }
+ }
+
+ .category-card {
+     position: relative;
+     overflow: hidden;
+     border-radius: 0.5rem;
+ }
+
+ .category-image {
+     width: 100%;
+     height: 16rem;
+     object-fit: cover;
+     transition: transform 0.5s;
+ }
+
+ .category-card:hover .category-image {
+     transform: scale(1.1);
+ }
+
+ .category-overlay {
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+     display: flex;
+     flex-direction: column;
+     justify-content: flex-end;
+     padding: 1.5rem;
+ }
+
+ .category-title {
+     font-size: 1.25rem;
+     font-weight: bold;
+     color: #ffffff;
+     margin-bottom: 0.25rem;
+ }
+
+ .category-count {
+     color: #FFC371;
+ }
+
+ .category-link-overlay {
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     background-color: rgba(0, 0, 0, 0.4);
+     opacity: 0;
+     transition: opacity 0.3s;
+     text-decoration: none;
+ }
+
+ .category-card:hover .category-link-overlay {
+     opacity: 1;
+ }
+
+ .category-button {
+     background-color: #FFC371;
+     color: #ffffff;
+     padding: 0.5rem 1.5rem;
+     border-radius: 9999px;
+     font-weight: 500;
+ }
