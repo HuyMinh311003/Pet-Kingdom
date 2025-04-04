@@ -1,0 +1,121 @@
+.cart-container {
+    background-color: #FFC371;
+    padding: 20px;
+    text-align: center;
+}
+
+.cart-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.cart-table th, .cart-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.cart-table th {
+    background: #FFA500;
+    color: white;
+    font-weight: bold;
+}
+
+.cart-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.quantity-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.quantity-btn {
+    padding: 5px 10px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.decrement-btn {
+    background-color: red;
+}
+.disabled-btn {
+    background-color: gray !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.increment-btn {
+    background-color: green;
+}
+
+.remove-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.cart-footer {
+    margin-top: 15px;
+}
+
+.coupon-input {
+    padding: 8px;
+    margin-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.apply-btn, .update-btn {
+    background-color: orange;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 7px;
+    margin-right: 10px;
+}
+
+.order-summary {
+    background: white;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.checkout-btn {
+    background-color: #FF8C00;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 7px;
+    font-size: 16px;
+}
+
+.return-shop {
+    font-weight: bold;
+    margin-top: 10px;
+}
