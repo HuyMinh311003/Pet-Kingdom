@@ -39,7 +39,8 @@
     padding: 0.5rem;
     z-index: 1100;
     position: absolute;
-    top: -29px;
+    top: -23px;
+    left: -32px;
     transition: transform 0.2s ease;
 }
 .hamburger-btn:active {

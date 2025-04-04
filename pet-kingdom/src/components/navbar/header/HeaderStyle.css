@@ -1,24 +1,29 @@
+/* ============================= */
+/*     Phần Desktop & Chung      */
+/* ============================= */
+
 .main-header {
     background-color: #ffffff;
     border-bottom: 1px solid #eaeaea;
     padding: 0.5rem 2rem;
+    position: relative;
+    /* QUAN TRỌNG: để .search-wrapper.active có thể position:absolute */
+    transition: all 0.3s ease;
 }
 
 .header-inner {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    .logo{
-        cursor: pointer;
-    }
+    /* position: relative; <-- Bỏ qua cũng được, vì .main-header đã position: relative rồi */
 }
 
 .logo {
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
 
 .logo-icon {
@@ -40,28 +45,59 @@
     margin: 0 2rem;
     display: flex;
     justify-content: center;
+    /* Ở desktop thì vẫn position: relative cũng được. */
+    position: relative;
 }
 
+/* Phần Desktop - Search */
 .search-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 70%;
-    padding: 9px 12px;
-    border: 1px solid #575756;
-    border-radius: 50px;
-    transition: all 250ms ease-in-out;
-    background-color: transparent;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 70%;
+  padding: 9px 12px;
+  border: 1px solid #575756;
+  border-radius: 50px;
+  background-color: transparent;
+  /* Chỉ transition những thuộc tính không ảnh hưởng đến box model */
+  transition: border 250ms ease-in-out, border-radius 250ms ease-in-out;
 }
 
+.search-wrapper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  /* Hiệu ứng nền dưới giống như border-bottom mở rộng */
+  background-color: #ffffff;
+  border-bottom: 1px solid #575756;
+  transition: height 250ms ease-in-out;
+  z-index: -1;
+}
+
+/* Khi hover hoặc focus, không thay đổi padding để không làm thay đổi kích thước */
 .search-wrapper:hover,
 .search-wrapper:focus-within {
-    padding: 12px 0;
-    border: 1px solid transparent;
-    border-bottom: 1px solid #575756;
-    border-radius: 0;
+  /* Chỉ thay đổi border-radius để tạo hiệu ứng “bình” */
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
 }
 
+/* Kích hoạt pseudo-element mở rộng từ bottom */
+.search-wrapper:hover::after,
+.search-wrapper:focus-within::after {
+  /* Mở rộng xuống đủ để “điền” phần dưới của header (giá trị này bạn có thể điều chỉnh sao cho phù hợp) */
+  
+  height: calc(100% + 9px);
+}
+
+  
 .search-icon {
     margin: 0 10px;
     width: 18px;
@@ -85,7 +121,6 @@
     text-transform: uppercase;
     letter-spacing: 1.5px;
 }
-
 
 .header-icons {
     display: flex;
@@ -120,11 +155,6 @@
     font-size: 12px;
 }
 
-.main-header {
-    position: relative;
-    transition: all 0.3s ease;
-}
-
 .main-header.sticky {
     position: fixed;
     top: 0;
@@ -135,3 +165,82 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* ============================= */
+/*         Phần Mobile           */
+/* ============================= */
+@media (max-width: 768px) {
+
+    /* Đảm bảo tất cả vẫn nằm trên 1 hàng */
+    .header-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        /* Bỏ mọi code cũ đặt column ở đây! */
+    }
+
+    /* Giảm margin để fit mobile */
+    .search-bar {
+        display: flex;
+        justify-content: center;
+        position: static;
+        /* QUAN TRỌNG: để .search-wrapper tuyệt đối so với .main-header */
+    }
+
+    /* Mặc định chỉ hiển thị icon search (thu nhỏ) */
+    .search-wrapper {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        border-radius: 50%;
+        border: 1px solid #575756;
+        background-color: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    /* Ẩn input khi chưa active */
+    .search-wrapper input {
+        display: none;
+    }
+
+    /* Khi active, overlay toàn bộ chiều ngang của .main-header */
+    .search-wrapper.active {
+        position: absolute;
+        /* QUAN TRỌNG: so với .main-header */
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-bottom: 0;
+        width: 100%;
+        /* Full ngang .main-header */
+        border-radius: 0;
+        padding: 9px 12px;
+        cursor: auto;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        background: #fff;
+        /* hoặc để transparent */
+        z-index: 9999;
+    }
+
+    .search-wrapper.active input {
+        display: inline;
+        /* Hiện input để gõ */
+        width: 100%;
+        margin-left: 0.5rem;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        color: #575756;
+    }
+
+    /* Nếu muốn ẩn icon user/cart khi search overlay */
+    .search-wrapper.active~.header-icons {
+        visibility: hidden;
+    }
+}
