@@ -22,7 +22,6 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
         </Routes>
-        
       </Router>
     </CartProvider>
   );

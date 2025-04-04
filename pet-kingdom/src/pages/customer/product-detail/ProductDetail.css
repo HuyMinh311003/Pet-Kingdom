@@ -1,20 +1,16 @@
 .main {
   display: flex;
   flex-direction: column;
-  width: 100vw;
-  height: 100vh;
-}
-
-.nav {
-  height: 10%;
-  background-color: rgb(243, 153, 153);
+  width: 99vw;
+  height: 130vh;
 }
 
 .product-detail-container {
   display: flex;
   flex-direction: row;
-  height: 65%;
-  padding: 0 5%;
+  max-width: 60%;
+  margin: 0 auto;
+  flex: 1;
 }
 
 .image-container {
@@ -24,10 +20,9 @@
   justify-content: center;
   align-items: center;
 
-  .image-slider {
-    width: 60%;
+  .product-image {
+    width: 70%;
     height: 90%;
-    background-color: rgb(197, 197, 197);
   }
 }
 
@@ -36,66 +31,75 @@
   width: 50%;
 
   .product-title {
-    font-size: 40px;
+    font-size: 2.5rem;
     font-weight: 600;
-    margin-bottom: 10px;
+    margin: 40px 0px 20px 0px;
   }
 
   .price {
     display: flex;
     flex-direction: row;
     align-items: center;
+    margin-bottom: 20px;
 
     .product-price {
-      font-size: 28px;
-      font-weight: 500;
+      font-size: 1.8rem;
+      font-weight: 600;
       margin: 0px 10px;
     }
 
     .old-price {
+      font-size: 1.2rem;
+      color: gray;
       text-decoration: line-through;
+    }
+  }
+
+  .text {
+    font-size: 1.5rem;
+    margin: 10px 50px 10px 0px;
+  }
+
+  .sub-description {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .main-description {
+    min-height: 40%;
+
+    .description {
+      font-size: 1.2rem;
     }
   }
 
   .button-list {
     display: flex;
     flex-direction: row;
-    position: fixed;
-    bottom: 30%;
 
-    .add-to-cart {
-      background-color: rgb(167, 192, 214);
+    .add-to-cart,
+    .go-to-cart {
+      background-color: #ffc371;
+      color: #ffffff;
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 9999px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
       margin-right: 20px;
     }
 
-    .go-to-cart {
-      background-color: rgb(190, 190, 190);
+    .add-to-cart:hover {
+      background-color: rgba(255, 195, 113, 0.9);
     }
-  }
-}
 
-.related-container {
-  height: 25%;
-  background-color: rgb(243, 153, 153);
-  display: flex;
-  flex-direction: column;
+    .go-to-cart {
+      background-color: gray;
+    }
 
-  .title {
-    font-weight: 600;
-    font-size: 20px;
-    margin-left: 20px;
-  }
-
-  .related-list {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-
-    .product {
-      background-color: white;
-      width: 20%;
-      height: 90%;
-      margin: 0 20px;
+    .go-to-cart:hover {
+      background-color: rgb(175, 175, 175);
     }
   }
 }
