@@ -41,6 +41,11 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
     };
 
 
+
+    const handleCartClick = () => {
+        navigate('/cart'); // Navigates to the Cart page
+    };
+
     return (
         <header className={`main-header ${isSticky ? "sticky" : ""}`}>
             <div className="header-inner">
@@ -65,6 +70,8 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
                 <div className="header-icons">
                     <User onClick={() => navigate('/profile')} className="user-icon" />
                     <div className="cart-icon-container">
+                    <User className="user-icon" />
+                    <div className="cart-icon-container" onClick={handleCartClick}>
                         <ShoppingCart className="cart-icon" />
                         {cartItems > 0 && <span className="cart-count">{cartItems}</span>}
                     </div>

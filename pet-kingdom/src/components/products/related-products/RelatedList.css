@@ -1,0 +1,19 @@
+.related-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 70%;
+  flex: 1;
+
+  .title {
+    font-weight: 600;
+    font-size: 30px;
+    margin: 20px;
+  }
+
+  .related-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem;
+  }
+}
