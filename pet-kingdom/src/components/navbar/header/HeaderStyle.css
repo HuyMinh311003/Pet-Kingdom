@@ -74,7 +74,6 @@
   height: 0;
   /* Hiệu ứng nền dưới giống như border-bottom mở rộng */
   background-color: #ffffff;
-  border-bottom: 1px solid #575756;
   transition: height 250ms ease-in-out;
   z-index: -1;
 }
