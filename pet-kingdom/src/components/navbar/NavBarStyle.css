@@ -15,7 +15,7 @@
 .navbar-container.sticky {
   position: fixed;
   /* Điều chỉnh top để nằm ngay dưới header */
-  top: 55px; /* thay đổi tùy chiều cao header, có thể là 60px, 70px, v.v. */
+  top: 53px; /* thay đổi tùy chiều cao header, có thể là 60px, 70px, v.v. */
   left: 0;
   right: 0;
   z-index: 1999;
