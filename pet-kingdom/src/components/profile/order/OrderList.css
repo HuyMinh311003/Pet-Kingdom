@@ -1,0 +1,81 @@
+.order-card {
+  height: 50px;
+  border-top: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.order-card:hover {
+  background-color: #ffc371;
+  color: white;
+}
+
+.order-card > div {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  gap: 50px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 5px;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.pagination .active {
+  background-color: #ffc371;
+  color: white;
+  font-weight: bold;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.status-pending {
+  background-color: #efde9b;
+  color: #92400e;
+}
+
+.status-processing {
+  background-color: #a7dbf1;
+  color: #0c4a6e;
+}
+
+.status-shipping {
+  background-color: #e9d5ff;
+  color: #3d1b76;
+}
+
+.status-delivered {
+  background-color: #bbf7d0;
+  color: #166534;
+}
+
+.status-cancelled {
+  background-color: #fecaca;
+  color: #991b1b;
+}

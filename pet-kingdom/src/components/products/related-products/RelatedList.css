@@ -8,12 +8,13 @@
   .title {
     font-weight: 600;
     font-size: 30px;
-    margin: 20px;
+    margin: 50px 0 20px 20px;
   }
 
   .related-list {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 1.5rem;
+    margin-bottom: 20px;
   }
 }
