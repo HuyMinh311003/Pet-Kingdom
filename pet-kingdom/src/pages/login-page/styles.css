@@ -51,7 +51,7 @@ img {
 
 .login-button {
   width: 100%;
-  background-color: #ff8c42;
+  background-color: #ffc371;
   color: white;
   padding: 10px;
   border: none;
@@ -71,7 +71,7 @@ img {
 .register-button {
   background: none;
   border: none;
-  color: #ff8c42;
+  color: #ffc371;
   font-size: 16px;
   cursor: pointer;
 }
