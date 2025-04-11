@@ -12,7 +12,7 @@ interface Product {
 const Cart: React.FC = () => {
     const navigate = useNavigate();
     const handleCheckout = () => {
-        navigate("/checkout");
+        navigate("/cart/checkout");
     };
     const [cartItems, setCartItems] = useState<Product[]>([
         { id: 1, name: "Dog", image: "https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/bernese-mountain-dog.jpg?crop=1.00xw:0.667xh;0,0.213xh&resize=980:*", quantity: 1 },

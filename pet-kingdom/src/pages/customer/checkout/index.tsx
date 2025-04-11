@@ -4,15 +4,14 @@ interface Product {
     id: number;
     name: string;
     image: string;
-    quantity: number;
     price: number;
 }
 
 const Checkout: React.FC = () => {
     const [CheckOutItems, setCheckOutItems] = useState<Product[]>([
-        { id: 1, name: "Dog", image: "https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/bernese-mountain-dog.jpg?crop=1.00xw:0.667xh;0,0.213xh&resize=980:*", quantity: 1, price: 550 },
-        { id: 2, name: "Cat", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/640px-Cat03.jpg", quantity: 2, price: 550 },
-        { id: 3, name: "Rabbit", image: "https://cdn.shopify.com/s/files/1/0040/8997/0777/files/Cute_Bunny_7d_1024x1024.jpg?v=1698453869", quantity: 5, price: 550 }
+        { id: 1, name: "Dog", image: "https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/bernese-mountain-dog.jpg?crop=1.00xw:0.667xh;0,0.213xh&resize=980:*", price: 550 },
+        { id: 2, name: "Cat", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/640px-Cat03.jpg", price: 550 },
+        { id: 3, name: "Rabbit", image: "https://cdn.shopify.com/s/files/1/0040/8997/0777/files/Cute_Bunny_7d_1024x1024.jpg?v=1698453869",  price: 550 }
     ]);
 
 
@@ -74,7 +73,7 @@ const Checkout: React.FC = () => {
                                         <p style={{ fontSize: "18px", }}>{item.name}</p>
                                         <div className="price-quantity">
                                             <p style={{ fontSize: "15px" }}>{item.price} </p>
-                                            <p style={{marginLeft:"10px",fontSize:"15px"}}>Qty: {item.quantity}</p>
+                                            {/* <p style={{marginLeft:"10px",fontSize:"15px"}}>Qty: {item.quantity}</p> */}
                                         </div>
                                     </div>
                                 </div>
