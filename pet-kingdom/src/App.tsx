@@ -9,6 +9,12 @@ import ProductDetail from "./pages/customer/product-detail/ProductDetail";
 import LoginPage from "./pages/login-page";
 import Cart from "./pages/customer/cart/Cart";
 import Checkout from "./pages/customer/checkout";
+
+import OrderList from "./components/profile/order/OrderList";
+import OrderDetailPage from "./components/profile/order/order-detail/OrderDetailPage";
+
+import AdminPage from "./pages/admin/admin";
+
 function App() {
   return (
     <CartProvider>
@@ -22,7 +28,14 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
           </Route>
-
+        </Routes>
+        <Routes>
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/orders" element={<OrderList role="admin" />} />
+          <Route
+            path="/admin/orders/:id"
+            element={<OrderDetailPage role="admin" />}
+          />
         </Routes>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

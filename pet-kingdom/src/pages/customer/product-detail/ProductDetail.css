@@ -31,9 +31,9 @@
   width: 50%;
 
   .product-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 600;
-    margin: 40px 0px 20px 0px;
+    margin: 60px 0px 20px 0px;
   }
 
   .price {
@@ -43,20 +43,20 @@
     margin-bottom: 20px;
 
     .product-price {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 600;
       margin: 0px 10px;
     }
 
     .old-price {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: gray;
       text-decoration: line-through;
     }
   }
 
   .text {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     margin: 10px 50px 10px 0px;
   }
 
@@ -66,11 +66,8 @@
   }
 
   .main-description {
-    min-height: 40%;
-
-    .description {
-      font-size: 1.2rem;
-    }
+    margin-top: 30px;
+    min-height: 35%;
   }
 
   .button-list {
@@ -85,6 +82,7 @@
       border: none;
       border-radius: 9999px;
       font-weight: 500;
+      font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.3s;
       margin-right: 20px;
