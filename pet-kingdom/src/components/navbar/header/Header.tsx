@@ -69,8 +69,6 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
 
                 <div className="header-icons">
                     <User onClick={() => navigate('/profile')} className="user-icon" />
-                    <div className="cart-icon-container">
-                    <User className="user-icon" />
                     <div className="cart-icon-container" onClick={handleCartClick}>
                         <ShoppingCart className="cart-icon" />
                         {cartItems > 0 && <span className="cart-count">{cartItems}</span>}

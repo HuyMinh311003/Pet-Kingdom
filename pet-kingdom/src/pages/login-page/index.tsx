@@ -11,11 +11,9 @@ const LoginPage: React.FC = () => {
         <h2 className="login-title">Login</h2>
         <form>
           <div className="input-group">
-            <label>Email</label>
             <input type="email" placeholder="Enter your email" />
           </div>
           <div className="input-group">
-            <label>Password</label>
             <input type="password" placeholder="Enter your password" />
           </div>
           <button className="login-button">Login</button>
@@ -32,15 +30,12 @@ const LoginPage: React.FC = () => {
             <h2>Register</h2>
             <form>
               <div className="input-group">
-                <label>Email</label>
                 <input type="email" placeholder="Enter your email" />
               </div>
               <div className="input-group">
-                <label>Password</label>
                 <input type="password" placeholder="Enter your password" />
               </div>
               <div className="input-group">
-                <label>Confirm Password</label>
                 <input type="password" placeholder="Confirm your password" />
               </div>
               <button className="google-button">Sign up with Google</button>
