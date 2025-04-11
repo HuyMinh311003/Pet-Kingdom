@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import RelatedList from "../../../components/products/related-products/RelatedList";
 import "./ProductDetail.css";
+import BackButton from "../../../components/common/back-button/BackButton";
 
 export default function ProductDetail() {
   const navigate = useNavigate();
 
   return (
-    <div className="main">
+    <div className="product-detail-page" style={{ position: "relative" }}>
+      <BackButton fallbackPath="/products" />
       <div className="product-detail-container">
         <div className="image-container">
           <img
