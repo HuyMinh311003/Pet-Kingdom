@@ -111,9 +111,9 @@ img {
   text-align: left;
 }
 
-/* Button đăng ký Google */
-.google-button {
-  background: #db4437;
+/* Button đăng ký */
+.signup-button {
+  background: #ffc371;
   color: white;
   padding: 10px;
   border: none;
@@ -121,20 +121,22 @@ img {
   cursor: pointer;
   width: 100%;
   margin-top: 10px;
+  font-size: 16px;
 }
 
-.google-button:hover {
-  background: #c1351d;
+.signup-button:hover {
+  background: #e07b3d;
 }
 
 /* Nút đóng */
 .close-button {
-  margin-top: 10px;
-  background: gray;
+  margin-top: 15px;
+  background: rgb(163, 163, 163);
   color: white;
   padding: 8px;
   border: none;
   border-radius: 8px;
+  width: 25%;
   cursor: pointer;
 }
 

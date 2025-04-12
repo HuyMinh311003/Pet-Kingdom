@@ -4,9 +4,10 @@ import "./BackButton.css";
 
 type BackButtonProps = {
   fallbackPath?: string;
+  style?: React.CSSProperties;
 };
 
-const BackButton = ({ fallbackPath }: BackButtonProps) => {
+const BackButton = ({ fallbackPath, style }: BackButtonProps) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -20,8 +21,8 @@ const BackButton = ({ fallbackPath }: BackButtonProps) => {
   };
 
   return (
-    <button className="back-button" onClick={handleBack}>
-      <ArrowBackIcon sx={{ fontSize: 24 }} />
+    <button className="back-button" onClick={handleBack} style={style}>
+      <ArrowBackIcon className="back-icon" />
     </button>
   );
 };

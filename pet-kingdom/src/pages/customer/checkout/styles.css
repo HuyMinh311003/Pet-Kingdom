@@ -1,184 +1,198 @@
-.checkout-title{
-    text-align: center;
+.checkout-title {
+  text-align: center;
 }
-.main-container{
-    
-    width: 80%;
-    height: 82vh;
-    margin: auto;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
+
+.main-container {
+  width: 80%;
+  height: 82vh;
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
 }
+
 .checkout-info {
-    width: 60%;
-    height: 100%;
-    flex-direction: column;
-    display: flex;
-    border-radius: 8px;
-    background-color: #f2f2f2; 
-    padding: 24px;
-    box-sizing: border-box;
-    
+  width: 60%;
+  height: 100%;
+  flex-direction: column;
+  display: flex;
+  border-radius: 8px;
+  background-color: #f6f6f6;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .checkout-info > div {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 /* Tiêu đề từng phần */
 .checkout-info p {
-    margin: 0 0 6px 0;
-    font-weight: 600;
+  margin: 0 0 6px 0;
+  font-weight: 600;
 }
 
 /* Input fields */
 .checkout-info input[type="text"],
 .checkout-info input[type="email"],
 .checkout-info input[type="address"] {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 14px;
-    border: 1px solid #ccc;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid #ccc;
 }
 
 /* Payment radio buttons */
 .payment label {
-    margin-right: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  margin-right: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-
-.order-info{
-    margin-left: auto;
-    display: flex;
-    flex-direction: column;
-    height: 93%;
-    width: 40%;
-    background-color: #f2f2f2; 
-    padding: 16px; /* <== thêm dòng này */
-    box-sizing: border-box; /* đảm bảo padding không làm bể layout */
-    border-radius: 10px;
+.order-info {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  height: 93%;
+  width: 40%;
+  background-color: #f6f6f6;
+  padding: 16px; /* <== thêm dòng này */
+  box-sizing: border-box; /* đảm bảo padding không làm bể layout */
+  border-radius: 10px;
 }
+
 .order-info p {
-    color: #000;
+  color: #000;
 }
-.checkout-card {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid #ddd;
 
+.checkout-card {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #ddd;
 }
 
 .checkout-card img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 4px;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 4px;
 }
 
 .yourorder-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
 }
 
 .yourorder-info p {
-    margin: 0;
-    font-size: 14px;
+  margin: 0;
+  font-size: 14px;
 }
 
 .price-quantity {
-    display: flex;
-    margin-top: 4px;
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  gap: 20px; /* khoảng cách giữa giá và số lượng */
 }
+
+.price-quantity p {
+  font-size: 15px;
+}
+
+.price-quantity p:last-child {
+  margin-left: auto;
+  font-weight: 600;
+}
+
 .checkout-item {
-    max-height: 300px; /* Giới hạn chiều cao để tạo vùng scroll */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-right: 6px; /* Để tránh che chữ khi có scrollbar */
+  max-height: 300px; /* Giới hạn chiều cao để tạo vùng scroll */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 6px; /* Để tránh che chữ khi có scrollbar */
 }
+
 /* Promo-code section */
 .promo-code {
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
-    background-color: #f2f2f2;
-    padding: 0px 16px 16px 16px;
-    border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  background-color: #f2f2f2;
+  padding: 0px 16px 16px 16px;
+  border-radius: 8px;
 }
 
 .promo-input {
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    flex: 1;
+  padding: 0px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1;
 }
+
 .apply-button {
-    padding: 8px 16px;
-    background-color: #ffc371;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: 600;
-    cursor: pointer;
-    width: fit-content;
-    align-self: flex-end;
+  padding: 8px 16px;
+  background-color: #ffc371;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+  align-self: flex-end;
 }
 
 .apply-button:hover {
-    background-color: #b6761b;
+  background-color: #b6761b;
 }
 
 /* Summary section */
 .checkout-summary {
-    margin-top: auto;
-    padding: 0px 16px 16px 16px;
-    background-color: #f2f2f2;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
+  margin-top: auto;
+  padding: 0px 16px 16px 16px;
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .checkout-summary p {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 500;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .checkout-summary p:nth-child(2) {
-    color: red;
+  color: red;
 }
 
 .checkout-summary p:last-child {
-    font-size: 16px;
-    font-weight: 700;
-    margin-top: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
 }
 
 /* Checkout button */
 .checkout-button {
-    margin-top: 6px;
-    padding: 10px 16px;
-    background-color: #ffc371;
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  margin-top: 6px;
+  padding: 10px 16px;
+  background-color: #ffc371;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .checkout-button:hover {
-    background-color: #d08822;
+  background-color: #d08822;
 }

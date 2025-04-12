@@ -1,7 +1,7 @@
 import Home from "./pages/customer/home/Home";
 import "./App.css";
-import ProfilePage from './components/profile/ProfilePage';
-import { Route,Outlet, BrowserRouter as Router, Routes } from "react-router-dom";
+import ProfilePage from "./components/profile/ProfilePage";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import ProductList from "./components/products/ProductList";
 import CustomerLayout from "./layouts/CustomerLayout";
 import { CartProvider } from "./contexts/CartContext";
@@ -9,7 +9,6 @@ import ProductDetail from "./pages/customer/product-detail/ProductDetail";
 import LoginPage from "./pages/login-page";
 import Cart from "./pages/customer/cart/Cart";
 import Checkout from "./pages/customer/checkout";
-import Breadcrumb from "./components/common/breadcrumb/breadcrumb";
 import OrderList from "./components/profile/order/OrderList";
 import OrderDetailPage from "./components/profile/order/order-detail/OrderDetailPage";
 

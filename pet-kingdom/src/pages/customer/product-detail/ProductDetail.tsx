@@ -8,7 +8,10 @@ export default function ProductDetail() {
 
   return (
     <div className="product-detail-page" style={{ position: "relative" }}>
-      <BackButton fallbackPath="/products" />
+      <BackButton
+        style={{ top: "40px", left: "18%" }}
+        fallbackPath="/products"
+      />
       <div className="product-detail-container">
         <div className="image-container">
           <img

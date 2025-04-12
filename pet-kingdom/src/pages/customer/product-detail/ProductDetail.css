@@ -22,7 +22,7 @@
 
   .product-image {
     width: 70%;
-    height: 90%;
+    height: 95%;
   }
 }
 
@@ -33,19 +33,18 @@
   .product-title {
     font-size: 2.2rem;
     font-weight: 600;
-    margin: 60px 0px 20px 0px;
+    margin-top: 30px;
   }
 
   .price {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-bottom: 20px;
 
     .product-price {
       font-size: 1.6rem;
       font-weight: 600;
-      margin: 0px 10px;
+      margin-left: 10px;
     }
 
     .old-price {
@@ -57,7 +56,8 @@
 
   .text {
     font-size: 1.1rem;
-    margin: 10px 50px 10px 0px;
+    margin-top: 10px;
+    margin-right: 50px;
   }
 
   .sub-description {
@@ -67,7 +67,7 @@
 
   .main-description {
     margin-top: 30px;
-    min-height: 35%;
+    min-height: 40%;
   }
 
   .button-list {
@@ -89,7 +89,7 @@
     }
 
     .add-to-cart:hover {
-      background-color: rgba(255, 195, 113, 0.9);
+      opacity: 0.8;
     }
 
     .go-to-cart {
