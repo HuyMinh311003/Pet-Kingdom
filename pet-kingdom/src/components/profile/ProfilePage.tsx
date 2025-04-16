@@ -1,12 +1,13 @@
 // src/pages/profile/ProfilePage.tsx
-import { NavLink, Routes, Route } from 'react-router-dom';
-import { User, ShoppingBag, Heart, Gift} from 'lucide-react';
+import { NavLink, Routes, Route } from "react-router-dom";
+import { User, ShoppingBag, Heart, Gift } from "lucide-react";
 
-import PersonalInfo from './PersonalInfo';
-// import MyOrders from './MyOrders';
+import PersonalInfo from "./PersonalInfo";
+import OrderList from "./order/OrderList";
 // import Wishlist from './Wishlist';
 // import PromoCodes from './PromoCodes';
-import './ProfilePage.css';
+import "./ProfilePage.css";
+import OrderDetailPage from "./order/order-detail/OrderDetailPage";
 
 export default function ProfilePage() {
   return (
@@ -33,45 +34,34 @@ export default function ProfilePage() {
       <div className="profile-content container">
         <div className="tabs-navigation">
           {/* Khi sử dụng NavLink, khi route khớp nó sẽ tự thêm class "active" */}
-          <NavLink
-            to="/profile"
-            end
-            className="tab-button"
-          >
+          <NavLink to="/profile" end className="tab-button">
             <User size={20} />
             <span>Personal Information</span>
           </NavLink>
-          <NavLink
-            to="/profile/orders"
-            className="tab-button"
-          >
+          <NavLink to="/profile/orders" className="tab-button">
             <ShoppingBag size={20} />
             <span>My Orders</span>
           </NavLink>
 
-          <NavLink
-            to="/profile/wishlist"
-            className="tab-button"
-          >
+          <NavLink to="/profile/wishlist" className="tab-button">
             <Heart size={20} />
             <span>Wishlist</span>
           </NavLink>
-          <NavLink
-            to="/profile/promo-codes"
-            className="tab-button"
-          >
+          <NavLink to="/profile/promo-codes" className="tab-button">
             <Gift size={20} />
             <span>My Promo-codes</span>
           </NavLink>
-          
-          
         </div>
 
         <div className="tab-container">
           <Routes>
             {/* Khi vào /profile, hiển thị tab PersonalInfo */}
             <Route index element={<PersonalInfo />} />
-            {/* <Route path="orders" element={<MyOrders />} /> */}
+            <Route path="orders" element={<OrderList role="profile" />} />
+            <Route
+              path="orders/:id"
+              element={<OrderDetailPage role="profile" />}
+            />
             {/* <Route path="wishlist" element={<Wishlist />} /> */}
             {/* <Route path="promo-codes" element={<PromoCodes />} /> */}
           </Routes>

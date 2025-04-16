@@ -1,121 +1,136 @@
-.cart-container {
-    background-color: #FFC371;
-    padding: 20px;
-    text-align: center;
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
 }
 
-.cart-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.cart-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.cart-table th, .cart-table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: center;
-}
-
-.cart-table th {
-    background: #FFA500;
-    color: white;
-    font-weight: bold;
+.cart-card {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px 20px;
+  gap: 20px;
+  justify-content: flex-start;
+  height: 120px;
 }
 
 .cart-image {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 5px;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 4px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  margin-left: 5px;
 }
 
-.quantity-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+.cart-details {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.pet-name-mmoney {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
 }
 
 .quantity-btn {
-    padding: 5px 10px;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
+  width: 35px;
+  height: 35px;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2 ease;
+}
+
+.delete-icon {
+  color: red;
 }
 
 .decrement-btn {
-    background-color: red;
-}
-.disabled-btn {
-    background-color: gray !important;
-    cursor: not-allowed;
-    opacity: 0.6;
+  background-color: rgb(250, 62, 62);
 }
 
 .increment-btn {
-    background-color: green;
+  background-color: rgb(100, 190, 100);
+}
+
+.decrement-btn:hover,
+.increment-btn:hover {
+  opacity: 0.8;
+}
+
+.disabled-btn {
+  background-color: gray !important;
+  cursor: not-allowed;
+  opacity: 0.6 !important;
+}
+
+.final-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 1;
 }
 
 .remove-btn {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 5px;
+  background-color: #ff5c5c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
-.cart-footer {
-    margin-top: 15px;
-}
-
-.coupon-input {
-    padding: 8px;
-    margin-right: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-.apply-btn, .update-btn {
-    background-color: orange;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 7px;
-    margin-right: 10px;
+.final-price p {
+  margin: 0;
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
 }
 
 .order-summary {
-    background: white;
-    padding: 15px;
-    margin-top: 15px;
-    border-radius: 10px;
-    text-align: center;
+  background: white;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 20px;
 }
 
 .checkout-btn {
-    background-color: #FF8C00;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 7px;
-    font-size: 16px;
+  background-color: #ffc371;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 7px;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: background-color 0.2 ease;
 }
 
-.return-shop {
-    font-weight: bold;
-    margin-top: 10px;
+.checkout-btn:hover {
+  background-color: #ffb357;
 }
