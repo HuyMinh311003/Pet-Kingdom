@@ -1,8 +1,8 @@
 import { Stepper, Step, StepLabel } from "@mui/material";
 import { StepConnector, stepConnectorClasses } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import { CheckIcon } from "lucide-react";
 
 const steps = ["Chờ xác nhận", "Đã xác nhận", "Đang giao", "Đã giao"];
 
