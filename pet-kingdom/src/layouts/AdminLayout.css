@@ -1,0 +1,19 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 250px; /* Bằng với width của sidebar */
+  background: #f3f4f6;
+}
+
+@media (max-width: 768px) {
+  .admin-content {
+    margin-left: 0;
+  }
+  
+  /* Add responsive sidebar handling here when needed */
+}
