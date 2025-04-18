@@ -43,7 +43,10 @@ function App() {
             <Route path="products" element={<ProductsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="orders" element={<OrderList role="admin" />} />
-            <Route path="orders/:id" element={<OrderDetailPage role="admin" />} />
+            <Route
+              path="orders/:id"
+              element={<OrderDetailPage role="admin" />}
+            />
             <Route path="promotions" element={<PromotionsPage />} />
             <Route path="staff" element={<StaffPage />} />
             <Route path="assigned-orders" element={<OrdersPage />}>
@@ -52,7 +55,7 @@ function App() {
             </Route>
           </Route>
 
-          {/* Auth Routes */} 
+          {/* Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
         </Routes>
       </Router>
