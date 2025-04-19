@@ -113,7 +113,10 @@ const StaffPage: React.FC = () => {
 
       {isAddingStaff && (
         <div className="modal-overlay" onClick={() => setIsAddingStaff(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="add-staff-form-container"
+            onClick={(e) => e.stopPropagation()}
+          >
             <form onSubmit={handleAddStaff} className="add-staff-form">
               <h2 style={{ marginBottom: 30 }}>
                 {isEditing ? "Edit Staff" : "Add New Staff"}

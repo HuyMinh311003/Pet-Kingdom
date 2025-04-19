@@ -14,7 +14,7 @@ interface Product {
   isActive: boolean;
   birthday?: string;
   age?: number;
-  gender?: 'male' | 'female';
+  gender?: "male" | "female";
   vaccinated?: boolean;
 }
 
@@ -136,6 +136,8 @@ const ProductsPage: React.FC = () => {
 
       <div className="products-grid">
         <form onSubmit={handleAddProduct} className="add-product-form">
+          <h2>Add new product</h2>
+          <label htmlFor="productName">Name</label>
           <input
             type="text"
             placeholder="Product Name"
@@ -178,8 +180,10 @@ const ProductsPage: React.FC = () => {
           <input
             id="productBirthday"
             type="date"
-            value={newProduct.birthday || ''}
-            onChange={e => setNewProduct({ ...newProduct, birthday: e.target.value })}
+            value={newProduct.birthday || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, birthday: e.target.value })
+            }
           />
 
           <label htmlFor="productAge">Age</label>
@@ -187,15 +191,22 @@ const ProductsPage: React.FC = () => {
             id="productAge"
             type="number"
             min="0"
-            value={newProduct.age || ''}
-            onChange={e => setNewProduct({ ...newProduct, age: Number(e.target.value) })}
+            value={newProduct.age || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, age: Number(e.target.value) })
+            }
           />
 
           <label htmlFor="productGender">Gender</label>
           <select
             id="productGender"
-            value={newProduct.gender || ''}
-            onChange={e => setNewProduct({ ...newProduct, gender: e.target.value as 'male' | 'female' })}
+            value={newProduct.gender || ""}
+            onChange={(e) =>
+              setNewProduct({
+                ...newProduct,
+                gender: e.target.value as "male" | "female",
+              })
+            }
           >
             <option value="">Select Gender</option>
             <option value="male">Male</option>
@@ -205,9 +216,16 @@ const ProductsPage: React.FC = () => {
           <label htmlFor="productVaccinated">Vaccinate</label>
           <select
             id="productVaccinated"
-            value={newProduct.vaccinated !== undefined ? String(newProduct.vaccinated) : ''}
-            onChange={e =>
-              setNewProduct({ ...newProduct, vaccinated: e.target.value === 'true' })
+            value={
+              newProduct.vaccinated !== undefined
+                ? String(newProduct.vaccinated)
+                : ""
+            }
+            onChange={(e) =>
+              setNewProduct({
+                ...newProduct,
+                vaccinated: e.target.value === "true",
+              })
             }
           >
             <option value="">Select Status</option>

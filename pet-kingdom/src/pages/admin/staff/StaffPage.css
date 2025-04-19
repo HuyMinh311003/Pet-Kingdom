@@ -29,7 +29,7 @@
   background-color: #ffb657;
 }
 
-/* Add staff form - modal */
+/* Add staff form */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -43,7 +43,7 @@
   z-index: 999;
 }
 
-.modal-content {
+.add-staff-form-container {
   background: white;
   border-radius: 0.75rem;
   padding: 2rem;
