@@ -90,7 +90,54 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
               required
             />
           </div>
+          <div className="form-group">
+            <label htmlFor="productBirthday">Birthday</label>
+            <input
+              id="productBirthday"
+              type="date"
+              value={editedProduct.birthday || ''}
+              onChange={e => setEditedProduct({ ...editedProduct, birthday: e.target.value })}
+            />
+          </div>
 
+          <div className="form-group">
+            <label htmlFor="productAge">Age</label>
+            <input
+              id="productAge"
+              type="number"
+              min="0"
+              value={editedProduct.age || ''}
+              onChange={e => setEditedProduct({ ...editedProduct, age: Number(e.target.value) })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="productGender">Gender</label>
+            <select
+              id="productGender"
+              value={editedProduct.gender || ''}
+              onChange={e => setEditedProduct({ ...editedProduct, gender: e.target.value as 'male' | 'female' })}
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="productVaccinated">Vaccinated</label>
+            <select
+              id="productVaccinated"
+              value={editedProduct.vaccinated !== undefined ? String(editedProduct.vaccinated) : ''}
+              onChange={e =>
+                setEditedProduct({ ...editedProduct, vaccinated: e.target.value === 'true' })
+              }
+            >
+              <option value="">Select Status</option>
+              <option value="true">Vaccinated</option>
+              <option value="false">Not Vaccinated</option>
+            </select>
+          </div>
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="editPrice">Price (VND)</label>
