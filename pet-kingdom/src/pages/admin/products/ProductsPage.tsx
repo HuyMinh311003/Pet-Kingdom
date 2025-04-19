@@ -12,6 +12,10 @@ interface Product {
   stock: number;
   imageUrl: string;
   isActive: boolean;
+  birthday?: string;
+  age?: number;
+  gender?: 'male' | 'female';
+  vaccinated?: boolean;
 }
 
 interface Category {
@@ -128,7 +132,6 @@ const ProductsPage: React.FC = () => {
     <div className="products-page">
       <div className="products-header">
         <h1>Product Management</h1>
-        <button className="add-product-btn">Add New Product</button>
       </div>
 
       <div className="products-grid">
@@ -171,6 +174,46 @@ const ProductsPage: React.FC = () => {
             }
             required
           />
+          <label htmlFor="productBirthday">Birthday</label>
+          <input
+            id="productBirthday"
+            type="date"
+            value={newProduct.birthday || ''}
+            onChange={e => setNewProduct({ ...newProduct, birthday: e.target.value })}
+          />
+
+          <label htmlFor="productAge">Age</label>
+          <input
+            id="productAge"
+            type="number"
+            min="0"
+            value={newProduct.age || ''}
+            onChange={e => setNewProduct({ ...newProduct, age: Number(e.target.value) })}
+          />
+
+          <label htmlFor="productGender">Gender</label>
+          <select
+            id="productGender"
+            value={newProduct.gender || ''}
+            onChange={e => setNewProduct({ ...newProduct, gender: e.target.value as 'male' | 'female' })}
+          >
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+
+          <label htmlFor="productVaccinated">Vaccinate</label>
+          <select
+            id="productVaccinated"
+            value={newProduct.vaccinated !== undefined ? String(newProduct.vaccinated) : ''}
+            onChange={e =>
+              setNewProduct({ ...newProduct, vaccinated: e.target.value === 'true' })
+            }
+          >
+            <option value="">Select Status</option>
+            <option value="true">Vacinated</option>
+            <option value="false">Not Vaccinated</option>
+          </select>
 
           <div className="number-inputs">
             <div>
