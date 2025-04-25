@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from "react";
+import "./OrdersPage.css";
 
 interface Order {
   id: string;
@@ -21,16 +22,16 @@ const MyAssignedOrders = () => {
       customerName: "Nguyễn Văn A",
       address: "123 Đường ABC, Quận 1, TP.HCM",
       total: 250000,
-      status: "Đang giao"
+      status: "Đang giao",
     },
     {
       id: "00002",
       date: "16/4/2025",
       customerName: "Trần Thị B",
-      address: "456 Đường XYZ, Quận 2, TP.HCM", 
+      address: "456 Đường XYZ, Quận 2, TP.HCM",
       total: 340000,
-      status: "Đã giao"
-    }
+      status: "Đã giao",
+    },
   ]);
 
   const indexOfLastOrder = currentPage * ordersPerPage;
@@ -52,7 +53,7 @@ const MyAssignedOrders = () => {
   return (
     <div className="orders-list">
       <h2>Đơn hàng của tôi</h2>
-      
+
       <div className="orders-table">
         <div className="table-header">
           <span>Mã đơn hàng</span>
@@ -62,7 +63,7 @@ const MyAssignedOrders = () => {
           <span>Tổng tiền</span>
           <span>Trạng thái</span>
         </div>
-        
+
         {currentOrders.map((order) => (
           <div key={order.id} className="table-row">
             <span>{order.id}</span>
@@ -77,8 +78,8 @@ const MyAssignedOrders = () => {
 
       {totalPages > 1 && (
         <div className="pagination">
-          <button 
-            onClick={() => setCurrentPage(1)} 
+          <button
+            onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
           >
             {"<<"}
@@ -108,7 +109,9 @@ const MyAssignedOrders = () => {
             ))}
 
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
           >
             {">"}

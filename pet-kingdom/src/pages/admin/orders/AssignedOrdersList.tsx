@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from "react";
+import "./OrdersPage.css";
 
 interface Order {
   id: string;
@@ -19,15 +20,15 @@ const AssignedOrdersList = () => {
       date: "17/4/2025",
       customerName: "Lê Văn C",
       address: "789 Đường DEF, Quận 3, TP.HCM",
-      total: 450000
+      total: 450000,
     },
     {
       id: "00006",
       date: "17/4/2025",
       customerName: "Phạm Thị D",
       address: "321 Đường GHI, Quận 4, TP.HCM",
-      total: 680000
-    }
+      total: 680000,
+    },
   ]);
 
   const indexOfLastOrder = currentPage * ordersPerPage;
@@ -37,13 +38,13 @@ const AssignedOrdersList = () => {
 
   const handleAssignOrder = (orderId: string) => {
     // Handle assigning order to current shipper
-    console.log('Assigning order:', orderId);
+    console.log("Assigning order:", orderId);
   };
 
   return (
     <div className="orders-list">
       <h2>Đơn hàng chờ giao</h2>
-      
+
       <div className="orders-table">
         <div className="table-header">
           <span>Mã đơn hàng</span>
@@ -53,7 +54,7 @@ const AssignedOrdersList = () => {
           <span>Tổng tiền</span>
           <span>Thao tác</span>
         </div>
-        
+
         {currentOrders.map((order) => (
           <div key={order.id} className="table-row">
             <span>{order.id}</span>
@@ -62,7 +63,7 @@ const AssignedOrdersList = () => {
             <span className="address-cell">{order.address}</span>
             <span>{order.total.toLocaleString()}đ</span>
             <span>
-              <button 
+              <button
                 className="assign-button"
                 onClick={() => handleAssignOrder(order.id)}
               >
@@ -75,8 +76,8 @@ const AssignedOrdersList = () => {
 
       {totalPages > 1 && (
         <div className="pagination">
-          <button 
-            onClick={() => setCurrentPage(1)} 
+          <button
+            onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
           >
             {"<<"}
@@ -106,7 +107,9 @@ const AssignedOrdersList = () => {
             ))}
 
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
           >
             {">"}
