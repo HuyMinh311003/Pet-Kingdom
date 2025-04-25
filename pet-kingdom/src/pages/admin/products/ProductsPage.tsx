@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import ProductEditModal from '../../../components/admin/products/ProductEditModal';
-import './ProductsPage.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import ProductEditModal from "../../../components/admin/products/ProductEditModal";
+import "./ProductsPage.css";
 
 interface Product {
   id: string;
@@ -12,12 +12,16 @@ interface Product {
   stock: number;
   imageUrl: string;
   isActive: boolean;
+  birthday?: string;
+  age?: number;
+  gender?: "male" | "female";
+  vaccinated?: boolean;
 }
 
 interface Category {
   id: string;
   name: string;
-  type: 'pet' | 'tool';
+  type: "pet" | "tool";
   isActive: boolean;
 }
 
@@ -38,29 +42,31 @@ const ProductsPage: React.FC = () => {
     // TODO: Fetch categories and products from API
     // For now using mock data
     setCategories([
-      { id: '1', name: 'Dogs', type: 'pet', isActive: true },
-      { id: '2', name: 'Cats', type: 'pet', isActive: true },
-      { id: '3', name: 'Pet Tools', type: 'tool', isActive: true },
+      { id: "1", name: "Dogs", type: "pet", isActive: true },
+      { id: "2", name: "Cats", type: "pet", isActive: true },
+      { id: "3", name: "Pet Tools", type: "tool", isActive: true },
     ]);
 
     // Mock products data
     const mockProducts = [
       {
-        id: '1',
-        name: 'Golden Retriever Puppy',
-        description: 'Friendly and intelligent puppy',
+        id: "1",
+        name: "Golden Retriever Puppy",
+        description: "Friendly and intelligent puppy",
         price: 15000000,
-        categoryId: '1',
+        categoryId: "1",
         stock: 3,
-        imageUrl: '/mock/golden.jpg',
-        isActive: true
+        imageUrl: "/mock/golden.jpg",
+        isActive: true,
       },
       // Add more mock products as needed
     ];
 
     // Filter products by category if categoryId is provided
     if (categoryId) {
-      setProducts(mockProducts.filter(product => product.categoryId === categoryId));
+      setProducts(
+        mockProducts.filter((product) => product.categoryId === categoryId)
+      );
     } else {
       setProducts(mockProducts);
     }
@@ -68,38 +74,44 @@ const ProductsPage: React.FC = () => {
 
   // Update page title based on category
   useEffect(() => {
-    const currentCategory = categories.find(cat => cat.id === categoryId);
-    document.title = currentCategory 
+    const currentCategory = categories.find((cat) => cat.id === categoryId);
+    document.title = currentCategory
       ? `${currentCategory.name} Products - Pet Kingdom Admin`
-      : 'All Products - Pet Kingdom Admin';
+      : "All Products - Pet Kingdom Admin";
   }, [categoryId, categories]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       setSelectedImage(e.target.files[0]);
       // TODO: Implement image upload and get URL
-      setNewProduct({ ...newProduct, imageUrl: URL.createObjectURL(e.target.files[0]) });
+      setNewProduct({
+        ...newProduct,
+        imageUrl: URL.createObjectURL(e.target.files[0]),
+      });
     }
   };
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement API call to add product
-    setProducts([...products, { ...newProduct, id: Date.now().toString() } as Product]);
+    setProducts([
+      ...products,
+      { ...newProduct, id: Date.now().toString() } as Product,
+    ]);
     setNewProduct({ isActive: true, stock: 0, price: 0 });
     setSelectedImage(null);
   };
 
   const handleUpdateProduct = (id: string, updates: Partial<Product>) => {
     // TODO: Implement API call to update product
-    setProducts(products.map(prod => 
-      prod.id === id ? { ...prod, ...updates } : prod
-    ));
+    setProducts(
+      products.map((prod) => (prod.id === id ? { ...prod, ...updates } : prod))
+    );
   };
 
   const handleDeleteProduct = (id: string) => {
     // TODO: Implement API call to delete product
-    setProducts(products.filter(prod => prod.id !== id));
+    setProducts(products.filter((prod) => prod.id !== id));
   };
 
   const handleEditClick = (product: Product) => {
@@ -120,29 +132,34 @@ const ProductsPage: React.FC = () => {
     <div className="products-page">
       <div className="products-header">
         <h1>Product Management</h1>
-        <button className="add-product-btn">Add New Product</button>
       </div>
 
       <div className="products-grid">
         <form onSubmit={handleAddProduct} className="add-product-form">
+          <h2>Add new product</h2>
+          <label htmlFor="productName">Name</label>
           <input
             type="text"
             placeholder="Product Name"
-            value={newProduct.name || ''}
-            onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+            value={newProduct.name || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, name: e.target.value })
+            }
             required
             aria-label="Product Name"
           />
-          
+
           <label htmlFor="productCategory">Category</label>
           <select
             id="productCategory"
-            value={newProduct.categoryId || ''}
-            onChange={e => setNewProduct({ ...newProduct, categoryId: e.target.value })}
+            value={newProduct.categoryId || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, categoryId: e.target.value })
+            }
             required
           >
             <option value="">Select Category</option>
-            {categories.map(category => (
+            {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
@@ -153,10 +170,68 @@ const ProductsPage: React.FC = () => {
           <textarea
             id="productDescription"
             placeholder="Description"
-            value={newProduct.description || ''}
-            onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
+            value={newProduct.description || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, description: e.target.value })
+            }
             required
           />
+          <label htmlFor="productBirthday">Birthday</label>
+          <input
+            id="productBirthday"
+            type="date"
+            value={newProduct.birthday || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, birthday: e.target.value })
+            }
+          />
+
+          <label htmlFor="productAge">Age</label>
+          <input
+            id="productAge"
+            type="number"
+            min="0"
+            value={newProduct.age || ""}
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, age: Number(e.target.value) })
+            }
+          />
+
+          <label htmlFor="productGender">Gender</label>
+          <select
+            id="productGender"
+            value={newProduct.gender || ""}
+            onChange={(e) =>
+              setNewProduct({
+                ...newProduct,
+                gender: e.target.value as "male" | "female",
+              })
+            }
+          >
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+
+          <label htmlFor="productVaccinated">Vaccinate</label>
+          <select
+            id="productVaccinated"
+            value={
+              newProduct.vaccinated !== undefined
+                ? String(newProduct.vaccinated)
+                : ""
+            }
+            onChange={(e) =>
+              setNewProduct({
+                ...newProduct,
+                vaccinated: e.target.value === "true",
+              })
+            }
+          >
+            <option value="">Select Status</option>
+            <option value="true">Vacinated</option>
+            <option value="false">Not Vaccinated</option>
+          </select>
 
           <div className="number-inputs">
             <div>
@@ -167,7 +242,12 @@ const ProductsPage: React.FC = () => {
                 min="0"
                 step="1000"
                 value={newProduct.price}
-                onChange={e => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                onChange={(e) =>
+                  setNewProduct({
+                    ...newProduct,
+                    price: Number(e.target.value),
+                  })
+                }
                 required
               />
             </div>
@@ -179,7 +259,12 @@ const ProductsPage: React.FC = () => {
                 type="number"
                 min="0"
                 value={newProduct.stock}
-                onChange={e => setNewProduct({ ...newProduct, stock: Number(e.target.value) })}
+                onChange={(e) =>
+                  setNewProduct({
+                    ...newProduct,
+                    stock: Number(e.target.value),
+                  })
+                }
                 required
               />
             </div>
@@ -207,7 +292,7 @@ const ProductsPage: React.FC = () => {
         </form>
 
         <div className="products-list">
-          {products.map(product => (
+          {products.map((product) => (
             <div key={product.id} className="product-item">
               <div className="product-image">
                 <img src={product.imageUrl} alt={product.name} />
@@ -216,16 +301,24 @@ const ProductsPage: React.FC = () => {
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
                 <div className="product-details">
-                  <span className="price">{product.price.toLocaleString()} VND</span>
+                  <span className="price">
+                    {product.price.toLocaleString()} VND
+                  </span>
                   <span className="stock">Stock: {product.stock}</span>
                 </div>
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${product.isActive ? 'active' : 'inactive'}`}
-                  onClick={() => handleUpdateProduct(product.id, { isActive: !product.isActive })}
+                  className={`status-btn ${
+                    product.isActive ? "active" : "inactive"
+                  }`}
+                  onClick={() =>
+                    handleUpdateProduct(product.id, {
+                      isActive: !product.isActive,
+                    })
+                  }
                 >
-                  {product.isActive ? 'Active' : 'Inactive'}
+                  {product.isActive ? "Active" : "Inactive"}
                 </button>
                 <button
                   className="edit-btn"
