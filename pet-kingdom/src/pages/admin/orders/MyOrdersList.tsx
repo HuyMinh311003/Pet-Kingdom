@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { orderApi } from '../../../services/api/orderApi';
 
 interface Order {
   id: string;
@@ -13,38 +14,48 @@ interface Order {
 const MyOrdersList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Mock data - replace with real API call later
-  const [orders] = useState<Order[]>([
-    {
-      id: "00003",
-      date: "17/4/2025",
-      total: 450000,
-      status: "Đang giao",
-      address: "789 Trần Văn C, Quận 3, TP.HCM",
-      customerName: "Nguyễn Văn A",
-      phone: "0123456789"
-    },
-    {
-      id: "00004",
-      date: "17/4/2025",
-      total: 550000,
-      status: "Đang giao",
-      address: "321 Phạm Văn D, Quận 4, TP.HCM",
-      customerName: "Trần Thị B",
-      phone: "0987654321"
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await orderApi.getAssignedOrders();
+        setOrders(response.data.orders);
+      } catch (err) {
+        setError('Failed to fetch orders');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [currentPage]);
+
+  const handleUpdateStatus = async (orderId: string, status: string) => {
+    try {
+      await orderApi.updateOrderStatus(orderId, {
+        status,
+        note: `Order status updated to ${status} by shipper`
+      });
+      // Refresh orders list
+      const response = await orderApi.getAssignedOrders();
+      setOrders(response.data.orders);
+    } catch (err) {
+      console.error('Error updating order status:', err);
     }
-  ]);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
   const totalPages = Math.ceil(orders.length / ordersPerPage);
-
-  const handleUpdateStatus = (orderId: string, status: string) => {
-    // Handle updating order status
-    console.log('Updating order:', orderId, 'to status:', status);
-  };
 
   return (
     <div className="orders-list">
@@ -75,7 +86,7 @@ const MyOrdersList = () => {
               >
                 <option value="Đang giao">Đang giao</option>
                 <option value="Đã giao">Đã giao</option>
-                <option value="Không thành công">Không thành công</option>
+                <option value="Đã hủy">Đã hủy</option>
               </select>
             </span>
           </div>

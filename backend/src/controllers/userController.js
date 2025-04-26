@@ -1,229 +1,363 @@
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// Register new user
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, phoneNumber, address } = req.body;
+        const { name, email, password, phone } = req.body;
 
-        // Check if email already exists
+        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'Email already registered' });
+            return res.status(400).json({
+                success: false,
+                message: 'Email already registered'
+            });
         }
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Create user
         const user = new User({
             name,
             email,
             password: hashedPassword,
-            phoneNumber,
-            address,
-            role: 'customer',
-            isActive: true
+            phone,
+            role: 'Customer' // Default role
         });
 
         await user.save();
 
-        // Create token
+        // Generate token
         const token = jwt.sign(
-            { id: user._id, role: user.role },
+            { id: user._id },
             process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: process.env.JWT_EXPIRE }
         );
 
         res.status(201).json({
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
+            success: true,
+            data: {
+                user,
+                token
             }
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error registering user',
+            error: error.message
+        });
     }
 };
 
-// Login user
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check user exists
+        // Check if user exists
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
         }
 
         // Check if user is active
         if (!user.isActive) {
-            return res.status(403).json({ message: 'Account is deactivated' });
+            return res.status(401).json({
+                success: false,
+                message: 'Account is deactivated'
+            });
         }
 
-        // Validate password
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
         }
 
-        // Create token
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Generate token
         const token = jwt.sign(
-            { id: user._id, role: user.role },
+            { id: user._id },
             process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: process.env.JWT_EXPIRE }
         );
 
         res.json({
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
+            success: true,
+            data: {
+                user,
+                token
             }
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error logging in',
+            error: error.message
+        });
     }
 };
 
-// Get user profile
 exports.getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
+        const user = await User.findById(req.params.id);
+        
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
         }
-        res.json(user);
+
+        // Only allow users to view their own profile unless admin
+        if (req.user.role !== 'Admin' && req.user._id.toString() !== req.params.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to view this profile'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: user
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching profile',
+            error: error.message
+        });
     }
 };
 
-// Update user profile
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, phoneNumber, address } = req.body;
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            { name, phoneNumber, address },
-            { new: true }
-        ).select('-password');
+        const updates = req.body;
+        
+        // Don't allow role updates through this endpoint
+        delete updates.role;
+        delete updates.password;
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        // Only allow users to update their own profile unless admin
+        if (req.user.role !== 'Admin' && req.user._id.toString() !== req.params.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to update this profile'
+            });
         }
 
-        res.json(user);
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { $set: updates },
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: user
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error updating profile',
+            error: error.message
+        });
     }
 };
 
-// Change password
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        const user = await User.findById(req.params.id);
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        // Only allow users to change their own password unless admin
+        if (req.user.role !== 'Admin' && req.user._id.toString() !== req.params.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to change this password'
+            });
         }
 
-        // Validate current password
-        const validPassword = await bcrypt.compare(currentPassword, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ message: 'Current password is incorrect' });
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Verify current password
+        if (req.user.role !== 'Admin') {
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Current password is incorrect'
+                });
+            }
         }
 
         // Hash new password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
         user.password = hashedPassword;
+        
         await user.save();
 
-        res.json({ message: 'Password updated successfully' });
+        res.json({
+            success: true,
+            message: 'Password updated successfully'
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error changing password',
+            error: error.message
+        });
     }
 };
 
-// Get all users (admin only)
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        res.json(users);
+        const { role, search, page = 1, limit = 10 } = req.query;
+        const query = {};
+
+        if (role) query.role = role;
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const total = await User.countDocuments(query);
+
+        const users = await User.find(query)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.json({
+            success: true,
+            data: {
+                users,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / limit)
+                }
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching users',
+            error: error.message
+        });
     }
 };
 
-// Create staff user (admin only)
 exports.createStaff = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, phone, role } = req.body;
 
         // Validate role
-        if (!['admin', 'staff', 'shipper'].includes(role)) {
-            return res.status(400).json({ message: 'Invalid role' });
+        if (role !== 'Admin' && role !== 'Shipper') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid role specified'
+            });
         }
 
-        // Check if email exists
+        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'Email already registered' });
+            return res.status(400).json({
+                success: false,
+                message: 'Email already registered'
+            });
         }
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Create staff user
         const user = new User({
             name,
             email,
             password: hashedPassword,
-            role,
-            isActive: true
+            phone,
+            role
         });
 
         await user.save();
+
         res.status(201).json({
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            success: true,
+            data: user
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error creating staff account',
+            error: error.message
+        });
     }
 };
 
-// Toggle user status (admin only)
 exports.toggleStatus = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
+        
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Prevent deactivating own account
+        if (user._id.toString() === req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot deactivate your own account'
+            });
         }
 
         user.isActive = !user.isActive;
         await user.save();
+
         res.json({
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            isActive: user.isActive
+            success: true,
+            data: {
+                id: user._id,
+                isActive: user.isActive
+            }
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error toggling user status',
+            error: error.message
+        });
     }
 };

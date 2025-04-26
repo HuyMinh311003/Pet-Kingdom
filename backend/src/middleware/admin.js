@@ -1,6 +1,16 @@
-module.exports = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. Admin only.' });
+const admin = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            throw new Error('Access denied. Admin only.');
+        }
+        next();
+    } catch (error) {
+        res.status(403).json({
+            success: false,
+            message: 'Access denied',
+            error: error.message
+        });
     }
-    next();
 };
+
+module.exports = admin;

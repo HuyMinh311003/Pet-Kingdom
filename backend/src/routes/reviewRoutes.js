@@ -1,23 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/reviewController');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
-// POST /api/reviews
-router.post('/', reviewController.createReview);
-
-// GET /api/reviews/product/:productId
+// Public routes
 router.get('/product/:productId', reviewController.getProductReviews);
 
-// GET /api/reviews/user/:userId
-router.get('/user/:userId', reviewController.getUserReviews);
+// Authenticated routes
+router.post('/', auth, reviewController.createReview);
+router.get('/user/:userId', auth, reviewController.getUserReviews);
+router.put('/:id', auth, reviewController.updateReview);
+router.delete('/:id', auth, reviewController.deleteReview);
 
-// GET /api/reviews/stats/:productId
-router.get('/stats/:productId', reviewController.getReviewStats);
-
-// PUT /api/reviews/:id
-router.put('/:id', reviewController.updateReview);
-
-// DELETE /api/reviews/:id
-router.delete('/:id', reviewController.deleteReview);
+// Admin only routes
+router.patch('/:id/verify', [auth, admin], reviewController.verifyReview);
 
 module.exports = router;

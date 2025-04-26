@@ -8,14 +8,14 @@ const admin = require('../middleware/admin');
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 
-// Protected routes
+// Authenticated routes
 router.get('/profile/:id', auth, userController.getProfile);
 router.put('/profile/:id', auth, userController.updateProfile);
 router.put('/profile/:id/password', auth, userController.changePassword);
 
-// Admin only routes
-router.get('/', auth, admin, userController.getUsers);
-router.post('/staff', auth, admin, userController.createStaff);
-router.patch('/:id/toggle-status', auth, admin, userController.toggleStatus);
+// Admin only routes - Chaining middleware functions correctly
+router.get('/', [auth, admin], userController.getUsers);
+router.post('/staff', [auth, admin], userController.createStaff);
+router.patch('/:id/toggle-status', [auth, admin], userController.toggleStatus);
 
 module.exports = router;

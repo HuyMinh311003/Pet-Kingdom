@@ -1,75 +1,113 @@
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true
-  },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5
-  },
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  images: [{
-    type: String
-  }],
-  isVerifiedPurchase: {
-    type: Boolean,
-    default: false
-  },
-  likes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: Date
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true
+    },
+    order: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order',
+        required: true
+    },
+    rating: {
+        type: Number,
+        required: [true, 'Rating is required'],
+        min: 1,
+        max: 5
+    },
+    comment: {
+        type: String,
+        required: [true, 'Review comment is required'],
+        trim: true,
+        maxlength: [500, 'Comment cannot be longer than 500 characters']
+    },
+    images: [{
+        type: String,
+        validate: {
+            validator: function(url) {
+                // Basic URL validation
+                try {
+                    new URL(url);
+                    return true;
+                } catch (error) {
+                    return false;
+                }
+            },
+            message: 'Invalid image URL'
+        }
+    }],
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verifiedAt: {
+        type: Date,
+        default: null
+    },
+    verifiedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    }
+}, {
+    timestamps: true
 });
 
-// Compound index for unique review per user per product
-reviewSchema.index({ user: 1, product: 1 }, { unique: true });
+// One user can only review a product once per order
+reviewSchema.index({ user: 1, product: 1, order: 1 }, { unique: true });
+
+// Add index for product lookup
 reviewSchema.index({ product: 1, createdAt: -1 });
-reviewSchema.index({ rating: 1 });
 
-// Update product rating when review is added/modified/removed
-reviewSchema.post('save', async function() {
-  const Review = this.constructor;
-  const stats = await Review.aggregate([
-    { $match: { product: this.product } },
-    {
-      $group: {
-        _id: '$product',
-        avgRating: { $avg: '$rating' },
-        count: { $sum: 1 }
-      }
+// Static method to calculate average rating
+reviewSchema.statics.calculateAverageRating = async function(productId) {
+    const result = await this.aggregate([
+        {
+            $match: { product: productId }
+        },
+        {
+            $group: {
+                _id: '$product',
+                avgRating: { $avg: '$rating' },
+                reviewCount: { $sum: 1 }
+            }
+        }
+    ]);
+
+    try {
+        if (result.length > 0) {
+            await this.model('Product').findByIdAndUpdate(productId, {
+                avgRating: Math.round(result[0].avgRating * 10) / 10, // Round to 1 decimal
+                reviewCount: result[0].reviewCount
+            });
+        } else {
+            await this.model('Product').findByIdAndUpdate(productId, {
+                avgRating: 0,
+                reviewCount: 0
+            });
+        }
+    } catch (error) {
+        console.error('Error updating product rating:', error);
     }
-  ]);
+};
 
-  if (stats.length > 0) {
-    await this.model('Product').findByIdAndUpdate(this.product, {
-      'ratings.average': Math.round(stats[0].avgRating * 10) / 10,
-      'ratings.count': stats[0].count
-    });
-  }
+// Call calculateAverageRating after save
+reviewSchema.post('save', function() {
+    this.constructor.calculateAverageRating(this.product);
+});
+
+// Call calculateAverageRating after delete
+reviewSchema.post('delete', function() {
+    this.constructor.calculateAverageRating(this.product);
 });
 
 const Review = mongoose.model('Review', reviewSchema);
+
 module.exports = Review;

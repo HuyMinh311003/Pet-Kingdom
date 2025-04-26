@@ -1,29 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
-// POST /api/products
-router.post('/', productController.createProduct);
-
-// GET /api/products
+// Public routes
 router.get('/', productController.getProducts);
-
-// GET /api/products/:id
 router.get('/:id', productController.getProductById);
-
-// GET /api/products/:id/related
 router.get('/:id/related', productController.getRelatedProducts);
 
-// PUT /api/products/:id
-router.put('/:id', productController.updateProduct);
-
-// DELETE /api/products/:id
-router.delete('/:id', productController.deleteProduct);
-
-// PATCH /api/products/:id/toggle-status
-router.patch('/:id/toggle-status', productController.toggleStatus);
-
-// PATCH /api/products/:id/stock
-router.patch('/:id/stock', productController.updateStock);
+// Admin only routes
+router.post('/', [auth, admin], productController.createProduct);
+router.put('/:id', [auth, admin], productController.updateProduct);
+router.delete('/:id', [auth, admin], productController.deleteProduct);
+router.patch('/:id/toggle-status', [auth, admin], productController.toggleStatus);
+router.patch('/:id/stock', [auth, admin], productController.updateStock);
 
 module.exports = router;

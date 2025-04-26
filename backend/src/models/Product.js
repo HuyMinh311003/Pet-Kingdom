@@ -1,94 +1,112 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  type: {
-    type: String,
-    enum: ['pet', 'accessory'],
-    required: true
-  },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: true
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  images: [{
-    type: String,
-    required: true
-  }],
-  stock: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  // Pet-specific fields
-  breed: {
-    type: String,
-    required: function() { return this.type === 'pet'; }
-  },
-  age: {
-    type: Number,
-    required: function() { return this.type === 'pet'; }
-  },
-  gender: {
-    type: String,
-    enum: ['male', 'female'],
-    required: function() { return this.type === 'pet'; }
-  },
-  // Accessory-specific fields
-  brand: {
-    type: String,
-    required: function() { return this.type === 'accessory'; }
-  },
-  specifications: {
-    type: Map,
-    of: String
-  },
-  // Common fields
-  ratings: {
-    average: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5
+    name: {
+        type: String,
+        required: [true, 'Product name is required'],
+        trim: true
     },
-    count: {
-      type: Number,
-      default: 0
+    description: {
+        type: String,
+        required: [true, 'Product description is required']
+    },
+    price: {
+        type: Number,
+        required: [true, 'Price is required'],
+        min: [0, 'Price cannot be negative']
+    },
+    categoryId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: [true, 'Category is required']
+    },
+    stock: {
+        type: Number,
+        required: [true, 'Stock quantity is required'],
+        min: [0, 'Stock cannot be negative']
+    },
+    imageUrl: {
+        type: String,
+        required: [true, 'Product image is required']
+    },
+    type: {
+        type: String,
+        enum: ['pet', 'tool'],
+        required: [true, 'Product type is required']
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    // Pet-specific fields
+    birthday: {
+        type: Date,
+        required: function() {
+            return this.type === 'pet';
+        }
+    },
+    gender: {
+        type: String,
+        enum: ['male', 'female'],
+        required: function() {
+            return this.type === 'pet';
+        }
+    },
+    vaccinated: {
+        type: Boolean,
+        default: false,
+        required: function() {
+            return this.type === 'pet';
+        }
+    },
+    // Tool-specific fields (if needed)
+    brand: {
+        type: String,
+        required: function() {
+            return this.type === 'tool';
+        }
+    },
+    // Common fields for search and filtering
+    tags: [{
+        type: String,
+        trim: true
+    }],
+    avgRating: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+    },
+    reviewCount: {
+        type: Number,
+        default: 0
     }
-  },
-  isOnSale: {
-    type: Boolean,
-    default: false
-  },
-  salePrice: {
-    type: Number,
-    min: 0
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: Date
+}, {
+    timestamps: true,
+    // Add virtual fields for age calculation
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
-// Add indexes for common queries
-productSchema.index({ name: 'text', description: 'text' });
-productSchema.index({ type: 1, category: 1 });
-productSchema.index({ isOnSale: 1 });
+// Virtual for age calculation
+productSchema.virtual('age').get(function() {
+    if (this.type !== 'pet' || !this.birthday) return null;
+    
+    const today = new Date();
+    const birthDate = new Date(this.birthday);
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    return age;
+});
+
+// Index for search functionality
+productSchema.index({ name: 'text', description: 'text', tags: 'text' });
 
 const Product = mongoose.model('Product', productSchema);
+
 module.exports = Product;

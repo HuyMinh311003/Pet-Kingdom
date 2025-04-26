@@ -1,200 +1,299 @@
 const Promotion = require('../models/Promotion');
 
-// Create a new promotion
 exports.createPromotion = async (req, res) => {
     try {
         const {
             code,
             type,
             value,
-            minOrderValue,
             startDate,
             endDate,
-            description,
-            usageLimit
+            minOrderValue,
+            maxDiscount,
+            usageLimit,
+            productType,
+            categories,
+            description
         } = req.body;
 
         // Validate dates
-        if (new Date(startDate) >= new Date(endDate)) {
-            return res.status(400).json({ message: 'End date must be after start date' });
+        if (new Date(endDate) <= new Date(startDate)) {
+            return res.status(400).json({
+                success: false,
+                message: 'End date must be after start date'
+            });
         }
 
         // Check if code already exists
-        const existingPromo = await Promotion.findOne({ code });
+        const existingPromo = await Promotion.findOne({ code: code.toUpperCase() });
         if (existingPromo) {
-            return res.status(400).json({ message: 'Promotion code already exists' });
+            return res.status(400).json({
+                success: false,
+                message: 'Promotion code already exists'
+            });
         }
 
         const promotion = new Promotion({
-            code,
+            code: code.toUpperCase(),
             type,
             value,
-            minOrderValue,
             startDate,
             endDate,
-            description,
+            minOrderValue,
+            maxDiscount,
             usageLimit,
-            usageCount: 0,
-            isActive: true
+            productType,
+            categories,
+            description
         });
 
         await promotion.save();
-        res.status(201).json(promotion);
+
+        res.status(201).json({
+            success: true,
+            data: promotion
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error creating promotion',
+            error: error.message
+        });
     }
 };
 
-// Get all promotions with optional filtering
 exports.getPromotions = async (req, res) => {
     try {
-        const { isActive, type } = req.query;
-        let query = {};
+        const {
+            isActive,
+            productType,
+            search,
+            current = false,
+            page = 1,
+            limit = 10
+        } = req.query;
 
+        const query = {};
+
+        // Filter by active status
         if (isActive !== undefined) {
             query.isActive = isActive === 'true';
         }
-        if (type) {
-            query.type = type;
+
+        // Filter by product type
+        if (productType) {
+            query.productType = productType;
         }
 
-        const promotions = await Promotion.find(query);
-        res.json(promotions);
+        // Filter current promotions
+        if (current === 'true') {
+            const now = new Date();
+            query.startDate = { $lte: now };
+            query.endDate = { $gte: now };
+            query.isActive = true;
+        }
+
+        // Search by code or description
+        if (search) {
+            query.$or = [
+                { code: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const total = await Promotion.countDocuments(query);
+
+        const promotions = await Promotion.find(query)
+            .populate('categories', 'name')
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.json({
+            success: true,
+            data: {
+                promotions,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / limit)
+                }
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching promotions',
+            error: error.message
+        });
     }
 };
 
-// Get promotion by ID
 exports.getPromotionById = async (req, res) => {
     try {
-        const promotion = await Promotion.findById(req.params.id);
+        const promotion = await Promotion.findById(req.params.id)
+            .populate('categories', 'name');
+
         if (!promotion) {
-            return res.status(404).json({ message: 'Promotion not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'Promotion not found'
+            });
         }
-        res.json(promotion);
+
+        res.json({
+            success: true,
+            data: promotion
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching promotion',
+            error: error.message
+        });
     }
 };
 
-// Update promotion
+exports.validatePromoCode = async (req, res) => {
+    try {
+        const { code, orderValue, productType } = req.body;
+
+        const promotion = await Promotion.findOne({ 
+            code: code.toUpperCase(),
+            isActive: true
+        });
+
+        if (!promotion) {
+            return res.status(404).json({
+                success: false,
+                message: 'Invalid promotion code'
+            });
+        }
+
+        if (!promotion.isValid(orderValue, productType)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Promotion code is not applicable',
+                data: {
+                    minOrderValue: promotion.minOrderValue,
+                    productType: promotion.productType,
+                    endDate: promotion.endDate
+                }
+            });
+        }
+
+        const discount = promotion.calculateDiscount(orderValue);
+
+        res.json({
+            success: true,
+            data: {
+                promotion,
+                discount
+            }
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: 'Error validating promotion code',
+            error: error.message
+        });
+    }
+};
+
 exports.updatePromotion = async (req, res) => {
     try {
-        const {
-            code,
-            type,
-            value,
-            minOrderValue,
-            startDate,
-            endDate,
-            description,
-            usageLimit,
-            isActive
-        } = req.body;
+        const updates = req.body;
 
-        if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
-            return res.status(400).json({ message: 'End date must be after start date' });
+        // Don't allow updating the code
+        delete updates.code;
+        delete updates.usageCount;
+
+        // Validate dates if updating
+        if (updates.startDate && updates.endDate) {
+            if (new Date(updates.endDate) <= new Date(updates.startDate)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'End date must be after start date'
+                });
+            }
         }
 
         const promotion = await Promotion.findByIdAndUpdate(
             req.params.id,
-            {
-                code,
-                type,
-                value,
-                minOrderValue,
-                startDate,
-                endDate,
-                description,
-                usageLimit,
-                isActive
-            },
-            { new: true }
-        );
+            { $set: updates },
+            { new: true, runValidators: true }
+        ).populate('categories', 'name');
 
         if (!promotion) {
-            return res.status(404).json({ message: 'Promotion not found' });
-        }
-        res.json(promotion);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
-
-// Delete promotion
-exports.deletePromotion = async (req, res) => {
-    try {
-        const promotion = await Promotion.findByIdAndDelete(req.params.id);
-        if (!promotion) {
-            return res.status(404).json({ message: 'Promotion not found' });
-        }
-        res.json({ message: 'Promotion deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// Validate and apply promotion
-exports.validatePromotion = async (req, res) => {
-    try {
-        const { code, orderTotal } = req.body;
-        const promotion = await Promotion.findOne({ code, isActive: true });
-
-        if (!promotion) {
-            return res.status(404).json({ message: 'Invalid promotion code' });
-        }
-
-        // Check if promotion is expired
-        const now = new Date();
-        if (now < new Date(promotion.startDate) || now > new Date(promotion.endDate)) {
-            return res.status(400).json({ message: 'Promotion has expired' });
-        }
-
-        // Check usage limit
-        if (promotion.usageCount >= promotion.usageLimit) {
-            return res.status(400).json({ message: 'Promotion usage limit reached' });
-        }
-
-        // Check minimum order value
-        if (promotion.minOrderValue && orderTotal < promotion.minOrderValue) {
-            return res.status(400).json({
-                message: `Minimum order value of ${promotion.minOrderValue} required`
+            return res.status(404).json({
+                success: false,
+                message: 'Promotion not found'
             });
         }
 
-        // Calculate discount
-        let discount = 0;
-        if (promotion.type === 'percentage') {
-            discount = (orderTotal * promotion.value) / 100;
-        } else if (promotion.type === 'fixed') {
-            discount = promotion.value;
-        } else if (promotion.type === 'bundle') {
-            discount = Math.floor(orderTotal / promotion.bundleMinItems) * promotion.value;
-        }
-
         res.json({
-            promotion,
-            discount,
-            finalTotal: orderTotal - discount
+            success: true,
+            data: promotion
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error updating promotion',
+            error: error.message
+        });
     }
 };
 
-// Toggle promotion status
+exports.deletePromotion = async (req, res) => {
+    try {
+        const promotion = await Promotion.findByIdAndDelete(req.params.id);
+
+        if (!promotion) {
+            return res.status(404).json({
+                success: false,
+                message: 'Promotion not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Promotion deleted successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting promotion',
+            error: error.message
+        });
+    }
+};
+
 exports.toggleStatus = async (req, res) => {
     try {
         const promotion = await Promotion.findById(req.params.id);
+
         if (!promotion) {
-            return res.status(404).json({ message: 'Promotion not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'Promotion not found'
+            });
         }
 
         promotion.isActive = !promotion.isActive;
         await promotion.save();
-        res.json(promotion);
+
+        res.json({
+            success: true,
+            data: {
+                id: promotion._id,
+                isActive: promotion.isActive
+            }
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error toggling promotion status',
+            error: error.message
+        });
     }
 };

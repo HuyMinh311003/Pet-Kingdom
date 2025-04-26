@@ -1,26 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const promotionController = require('../controllers/promotionController');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
-// POST /api/promotions
-router.post('/', promotionController.createPromotion);
+// Public routes
+router.post('/validate', promotionController.validatePromoCode);
 
-// GET /api/promotions
-router.get('/', promotionController.getPromotions);
-
-// GET /api/promotions/:id
-router.get('/:id', promotionController.getPromotionById);
-
-// PUT /api/promotions/:id
-router.put('/:id', promotionController.updatePromotion);
-
-// DELETE /api/promotions/:id
-router.delete('/:id', promotionController.deletePromotion);
-
-// POST /api/promotions/validate
-router.post('/validate', promotionController.validatePromotion);
-
-// PATCH /api/promotions/:id/toggle-status
-router.patch('/:id/toggle-status', promotionController.toggleStatus);
+// Admin only routes
+router.post('/', [auth, admin], promotionController.createPromotion);
+router.get('/', [auth, admin], promotionController.getPromotions);
+router.get('/:id', [auth, admin], promotionController.getPromotionById);
+router.put('/:id', [auth, admin], promotionController.updatePromotion);
+router.delete('/:id', [auth, admin], promotionController.deletePromotion);
+router.patch('/:id/toggle-status', [auth, admin], promotionController.toggleStatus);
 
 module.exports = router;

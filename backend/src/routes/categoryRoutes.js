@@ -1,23 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
-// POST /api/categories
-router.post('/', categoryController.createCategory);
-
-// GET /api/categories
+// Public routes
 router.get('/', categoryController.getCategories);
-
-// GET /api/categories/:id
 router.get('/:id', categoryController.getCategoryById);
 
-// PUT /api/categories/:id
-router.put('/:id', categoryController.updateCategory);
-
-// DELETE /api/categories/:id
-router.delete('/:id', categoryController.deleteCategory);
-
-// PATCH /api/categories/:id/toggle-status
-router.patch('/:id/toggle-status', categoryController.toggleStatus);
+// Admin only routes
+router.post('/', [auth, admin], categoryController.createCategory);
+router.put('/:id', [auth, admin], categoryController.updateCategory);
+router.delete('/:id', [auth, admin], categoryController.deleteCategory);
+router.patch('/:id/toggle-status', [auth, admin], categoryController.toggleStatus);
 
 module.exports = router;

@@ -1,56 +1,106 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 
-// Create a new order
 exports.createOrder = async (req, res) => {
     try {
-        const { userId, items, shippingAddress, paymentMethod, promotionCode } = req.body;
+        const {
+            items,
+            shippingAddress,
+            phone,
+            paymentMethod,
+            promoCode
+        } = req.body;
 
-        // Validate products and calculate total
-        let total = 0;
+        // Validate and calculate totals
+        let subtotal = 0;
+        const orderItems = [];
+
         for (const item of items) {
             const product = await Product.findById(item.productId);
             if (!product) {
-                return res.status(400).json({ message: `Product ${item.productId} not found` });
+                return res.status(404).json({
+                    success: false,
+                    message: `Product ${item.productId} not found`
+                });
             }
+
             if (product.stock < item.quantity) {
-                return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient stock for ${product.name}`
+                });
             }
-            total += product.price * item.quantity;
+
+            // Save current price in order
+            orderItems.push({
+                product: item.productId,
+                quantity: item.quantity,
+                price: product.price // Current price when ordering
+            });
+
+            subtotal += product.price * item.quantity;
+
+            // Update stock
+            product.stock -= item.quantity;
+            await product.save();
         }
 
-        // Create order
+        // Apply promotion if valid
+        let discount = 0;
+        if (promoCode) {
+            // TODO: Implement promotion validation and calculation
+        }
+
+        // Calculate shipping fee (can be replaced with actual delivery API)
+        const shippingFee = 20000; // Default shipping fee
+
         const order = new Order({
-            userId,
-            items,
-            total,
+            user: req.user._id,
+            items: orderItems,
+            subtotal,
+            shippingFee,
+            discount,
+            total: subtotal + shippingFee - discount,
             shippingAddress,
+            phone,
             paymentMethod,
-            promotionCode,
-            status: 'pending'
+            status: 'Chờ xác nhận',
+            promoCode,
+            statusHistory: [{
+                status: 'Chờ xác nhận',
+                date: new Date(),
+                note: 'Order placed'
+            }]
         });
 
-        // Update product stock
-        for (const item of items) {
-            await Product.findByIdAndUpdate(item.productId, {
-                $inc: { stock: -item.quantity }
-            });
-        }
-
         await order.save();
-        res.status(201).json(order);
+
+        res.status(201).json({
+            success: true,
+            data: order
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error creating order',
+            error: error.message
+        });
     }
 };
 
-// Get all orders with optional filtering
 exports.getOrders = async (req, res) => {
     try {
-        const { userId, status, startDate, endDate } = req.query;
-        let query = {};
+        const { 
+            status,
+            startDate,
+            endDate,
+            page = 1,
+            limit = 10
+        } = req.query;
 
-        if (userId) query.userId = userId;
+        const query = {};
+
+        // Add filters
         if (status) query.status = status;
         if (startDate || endDate) {
             query.createdAt = {};
@@ -58,106 +108,231 @@ exports.getOrders = async (req, res) => {
             if (endDate) query.createdAt.$lte = new Date(endDate);
         }
 
+        // Admin can see all orders, customers see only their orders
+        if (req.user.role === 'Customer') {
+            query.user = req.user._id;
+        }
+
+        const total = await Order.countDocuments(query);
+
         const orders = await Order.find(query)
-            .populate('userId', 'name email')
-            .populate('items.productId')
-            .sort({ createdAt: -1 });
-        res.json(orders);
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('user', 'name email')
+            .populate('items.product', 'name imageUrl');
+
+        res.json({
+            success: true,
+            data: {
+                orders,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / limit)
+                }
+            }
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching orders',
+            error: error.message
+        });
     }
 };
 
-// Get order by ID
 exports.getOrderById = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
-            .populate('userId', 'name email')
-            .populate('items.productId');
+            .populate('user', 'name email phone')
+            .populate('items.product', 'name imageUrl')
+            .populate('assignedTo', 'name');
+
         if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
         }
-        res.json(order);
+
+        // Check authorization
+        if (req.user.role === 'Customer' && order.user._id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to view this order'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: order
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching order',
+            error: error.message
+        });
     }
 };
 
-// Update order status
+exports.getUserOrders = async (req, res) => {
+    try {
+        const { status, page = 1, limit = 10 } = req.query;
+        const query = { user: req.params.userId };
+
+        if (status) query.status = status;
+
+        const total = await Order.countDocuments(query);
+
+        const orders = await Order.find(query)
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('items.product', 'name imageUrl');
+
+        res.json({
+            success: true,
+            data: {
+                orders,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / limit)
+                }
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching user orders',
+            error: error.message
+        });
+    }
+};
+
 exports.updateOrderStatus = async (req, res) => {
     try {
-        const { status } = req.body;
-        const validStatuses = ['pending', 'confirmed', 'shipping', 'delivered', 'cancelled'];
-        
-        if (!validStatuses.includes(status)) {
-            return res.status(400).json({ message: 'Invalid status' });
-        }
-
-        const order = await Order.findByIdAndUpdate(
-            req.params.id,
-            { status },
-            { new: true }
-        );
+        const { status, note } = req.body;
+        const order = await Order.findById(req.params.id);
 
         if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
         }
 
+        // Validate status transition
+        const validTransitions = {
+            'Chờ xác nhận': ['Đã xác nhận', 'Đã hủy'],
+            'Đã xác nhận': ['Đang giao', 'Đã hủy'],
+            'Đang giao': ['Đã giao', 'Đã hủy'],
+            'Đã giao': [],
+            'Đã hủy': []
+        };
+
+        if (!validTransitions[order.status].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status transition'
+            });
+        }
+
+        // Add to status history
+        order.statusHistory.push({
+            status,
+            date: new Date(),
+            note,
+            updatedBy: req.user._id
+        });
+
+        // Update current status
+        order.status = status;
+
         // If order is cancelled, restore product stock
-        if (status === 'cancelled') {
+        if (status === 'Đã hủy') {
             for (const item of order.items) {
-                await Product.findByIdAndUpdate(item.productId, {
-                    $inc: { stock: item.quantity }
-                });
+                const product = await Product.findById(item.product);
+                if (product) {
+                    product.stock += item.quantity;
+                    await product.save();
+                }
             }
         }
 
-        res.json(order);
+        await order.save();
+
+        res.json({
+            success: true,
+            data: order
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({
+            success: false,
+            message: 'Error updating order status',
+            error: error.message
+        });
     }
 };
 
-// Get user's order history
-exports.getUserOrders = async (req, res) => {
-    try {
-        const orders = await Order.find({ userId: req.params.userId })
-            .populate('items.productId')
-            .sort({ createdAt: -1 });
-        res.json(orders);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// Get order analytics
 exports.getOrderAnalytics = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        let dateQuery = {};
+        const query = {};
 
         if (startDate || endDate) {
-            dateQuery = {
-                createdAt: {
-                    ...(startDate && { $gte: new Date(startDate) }),
-                    ...(endDate && { $lte: new Date(endDate) })
-                }
-            };
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
         }
 
-        const analytics = await Order.aggregate([
-            { $match: dateQuery },
-            {
-                $group: {
-                    _id: '$status',
-                    count: { $sum: 1 },
-                    totalRevenue: { $sum: '$total' }
-                }
-            }
-        ]);
+        // Get orders summary
+        const orders = await Order.find(query);
 
-        res.json(analytics);
+        // Calculate analytics
+        const analytics = {
+            totalOrders: orders.length,
+            totalRevenue: orders.reduce((sum, order) => sum + order.total, 0),
+            totalShippingFees: orders.reduce((sum, order) => sum + order.shippingFee, 0),
+            statusBreakdown: orders.reduce((acc, order) => {
+                acc[order.status] = (acc[order.status] || 0) + 1;
+                return acc;
+            }, {}),
+            averageOrderValue: orders.length ? 
+                orders.reduce((sum, order) => sum + order.total, 0) / orders.length : 0
+        };
+
+        res.json({
+            success: true,
+            data: analytics
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching order analytics',
+            error: error.message
+        });
+    }
+};
+
+// Add new function for shipper assigned orders
+exports.getOrdersByShipper = async (req, res) => {
+    try {
+        const orders = await Order.find({ assignedTo: req.user._id })
+            .sort({ createdAt: -1 })
+            .populate('user', 'name email')
+            .populate('items.product', 'name imageUrl');
+        res.json({
+            success: true,
+            data: orders
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching orders for shipper',
+            error: error.message
+        });
     }
 };
