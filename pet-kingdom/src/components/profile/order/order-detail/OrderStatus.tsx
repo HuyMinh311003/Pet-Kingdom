@@ -16,6 +16,10 @@ const getNextStatuses = (current: string) => {
       return ["Đang giao", "Đã hủy"];
     case "Đang giao":
       return ["Đã giao", "Đã hủy"];
+    case "Đã giao":
+      return [];
+    case "Đã hủy":
+      return [];
     default:
       return [];
   }
@@ -30,8 +34,7 @@ type Props = {
 const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
   const [previousStatus, setPreviousStatus] = useState<string | undefined>();
   const [currentStatus, setCurrentStatus] = useState(initialStatus);
-  const [selectedStatus, setSelectedStatus] = useState(initialStatus);
-
+  const [selectedStatus, setSelectedStatus] = useState(currentStatus);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // admin confirm
   const [openCancelDialog, setOpenCancelDialog] = useState(false); // customer confirm
 
@@ -42,14 +45,17 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
   };
 
   const confirmAdminChange = () => {
-    setPreviousStatus(currentStatus); //lưu lại trước khi cập nhật để nếu bấm hủy thì nó nhảy sang kế tiếp, xong nó sẽ lùi và hủy
+    setPreviousStatus(currentStatus);
     setCurrentStatus(selectedStatus);
     onStatusChange(selectedStatus);
     setOpenConfirmDialog(false);
   };
 
   const handleCustomerClick = () => {
-    setOpenCancelDialog(true);
+    // Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "Chờ xác nhận"
+    if (currentStatus === "Chờ xác nhận") {
+      setOpenCancelDialog(true);
+    }
   };
 
   const confirmCustomerCancel = () => {
@@ -64,6 +70,7 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
     setOpenCancelDialog(false);
   };
 
+  // ADMIN VIEW
   if (role === "admin") {
     const nextOptions = getNextStatuses(currentStatus);
 
@@ -79,6 +86,7 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
           }}
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
+          disabled={nextOptions.length === 0}
         >
           <option value={currentStatus}>{currentStatus}</option>
           {nextOptions.map((status) => (
@@ -90,7 +98,7 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
         <button
           className="status-button"
           onClick={handleAdminUpdate}
-          disabled={selectedStatus === currentStatus}
+          disabled={selectedStatus === currentStatus || nextOptions.length === 0}
         >
           Cập nhật
         </button>
