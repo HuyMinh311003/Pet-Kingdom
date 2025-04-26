@@ -62,7 +62,7 @@ const AssignedOrdersList = () => {
   return (
     <div className="orders-list">
       <h2>Đơn hàng chờ giao</h2>
-      
+
       <div className="orders-table">
         <div className="table-header">
           <span>Mã đơn hàng</span>
@@ -81,7 +81,7 @@ const AssignedOrdersList = () => {
             <span className="address-cell">{order.address}</span>
             <span>{order.total.toLocaleString()}đ</span>
             <span>
-              <button 
+              <button
                 className="assign-button"
                 onClick={() => handleAssignOrder(order.id)}
               >
@@ -94,8 +94,8 @@ const AssignedOrdersList = () => {
 
       {orders.length > ordersPerPage && (
         <div className="pagination">
-          <button 
-            onClick={() => setCurrentPage(1)} 
+          <button
+            onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
           >
             {"<<"}
