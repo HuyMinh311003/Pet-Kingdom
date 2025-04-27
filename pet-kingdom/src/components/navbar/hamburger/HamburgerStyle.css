@@ -1,181 +1,180 @@
-.hamburger-menu-container {
+.pk-hamburger-menu-container {
     position: relative;
     display: inline-block;
 }
 
-/* Overlay có hiệu ứng fade mờ */
-.menu-overlay {
+.pk-hamburger-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
     z-index: 998;
     opacity: 0;
-    animation: fadeIn 0.3s forwards;
-    
+    animation: pkFadeIn 0.3s forwards;
 }
 
-.hamburger-btn-open {
-    position: fixed;
-    width: 40px;
-    top: -70px;
-    left: 210px;
-    z-index: 1101;
-    background-color: #FFC371;
-}
-
-/* Thay đổi màu của icon khi mở (màu đen) */
-.hamburger-btn-open .hamburger-icon {
-    color: #000;
-}
-@keyframes fadeIn {
+@keyframes pkFadeIn {
     to { opacity: 1; }
 }
 
-/* Hamburger button */
-.hamburger-btn {
+.pk-hamburger-btn {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.75rem;
     z-index: 1100;
     position: absolute;
     top: -23px;
     left: -32px;
-    transition: transform 0.2s ease;
+    transition: all 0.3s ease;
+    border-radius: 50%;
 }
-.hamburger-btn:active {
+
+.pk-hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.pk-hamburger-btn:active {
     transform: scale(0.95);
 }
-.hamburger-icon {
-    width: 30px;
-    height: 30px;
+
+.pk-hamburger-icon {
+    width: 24px;
+    height: 24px;
     color: #ffffff;
     transition: color 0.3s ease;
 }
-.close-sidebar-btn {
-    background-color: #FFC371;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
-    position: absolute;
-    top: -80px;
-    left: 212px;
-    z-index: 1102;
-    animation: slideInLeft 0.3s ease-out forwards;
-  }
-  
-  .close-sidebar-btn .hamburger-icon {
-    width: 30px;
-    height: 30px;
-    color: #000;
-    
-  }
-/* Sidebar Menu với slide-in animation */
-.sidebar-menu {
+
+.pk-sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 260px;
-    height: 100%;
-    background-color: #ffffff;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 100vh;
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    padding: 1rem 0;
-    overflow-y: auto;
-    overflow-x: visible;
-    animation: slideInLeft 0.3s ease-out forwards;
+    transform: translateX(-100%);
+    animation: pkSlideIn 0.4s ease-out forwards;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); }
+
+@keyframes pkSlideIn {
     to { transform: translateX(0); }
 }
 
-/* Reset danh sách cho các menu levels */
-.menu-level-1,
-.menu-level-2,
-.menu-level-3 {
+.pk-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.pk-close-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.pk-close-btn .pk-hamburger-icon {
+    color: #333;
+}
+
+.pk-sidebar-content {
+    padding: 80px 0 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.pk-menu-list {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 15px;
 }
 
-/* Style cho menu item */
-.menu-item {
-    padding: 0.8rem 1.5rem;
-    font-size: 15px;
-    color: #333;
-    background-color: #fff;
-    border-radius: 6px;
+.pk-menu-item {
+    margin-bottom: 8px;
+}
+
+.pk-menu-button {
+    width: 100%;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid #eef0f2;
+    border-radius: 10px;
     cursor: pointer;
-    position: relative;
-    transition: background-color 0.2s ease;
-    outline: none;
-    margin-bottom: 0.3rem;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    color: #2c3e50;
 }
 
-/* Khi hover đổi màu nhạt hơn */
-.menu-item:hover,
-.menu-item:focus {
-    background-color: #f2f2f2;
+.pk-menu-button:hover {
+    background: #f8f9fa;
+    transform: translateX(4px);
 }
 
-/* Khi item đang được focus (active) */
-.menu-item.active {
-    background-color: #e6e6e6;
+.pk-menu-button.active {
+    background: #FFC371;
+    color: white;
+    border-color: #FFC371;
 }
 
-/* Arrow style */
-.arrow {
-    float: right;
-    font-size: 12px;
-    margin-top: 2px;
+.pk-submenu-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+}
+
+.pk-submenu-container.open {
+    max-height: 500px;
+    margin-top: 8px;
+}
+
+.pk-submenu {
+    padding-left: 16px;
+}
+
+.pk-submenu .pk-menu-button {
+    background: #f8f9fa;
+    border: none;
+    font-size: 14px;
+}
+
+.pk-submenu .pk-menu-button:hover {
+    background: #f0f2f5;
+}
+
+.pk-menu-arrow {
     transition: transform 0.3s ease;
 }
 
-/* Xoay arrow khi menu item đang active hoặc focus */
-.menu-item.active > .arrow,
-.menu-item:hover > .arrow,
-.menu-item:focus-within > .arrow {
-    transform: rotate(180deg);
+.pk-menu-arrow.rotated {
+    transform: rotate(90deg);
 }
 
-/* Detached submenu (level 2 hoặc 3) – hiển thị bên ngoài sidebar */
-.detached-submenu {
-    position: fixed;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    min-width: 200px;
-    padding: 0.5rem 0;
-    border-radius: 6px;
-    z-index: 1050;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(10px);
-    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-}
-
-/* Khi focus/active ở menu item thì hiển thị detached submenu */
-.menu-item:focus-within + .detached-submenu,
-.menu-item.active + .detached-submenu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0);
-}
-
-/* Nếu dùng inline style để định vị thì không cần điều chỉnh vị trí ở đây */
-
-/* Điều chỉnh padding cho các mục con trong submenu */
-.menu-level-2 .menu-item,
-.menu-level-3 .menu-item {
-    padding: 0.7rem 1.2rem;
-    margin-bottom: 0.2rem;
-}
-
-/* Scrollbar tùy chỉnh cho sidebar */
-.sidebar-menu::-webkit-scrollbar {
+/* Custom scrollbar */
+.pk-sidebar-content::-webkit-scrollbar {
     width: 6px;
 }
-.sidebar-menu::-webkit-scrollbar-thumb {
+
+.pk-sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pk-sidebar-content::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
+    border-radius: 10px;
+}
+
+.pk-sidebar-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
 }

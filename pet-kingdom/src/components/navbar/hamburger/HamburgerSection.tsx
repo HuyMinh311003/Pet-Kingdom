@@ -1,158 +1,126 @@
-import React, { useState } from "react";
-import { Menu, ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Menu, ArrowLeft, ChevronRight } from "lucide-react";
+import axios from "axios";
 import "./HamburgerStyle.css";
+
+interface Category {
+    _id: string;
+    name: string;
+    type: 'pet' | 'tool';
+    isActive: boolean;
+    subcategories?: Category[];
+}
+
+const STATIC_TABS: Category[] = [
+    {
+        _id: 'pets',
+        name: 'Thú cưng',
+        type: 'pet',
+        isActive: true
+    },
+    {
+        _id: 'accessories',
+        name: 'Vật dụng',
+        type: 'tool',
+        isActive: true
+    }
+];
 
 const HamburgerSection: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-    const [openLevel3, setOpenLevel3] = useState<string | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [activeMenus, setActiveMenus] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/categories');
+                if (response.data?.success) {
+                    const petCategories: Category[] = response.data.data
+                        .filter((cat: any) => cat.type === 'pet')
+                        .map((cat: any) => ({ ...cat, type: 'pet' }));
+                    const toolCategories: Category[] = response.data.data
+                        .filter((cat: any) => cat.type === 'tool')
+                        .map((cat: any) => ({ ...cat, type: 'tool' }));
+
+                    const categoriesWithSubs = STATIC_TABS.map(tab => ({
+                        ...tab,
+                        subcategories: tab.type === 'pet' ? petCategories : toolCategories
+                    }));
+
+                    setCategories(categoriesWithSubs);
+                }
+            } catch (error) {
+                console.error('Failed to fetch categories:', error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
-        setOpenSubmenu(null);
-        setOpenLevel3(null);
+        setActiveMenus([]);
     };
 
-    const handleMenuItemClick = (submenu: string) => {
-        setOpenSubmenu(openSubmenu === submenu ? null : submenu);
-        setOpenLevel3(null);
+    const handleMenuClick = (categoryId: string) => {
+        setActiveMenus(prev => {
+            const index = prev.indexOf(categoryId);
+            if (index > -1) {
+                return prev.filter(id => id !== categoryId);
+            }
+            return [...prev, categoryId];
+        });
     };
 
-    const handleLevel3MenuClick = (submenu: string) => {
-        setOpenLevel3(openLevel3 === submenu ? null : submenu);
+    const renderMenuItems = (items: Category[], level: number = 0) => {
+        return (
+            <ul className={`pk-menu-list ${level > 0 ? 'pk-submenu' : ''}`}>
+                {items.map((item) => (
+                    <li key={item._id} className="pk-menu-item">
+                        <button
+                            className={`pk-menu-button ${activeMenus.includes(item._id) ? 'active' : ''}`}
+                            onClick={() => handleMenuClick(item._id)}
+                        >
+                            <span>{item.name}</span>
+                            {item.subcategories && item.subcategories.length > 0 && (
+                                <ChevronRight 
+                                    className={`pk-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
+                                    size={18}
+                                />
+                            )}
+                        </button>
+                        {item.subcategories && item.subcategories.length > 0 && (
+                            <div className={`pk-submenu-container ${activeMenus.includes(item._id) ? 'open' : ''}`}>
+                                {renderMenuItems(item.subcategories, level + 1)}
+                            </div>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        );
     };
 
     return (
-        <div className="hamburger-menu-container">
+        <div className="pk-hamburger-menu-container">
             {!isOpen && (
-                <button className="hamburger-btn" onClick={toggleMenu}>
-                    <Menu className="hamburger-icon" />
+                <button className="pk-hamburger-btn" onClick={toggleMenu}>
+                    <Menu className="pk-hamburger-icon" />
                 </button>
             )}
 
-            {isOpen && <div className="menu-overlay" onClick={toggleMenu} />}
-
             {isOpen && (
                 <>
-                    <button className="close-sidebar-btn" onClick={toggleMenu}>
-                        <ArrowLeft className="hamburger-icon" />
-                    </button>
-                    <div className="sidebar-menu">
-                        <ul className="menu-level-1">
-                            <li
-                                className={`menu-item ${openSubmenu === "thucung" ? "active" : ""}`}
-                                tabIndex={0}
-                                onClick={() => handleMenuItemClick("thucung")}
-                            >
-                                Thú cưng <span className="arrow">▼</span>
-                            </li>
-                            <li
-                                className={`menu-item ${openSubmenu === "vatdung" ? "active" : ""}`}
-                                tabIndex={0}
-                                onClick={() => handleMenuItemClick("vatdung")}
-                            >
-                                Vật dụng chăm sóc <span className="arrow">▼</span>
-                            </li>
-                        </ul>
+                    <div className="pk-hamburger-overlay" onClick={toggleMenu} />
+                    <div className="pk-sidebar">
+                        <button className="pk-close-btn" onClick={toggleMenu}>
+                            <ArrowLeft className="pk-hamburger-icon" />
+                        </button>
+                        <div className="pk-sidebar-content">
+                            {renderMenuItems(categories)}
+                        </div>
                     </div>
                 </>
-            )}
-
-            {openSubmenu === "thucung" && (
-                <div
-                    className="detached-submenu"
-                    style={{ top: 80, left: 260, opacity: 1, visibility: "visible", transform: "translateX(0)" }}
-                >
-                    <ul className="menu-level-2">
-                        <li
-                            className="menu-item"
-                            tabIndex={0}
-                            onClick={() => handleLevel3MenuClick("cho")}
-                        >
-                            Chó <span className="arrow">▼</span>
-                        </li>
-                        <li
-                            className="menu-item"
-                            tabIndex={0}
-                            onClick={() => handleLevel3MenuClick("meo")}
-                        >
-                            Mèo <span className="arrow">▼</span>
-                        </li>
-                    </ul>
-                </div>
-            )}
-
-            {openSubmenu === "vatdung" && (
-                <div
-                    className="detached-submenu"
-                    style={{ top: 120, left: 260, opacity: 1, visibility: "visible", transform: "translateX(0)" }}
-                >
-                    <ul className="menu-level-2">
-                        <li
-                            className="menu-item"
-                            tabIndex={0}
-                            onClick={() => handleLevel3MenuClick("thucan")}
-                        >
-                            Thức ăn <span className="arrow">▼</span>
-                        </li>
-                        <li
-                            className="menu-item"
-                            tabIndex={0}
-                            onClick={() => handleLevel3MenuClick("vatdung-detail")}
-                        >
-                            Vật dụng <span className="arrow">▼</span>
-                        </li>
-                    </ul>
-                </div>
-            )}
-
-            {/* Các level 3 khác */}
-            {openLevel3 === "cho" && (
-                <div
-                    className="detached-submenu"
-                    style={{ top: 120, left: 460, opacity: 1, visibility: "visible", transform: "translateX(0)" }}
-                >
-                    <ul className="menu-level-3">
-                        <li className="menu-item" tabIndex={0}>Chó giống A</li>
-                        <li className="menu-item" tabIndex={0}>Chó giống B</li>
-                    </ul>
-                </div>
-            )}
-
-            {openLevel3 === "meo" && (
-                <div
-                    className="detached-submenu"
-                    style={{ top: 160, left: 460, opacity: 1, visibility: "visible", transform: "translateX(0)" }}
-                >
-                    <ul className="menu-level-3">
-                        <li className="menu-item" tabIndex={0}>Mèo giống X</li>
-                        <li className="menu-item" tabIndex={0}>Mèo giống Y</li>
-                    </ul>
-                </div>
-            )}
-
-            {openLevel3 === "thucan" && (
-                <div
-                    className="detached-submenu"
-                    style={{ top: 160, left: 460, opacity: 1, visibility: "visible", transform: "translateX(0)" }}
-                >
-                    <ul className="menu-level-3">
-                        <li className="menu-item" tabIndex={0}>Thức ăn loại 1</li>
-                        <li className="menu-item" tabIndex={0}>Thức ăn loại 2</li>
-                    </ul>
-                </div>
-            )}
-
-            {openLevel3 === "vatdung-detail" && (
-                <div
-                    className="detached-submenu"
-                    style={{ top: 200, left: 460, opacity: 1, visibility: "visible", transform: "translateX(0)" }}
-                >
-                    <ul className="menu-level-3">
-                        <li className="menu-item" tabIndex={0}>Vật dụng loại A</li>
-                        <li className="menu-item" tabIndex={0}>Vật dụng loại B</li>
-                    </ul>
-                </div>
             )}
         </div>
     );
