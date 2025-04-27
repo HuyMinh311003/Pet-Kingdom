@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Menu, ArrowLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./HamburgerStyle.css";
 
@@ -27,35 +28,41 @@ const STATIC_TABS: Category[] = [
 ];
 
 const HamburgerSection: React.FC = () => {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [activeMenus, setActiveMenus] = useState<string[]>([]);
+    const [loadedTypes, setLoadedTypes] = useState<Set<'pet' | 'tool'>>(new Set());
+
+    const fetchCategoriesByType = async (type: 'pet' | 'tool') => {
+        if (loadedTypes.has(type)) return;
+        
+        try {
+            const response = await axios.get(`http://localhost:5000/api/categories?type=${type}`);
+            if (response.data?.success) {
+                const fetchedCategories = response.data.data.map((cat: any) => ({ 
+                    ...cat, 
+                    type: type 
+                }));
+
+                setCategories(prev => {
+                    const updatedCategories = [...prev];
+                    const staticTab = updatedCategories.find(cat => cat.type === type);
+                    if (staticTab) {
+                        staticTab.subcategories = fetchedCategories;
+                    }
+                    return updatedCategories;
+                });
+
+                setLoadedTypes(prev => new Set(prev).add(type));
+            }
+        } catch (error) {
+            console.error(`Failed to fetch ${type} categories:`, error);
+        }
+    };
 
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/categories');
-                if (response.data?.success) {
-                    const petCategories: Category[] = response.data.data
-                        .filter((cat: any) => cat.type === 'pet')
-                        .map((cat: any) => ({ ...cat, type: 'pet' }));
-                    const toolCategories: Category[] = response.data.data
-                        .filter((cat: any) => cat.type === 'tool')
-                        .map((cat: any) => ({ ...cat, type: 'tool' }));
-
-                    const categoriesWithSubs = STATIC_TABS.map(tab => ({
-                        ...tab,
-                        subcategories: tab.type === 'pet' ? petCategories : toolCategories
-                    }));
-
-                    setCategories(categoriesWithSubs);
-                }
-            } catch (error) {
-                console.error('Failed to fetch categories:', error);
-            }
-        };
-
-        fetchCategories();
+        setCategories(STATIC_TABS);
     }, []);
 
     const toggleMenu = () => {
@@ -63,14 +70,29 @@ const HamburgerSection: React.FC = () => {
         setActiveMenus([]);
     };
 
-    const handleMenuClick = (categoryId: string) => {
-        setActiveMenus(prev => {
-            const index = prev.indexOf(categoryId);
-            if (index > -1) {
-                return prev.filter(id => id !== categoryId);
+    const handleMenuClick = async (category: Category, isChevronClick: boolean) => {
+        // If clicking on a main category (Thú cưng/Vật dụng), fetch its subcategories
+        if (category._id === 'pets' || category._id === 'accessories') {
+            const type = category.type;
+            await fetchCategoriesByType(type);
+        }
+
+        if (isChevronClick) {
+            // Only handle menu expansion
+            setActiveMenus(prev => {
+                const index = prev.indexOf(category._id);
+                if (index > -1) {
+                    return prev.filter(id => id !== category._id);
+                }
+                return [...prev, category._id];
+            });
+        } else {
+            // Handle navigation
+            if (category._id !== 'pets' && category._id !== 'accessories') {
+                navigate(`/products?category=${category._id}`);
+                toggleMenu(); // Close menu after navigation
             }
-            return [...prev, categoryId];
-        });
+        }
     };
 
     const renderMenuItems = (items: Category[], level: number = 0) => {
@@ -78,18 +100,25 @@ const HamburgerSection: React.FC = () => {
             <ul className={`pk-menu-list ${level > 0 ? 'pk-submenu' : ''}`}>
                 {items.map((item) => (
                     <li key={item._id} className="pk-menu-item">
-                        <button
-                            className={`pk-menu-button ${activeMenus.includes(item._id) ? 'active' : ''}`}
-                            onClick={() => handleMenuClick(item._id)}
-                        >
-                            <span>{item.name}</span>
-                            {item.subcategories && item.subcategories.length > 0 && (
-                                <ChevronRight 
-                                    className={`pk-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
-                                    size={18}
-                                />
+                        <div className="pk-menu-button-container">
+                            <span 
+                                className="pk-menu-text"
+                                onClick={() => handleMenuClick(item, false)}
+                            >
+                                {item.name}
+                            </span>
+                            {((item.subcategories?.length ?? 0) > 0 || item._id === 'pets' || item._id === 'accessories') && (
+                                <button
+                                    className="pk-chevron-button"
+                                    onClick={() => handleMenuClick(item, true)}
+                                >
+                                    <ChevronRight 
+                                        className={`pk-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
+                                        size={18}
+                                    />
+                                </button>
                             )}
-                        </button>
+                        </div>
                         {item.subcategories && item.subcategories.length > 0 && (
                             <div className={`pk-submenu-container ${activeMenus.includes(item._id) ? 'open' : ''}`}>
                                 {renderMenuItems(item.subcategories, level + 1)}

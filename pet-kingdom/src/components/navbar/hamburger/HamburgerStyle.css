@@ -102,30 +102,36 @@
     margin-bottom: 8px;
 }
 
-.pk-menu-button {
-    width: 100%;
-    padding: 12px 16px;
+.pk-menu-button-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: white;
-    border: 1px solid #eef0f2;
-    border-radius: 10px;
+    width: 100%;
+    padding: 8px 16px;
+}
+
+.pk-menu-text {
+    flex: 1;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 15px;
-    color: #2c3e50;
+    padding: 4px 0;
 }
 
-.pk-menu-button:hover {
-    background: #f8f9fa;
-    transform: translateX(4px);
+.pk-menu-text:hover {
+    color: #FF9800;
 }
 
-.pk-menu-button.active {
-    background: #FFC371;
-    color: white;
-    border-color: #FFC371;
+.pk-chevron-button {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pk-chevron-button:hover {
+    color: #FF9800;
 }
 
 .pk-submenu-container {
