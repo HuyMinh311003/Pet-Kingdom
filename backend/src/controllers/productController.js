@@ -14,7 +14,8 @@ exports.createProduct = async (req, res) => {
             birthday,
             gender,
             vaccinated,
-            type
+            type,
+            brand
         } = req.body;
 
         // Validate category exists
@@ -27,7 +28,7 @@ exports.createProduct = async (req, res) => {
         }
 
         // Create product
-        const product = new Product({
+        const productData = new Product({
             name,
             description,
             price,
@@ -35,15 +36,18 @@ exports.createProduct = async (req, res) => {
             stock,
             imageUrl,
             isActive: true,
-            type: category.type, // 'pet' or 'tool'
-            // Add pet specific fields if it's a pet
-            ...(category.type === 'pet' && {
-                birthday,
-                gender,
-                vaccinated
-            })
+            type: category.type
         });
+        if (category.type === 'pet') {
+            productData.birthday = birthday;
+            productData.gender = gender;
+            productData.vaccinated = vaccinated;
+        }
 
+        if (category.type === 'tool') {
+            productData.brand = brand;
+        }
+        const product = new Product(productData);
         await product.save();
 
         res.status(201).json({
@@ -61,7 +65,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
     try {
-        const { 
+        const {
             category,
             type,
             minPrice,
@@ -132,7 +136,7 @@ exports.getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id)
             .populate('categoryId', 'name type');
-        
+
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -172,8 +176,8 @@ exports.getRelatedProducts = async (req, res) => {
             ],
             isActive: true
         })
-        .limit(4)
-        .populate('categoryId', 'name');
+            .limit(4)
+            .populate('categoryId', 'name');
 
         res.json({
             success: true,
@@ -191,7 +195,7 @@ exports.getRelatedProducts = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const updates = req.body;
-        
+
         // Prevent changing product type directly
         delete updates.type;
 
@@ -224,7 +228,7 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
-        
+
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -248,7 +252,7 @@ exports.deleteProduct = async (req, res) => {
 exports.toggleStatus = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        
+
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -278,7 +282,7 @@ exports.toggleStatus = async (req, res) => {
 exports.updateStock = async (req, res) => {
     try {
         const { quantity } = req.body;
-        
+
         const product = await Product.findById(req.params.id);
         if (!product) {
             return res.status(404).json({

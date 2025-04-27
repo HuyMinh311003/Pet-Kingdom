@@ -1,41 +1,43 @@
-import axios from 'axios';
 import { Product } from '../../types/admin';
-
-const BASE_URL = 'http://localhost:5000/api';
-
+import api from './axiosConfig';
 export const productApi = {
   getProducts: async (params?: any) => {
-    const response = await axios.get(`${BASE_URL}/products`, { params });
+    const response = await api.get('/products', { params });
     return response.data;
   },
 
   getProductById: async (id: string) => {
-    const response = await axios.get(`${BASE_URL}/products/${id}`);
+    const response = await api.get(`/products/${id}`);
     return response.data;
   },
 
   createProduct: async (product: Partial<Product>) => {
-    const response = await axios.post(`${BASE_URL}/products`, product);
+    const response = await api.post('/products', product);
     return response.data;
   },
 
   updateProduct: async (id: string, product: Partial<Product>) => {
-    const response = await axios.put(`${BASE_URL}/products/${id}`, product);
+    const response = await  api.put(`/products/${id}`, product);
     return response.data;
   },
 
   deleteProduct: async (id: string) => {
-    const response = await axios.delete(`${BASE_URL}/products/${id}`);
+    const response = await api.delete(`/products/${id}`);
     return response.data;
   },
 
   toggleStatus: async (id: string) => {
-    const response = await axios.patch(`${BASE_URL}/products/${id}/toggle-status`);
+    const response = await api.patch(`/products/${id}/toggle-status`);
     return response.data;
   },
 
   updateStock: async (id: string, quantity: number) => {
-    const response = await axios.patch(`${BASE_URL}/products/${id}/stock`, { quantity });
+    const response = await api.patch(`/products/${id}/stock`, { quantity });
     return response.data;
-  }
+  },
+
+  uploadImage: async (imageData: FormData) => {
+    const response = await api.post('/products/upload', imageData);
+    return response.data;
+  },
 };
