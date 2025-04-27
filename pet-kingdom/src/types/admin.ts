@@ -7,10 +7,10 @@ export interface Product {
   stock: number;
   imageUrl: string;
   isActive: boolean;
-  birthday?: string; // Ngày sinh, có thể là kiểu string hoặc Date
-  age?: number; // Độ tuổi
-  gender?: 'male' | 'female'; // Giới tính
-  vaccinated?: boolean; // Trạng thái tiêm phòng
+  birthday?: string; 
+  age?: number;
+  gender?: 'male' | 'female';
+  vaccinated?: boolean; 
 }
 
 export interface Category {
