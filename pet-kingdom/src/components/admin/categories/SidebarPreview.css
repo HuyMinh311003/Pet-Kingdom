@@ -1,0 +1,168 @@
+.sidebar-preview {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: calc(100vh - 8rem);
+  display: flex; 
+  flex-direction: column;
+}
+
+.preview-header {
+  margin-bottom: 2rem;
+}
+
+.preview-header h2 {
+  font-size: 1.25rem;
+  color: #2a292a;
+  margin: 0 0 0.5rem;
+}
+
+.preview-header p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.preview-sidebar {
+  flex: 1;
+  background: #1a1c23;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: white;
+}
+
+.preview-chevron-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.preview-menu-arrow {
+  transition: transform 0.3s ease;
+}
+
+.preview-menu-arrow.rotated {
+  transform: rotate(90deg);
+}
+
+.preview-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.preview-menu-item {
+  margin: 4px 0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.preview-menu-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.preview-menu-item.selected .preview-menu-button-container {
+  background: #FFC371;
+  color: #1a1c23;
+}
+
+.preview-menu-text {
+  flex: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.preview-menu-text.inactive {
+  opacity: 0.6;
+}
+
+.order-badge {
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-left: auto;
+  min-width: 24px;
+  text-align: center;
+}
+
+.preview-menu-item.selected .order-badge {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.preview-submenu-container {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+  position: relative;
+}
+
+.preview-submenu-container::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1px;
+}
+
+.preview-submenu-container.open {
+  max-height: 1000px;
+  margin-top: 4px;
+}
+
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 8px;
+}
+
+.preview-action-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.preview-menu-item:hover .preview-action-btn {
+  opacity: 1;
+}
+
+.preview-action-btn:hover {
+  color: #FFC371;
+}
+
+.preview-action-btn.delete:hover {
+  color: #ef4444;
+}
+
+.preview-action-btn svg.active {
+  color: #10b981;
+}
