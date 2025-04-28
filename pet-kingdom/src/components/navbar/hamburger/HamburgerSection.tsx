@@ -87,9 +87,9 @@ const HamburgerSection: React.FC = () => {
                 return [...prev, category._id];
             });
         } else {
-            // Handle navigation
+            // Handle navigation with categoryId
             if (category._id !== 'pets' && category._id !== 'accessories') {
-                navigate(`/products?category=${category._id}`);
+                navigate(`/products?category=${category._id}&name=${category.name}`);
                 toggleMenu(); // Close menu after navigation
             }
         }

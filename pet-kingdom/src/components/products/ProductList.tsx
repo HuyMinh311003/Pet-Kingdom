@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, Filter } from 'lucide-react';
 import './ProductStyle.css';
 import ProductCard from './ProductCard';
 import api from '../../services/api/axiosConfig';
+import { useSearchParams } from 'react-router-dom';
+import PriceRangeSlider from './filters/PriceRangeSlider';
 
 interface Category {
   _id: string;
@@ -33,12 +35,20 @@ interface Product {
 interface FilterSectionProps {
   title: string;
   items: Category[];
-  isExpanded: boolean; 
+  isExpanded: boolean;
   onToggle: () => void;
   onFilterChange: (categoryId: string) => void;
+  selectedCategories: string[];
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({ title, items, isExpanded, onToggle, onFilterChange }) => {
+const FilterSection: React.FC<FilterSectionProps> = ({
+  title,
+  items,
+  isExpanded,
+  onToggle,
+  onFilterChange,
+  selectedCategories
+}) => {
   return (
     <div className="filter-section">
       <button
@@ -54,7 +64,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, items, isExpanded,
           {items.map((item) => (
             <li key={item._id}>
               <label className="checkbox-label">
-                <input type="checkbox" className="checkbox-input" onChange={() => onFilterChange(item._id)} />
+                <input
+                  type="checkbox"
+                  className="checkbox-input"
+                  onChange={() => onFilterChange(item._id)}
+                  checked={selectedCategories.includes(item._id)}
+                />
                 <span className="checkbox-custom"></span>
                 <span>{item.name}</span>
               </label>
@@ -66,7 +81,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, items, isExpanded,
   );
 };
 
+
 export default function ProductList() {
+  const [searchParams] = useSearchParams();
+  const initialCategoryId = searchParams.get('category');
+  const categoryName = searchParams.get('name');
+  const [overallMaxPrice, setOverallMaxPrice] = useState(0);
   const [expandedSections, setExpandedSections] = useState({
     categories: true,
     priceRange: false
@@ -74,8 +94,8 @@ export default function ProductList() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<{min: number, max: number}>({
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategoryId ? [initialCategoryId] : []);
+  const [priceRange, setPriceRange] = useState<{ min: number, max: number }>({
     min: 0,
     max: 10000000
   });
@@ -97,6 +117,34 @@ export default function ProductList() {
     fetchCategories();
   }, []);
 
+  // Thêm useEffect mới để cập nhật selectedCategories khi URL thay đổi
+  useEffect(() => {
+    if (initialCategoryId) {
+      setSelectedCategories([initialCategoryId]);
+    }
+  }, [initialCategoryId]);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get('/products');
+        if (res.data.success) {
+          const all: Product[] = res.data.data.products;
+          const maxPrice = all.reduce((mx, p) => Math.max(mx, p.price), 0);
+          setOverallMaxPrice(maxPrice);
+          setPriceRange({ min: 0, max: maxPrice });
+        }
+      } catch (err) {
+        console.error('Error fetching all products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, []);
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -112,8 +160,8 @@ export default function ProductList() {
         if (response.data?.success) {
           setProducts(response.data.data.products);
         }
-      } catch (error) {
-        console.error('Error fetching products:', error);
+      } catch (err) {
+        console.error('Error fetching all products:', err);
       } finally {
         setLoading(false);
       }
@@ -138,15 +186,15 @@ export default function ProductList() {
     });
   };
 
-  const handlePriceRangeChange = (min: number, max: number) => {
+  const handlePriceRangeChange = useCallback((min: number, max: number) => {
     setPriceRange({ min, max });
-  };
+  }, []);
 
   return (
     <div className="product-list">
       <div className="container">
         <div className="header">
-          <h1 className="title">PET PRODUCTS</h1>
+          <h1 className="title">{categoryName || 'PET PRODUCTS'}</h1>
           <div className="header-right">
             <p className="results-count">{products.length} RESULTS</p>
             <button
@@ -177,6 +225,7 @@ export default function ProductList() {
               isExpanded={expandedSections.categories}
               onToggle={() => toggleSection('categories')}
               onFilterChange={handleCategoryChange}
+              selectedCategories={selectedCategories}
             />
 
             <div className="filter-section">
@@ -189,21 +238,11 @@ export default function ProductList() {
                 <ChevronDown className={`filter-icon ${expandedSections.priceRange ? 'expanded' : ''}`} size={20} />
               </button>
               <div className={`filter-content ${expandedSections.priceRange ? 'expanded' : ''}`}>
-                <div className="price-range-inputs">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceRange.min}
-                    onChange={(e) => handlePriceRangeChange(Number(e.target.value), priceRange.max)}
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceRange.max}
-                    onChange={(e) => handlePriceRangeChange(priceRange.min, Number(e.target.value))}
-                  />
-                </div>
+                <PriceRangeSlider
+                  min={0}
+                  max={overallMaxPrice}
+                  onPriceChange={handlePriceRangeChange}
+                />
               </div>
             </div>
           </div>
