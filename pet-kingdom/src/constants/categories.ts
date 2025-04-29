@@ -16,3 +16,13 @@ export const STATIC_TABS: Category[] = [
     order: 1
   }
 ];
+
+export interface TabConfig {
+  id: 'pet' | 'tool';
+  label: string;
+}
+
+export const PRODUCT_CATEGORY_TABS: TabConfig[] = [
+  { id: 'pet',  label: 'THÚ CƯNG' },
+  { id: 'tool', label: 'VẬT DỤNG' },
+];

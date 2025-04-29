@@ -15,13 +15,27 @@ interface Category {
   name: string;
   type: "pet" | "tool";
   isActive: boolean;
+  children?: Category[];
 }
-
-
+interface Option {
+  _id: string;
+  path: string;
+}
+const findNode = (nodes: Category[], id: string): Category | undefined => {
+  for (const n of nodes) {
+    if (n._id === id) return n;
+    if (n.children) {
+      const hit = findNode(n.children, id);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
+};
 const ProductsPage: React.FC = () => {
   const { categoryId } = useParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [options, setOptions] = useState<Option[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
   const [productType, setProductType] = useState<'pet' | 'tool'>('tool');
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
@@ -50,6 +64,8 @@ const ProductsPage: React.FC = () => {
           params: { categoryId },
         });
         setProducts(response.data.data.products);
+        const cat = findNode(categories, categoryId);
+        if (cat) setProductType(cat.type);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
@@ -58,6 +74,22 @@ const ProductsPage: React.FC = () => {
     fetchCategories();
     fetchProducts();
   }, [categoryId]);
+
+  useEffect(() => {
+    const opts: Option[] = [];
+    const traverse = (nodes: Category[], parent: string) => {
+      nodes.forEach(n => {
+        const curr = parent ? `${parent}/${n.name}` : n.name;
+        if (n.children && n.children.length) {
+          traverse(n.children, curr);
+        } else {
+          opts.push({ _id: n._id, path: curr });
+        }
+      });
+    };
+    traverse(categories, '');
+    setOptions(opts);
+  }, [categories]);
 
   // Update page title based on category
   useEffect(() => {
@@ -83,7 +115,7 @@ const ProductsPage: React.FC = () => {
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    const category = categories.find(c => c._id === categoryId);
+    const category = findNode(categories, categoryId);
     setSelectedCategory(category);
     const type = category?.type || 'tool';
     setProductType(type);
@@ -213,18 +245,27 @@ const ProductsPage: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="productCategory">Category</label>
+          <label htmlFor="productCategory">Category</label>
             <select
               id="productCategory"
               value={newProduct.categoryId || ""}
-              onChange={(e) => handleCategoryChange(e.target.value)}
+              onChange={e => handleCategoryChange(e.target.value)}
               required
             >
-              <option value="">Select Category</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
+              {categories.map(parent => (
+                parent.children && parent.children.length ? (
+                  <optgroup key={parent._id} label={parent.name}>
+                    {parent.children.map(child => (
+                      <option key={child._id} value={child._id}>
+                        {child.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <option key={parent._id} value={parent._id}>
+                    {parent.name}
+                  </option>
+                )
               ))}
             </select>
           </div>

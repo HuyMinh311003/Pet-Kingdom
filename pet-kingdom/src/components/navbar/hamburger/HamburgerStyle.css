@@ -184,3 +184,31 @@
 .pk-sidebar-content::-webkit-scrollbar-thumb:hover {
     background-color: rgba(0, 0, 0, 0.3);
 }
+
+.pk-submenu-container {
+    border-left: 2px dotted rgba(0, 0, 0, 0.1);
+    margin-left: 8px;    
+    padding-left: 12px;  
+  }
+  
+  .pk-menu-list.level-1 .pk-menu-item .pk-menu-button-container {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+  .pk-menu-list.level-2 .pk-menu-item .pk-menu-button-container {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .pk-menu-list.level-3 .pk-menu-item .pk-menu-button-container {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+  
+  .pk-menu-item .pk-menu-button-container:hover {
+    background-color: rgba(255, 152, 0, 0.08);
+  }
+  .pk-menu-item .pk-menu-button-container:active {
+    background-color: rgba(255, 152, 0, 0.12);
+  }
+  
+  .pk-submenu-container:not(.open) {
+    border-color: transparent;
+  }
+  

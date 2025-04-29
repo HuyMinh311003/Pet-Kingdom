@@ -11,6 +11,7 @@ interface Category {
   name: string;
   type: "pet" | "tool";
   isActive: boolean;
+  children?: Category[];
 }
 
 interface ProductEditModalProps {
@@ -21,6 +22,20 @@ interface ProductEditModalProps {
   onSave: (product: Product) => void;
 }
 
+interface Option {
+  _id: string;
+  path: string;
+}
+const findNode = (nodes: Category[], id: string): Category | undefined => {
+  for (const n of nodes) {
+    if (n._id === id) return n;
+    if (n.children) {
+      const hit = findNode(n.children, id);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
+};
 const ProductEditModal: React.FC<ProductEditModalProps> = ({
   product,
   categories,
@@ -31,24 +46,43 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
   const [productType, setProductType] = useState<'pet' | 'tool'>('tool');
+  const [options, setOptions] = useState<Option[]>([]);
+
+
 
   useEffect(() => {
     setEditedProduct(product);
     if (product) {
-      const category = categories.find(c => c._id === product.categoryId);
+      const category = findNode(categories, product.categoryId);
       setSelectedCategory(category);
       setProductType(category?.type || 'tool');
     }
   }, [product, categories]);
 
+  useEffect(() => {
+    const opts: Option[] = [];
+    const traverse = (nodes: Category[], parentPath: string) => {
+      nodes.forEach(n => {
+        const curr = parentPath ? `${parentPath}/${n.name}` : n.name;
+        if (n.children && n.children.length) {
+          traverse(n.children, curr);
+        } else {
+          opts.push({ _id: n._id, path: curr });
+        }
+      });
+    };
+    traverse(categories, '');
+    setOptions(opts);
+  }, [categories]);
+
   if (!isOpen || !editedProduct) return null;
 
   const handleCategoryChange = (categoryId: string) => {
-    const category = categories.find(c => c._id === categoryId);
+    const category = findNode(categories, categoryId);
     setSelectedCategory(category);
     const type = category?.type || 'tool';
     setProductType(type);
-    
+
     setEditedProduct({
       ...editedProduct,
       categoryId,
@@ -79,7 +113,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
           return;
         }
       }
-      
+
       onSave({
         ...editedProduct,
         type: productType,
@@ -116,11 +150,20 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
               onChange={e => handleCategoryChange(e.target.value)}
               required
             >
-              <option value="">Select Category</option>
-              {categories.map(category => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
+              {categories.map(parent => (
+                parent.children && parent.children.length ? (
+                  <optgroup key={parent._id} label={parent.name}>
+                    {parent.children.map(child => (
+                      <option key={child._id} value={child._id}>
+                        {child.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <option key={parent._id} value={parent._id}>
+                    {parent.name}
+                  </option>
+                )
               ))}
             </select>
           </div>

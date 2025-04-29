@@ -9,6 +9,7 @@ interface Category {
     name: string;
     type: 'pet' | 'tool';
     isActive: boolean;
+    children?: Category[];
     subcategories?: Category[];
 }
 
@@ -36,30 +37,37 @@ const HamburgerSection: React.FC = () => {
 
     const fetchCategoriesByType = async (type: 'pet' | 'tool') => {
         if (loadedTypes.has(type)) return;
-        
         try {
-            const response = await axios.get(`http://localhost:5000/api/categories?type=${type}`);
+            const response = await axios.get(`/api/categories?type=${type}`);
             if (response.data?.success) {
-                const fetchedCategories = response.data.data.map((cat: any) => ({ 
-                    ...cat, 
-                    type: type 
-                }));
+                const fetched: any[] = response.data.data;
+
+                // Hàm đệ quy chuyển `children` → `subcategories`
+                const normalize = (cats: any[]): Category[] =>
+                    cats.map(cat => ({
+                        _id: cat._id,
+                        name: cat.name,
+                        type,
+                        isActive: cat.isActive,
+                        subcategories: cat.children ? normalize(cat.children) : []
+                    }));
+
+                const mapped = normalize(fetched);
 
                 setCategories(prev => {
-                    const updatedCategories = [...prev];
-                    const staticTab = updatedCategories.find(cat => cat.type === type);
-                    if (staticTab) {
-                        staticTab.subcategories = fetchedCategories;
-                    }
-                    return updatedCategories;
+                    const updated = [...prev];
+                    const staticTab = updated.find(c => c.type === type);
+                    if (staticTab) staticTab.subcategories = mapped;
+                    return updated;
                 });
 
                 setLoadedTypes(prev => new Set(prev).add(type));
             }
-        } catch (error) {
-            console.error(`Failed to fetch ${type} categories:`, error);
+        } catch (err) {
+            console.error(err);
         }
     };
+
 
     useEffect(() => {
         setCategories(STATIC_TABS);
@@ -97,38 +105,52 @@ const HamburgerSection: React.FC = () => {
 
     const renderMenuItems = (items: Category[], level: number = 0) => {
         return (
-            <ul className={`pk-menu-list ${level > 0 ? 'pk-submenu' : ''}`}>
-                {items.map((item) => (
-                    <li key={item._id} className="pk-menu-item">
-                        <div className="pk-menu-button-container">
-                            <span 
-                                className="pk-menu-text"
-                                onClick={() => handleMenuClick(item, false)}
-                            >
-                                {item.name}
-                            </span>
-                            {((item.subcategories?.length ?? 0) > 0 || item._id === 'pets' || item._id === 'accessories') && (
-                                <button
-                                    className="pk-chevron-button"
-                                    onClick={() => handleMenuClick(item, true)}
+            <ul className={`pk-menu-list level-${level}`}>
+                {items.map(item => {
+                    const nested = item.subcategories || [];
+                    const isTypeTab = level === 0 && (item._id === 'pets' || item._id === 'accessories');
+                    const canExpand = nested.length > 0 || isTypeTab;
+
+                    return (
+                        <li
+                            key={item._id}
+                            className="pk-menu-item"
+                            // indent động theo level, giống SidebarPreview
+                            style={{ paddingLeft: `${level * 16}px` }}
+                        >
+                            <div className="pk-menu-button-container">
+                                <span
+                                    className="pk-menu-text"
+                                    onClick={() => handleMenuClick(item, false)}
                                 >
-                                    <ChevronRight 
-                                        className={`pk-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
-                                        size={18}
-                                    />
-                                </button>
-                            )}
-                        </div>
-                        {item.subcategories && item.subcategories.length > 0 && (
-                            <div className={`pk-submenu-container ${activeMenus.includes(item._id) ? 'open' : ''}`}>
-                                {renderMenuItems(item.subcategories, level + 1)}
+                                    {item.name}
+                                </span>
+                                {canExpand && (
+                                    <button
+                                        className="pk-chevron-button"
+                                        onClick={() => handleMenuClick(item, true)}
+                                    >
+                                        <ChevronRight
+                                            className={`pk-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
+                                            size={18}
+                                        />
+                                    </button>
+                                )}
                             </div>
-                        )}
-                    </li>
-                ))}
+                            {nested.length > 0 && (
+                                <div
+                                    className={`pk-submenu-container ${activeMenus.includes(item._id) ? 'open' : ''}`}
+                                >
+                                    {renderMenuItems(nested, level + 1)}
+                                </div>
+                            )}
+                        </li>
+                    );
+                })}
             </ul>
         );
     };
+
 
     return (
         <div className="pk-hamburger-menu-container">
