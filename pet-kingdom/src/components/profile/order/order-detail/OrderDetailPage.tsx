@@ -4,7 +4,7 @@ import OrderProgressBar from "./OrderProgressBar";
 import OrderStatus from "./OrderStatus";
 import OrderInfo from "./OrderInfo";
 import OrderProductList from "./OrderProductList";
-import { orderApi } from "../../../../services/api/orderApi";
+import { orderApi } from "../../../../services/admin-api/orderApi";
 import "./OrderDetailPage.css";
 
 interface OrderDetail {

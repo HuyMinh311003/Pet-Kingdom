@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { orderApi } from '../../../services/api/orderApi';
+import { orderApi } from '../../../services/admin-api/orderApi';
 import './OrdersPage.css'
 
 interface Order {
