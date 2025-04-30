@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import './OrdersPage.css'
+import { useState } from "react";
+import "./OrdersPage.css";
+
 interface Order {
   id: string;
   date: string;
