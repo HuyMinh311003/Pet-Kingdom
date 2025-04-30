@@ -24,14 +24,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
   return (
     <aside className="admin-sidebar">
       <div className="sidebar-header">
-        <h1>{userRole === 'admin' ? 'Admin Dashboard' : 'Shipper Dashboard'}</h1>
+        <h1>{userRole === 'Admin' ? 'Admin Dashboard' : 'Shipper Dashboard'}</h1>
       </div>
       
       <nav className="sidebar-nav">
         <NavLink 
           to="/admin/analytics" 
-          className={`nav-item ${userRole === 'shipper' ? 'disabled' : ''}`}
-          onClick={(e) => userRole === 'shipper' && e.preventDefault()}
+          className={`nav-item ${userRole === 'Shipper' ? 'disabled' : ''}`}
+          onClick={(e) => userRole === 'Shipper' && e.preventDefault()}
         >
           <BarChart3 size={20} />
           <span>Analytics</span>
@@ -39,8 +39,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
 
         <NavLink 
           to="/admin/products" 
-          className={`nav-item ${userRole === 'shipper' ? 'disabled' : ''}`}
-          onClick={(e) => userRole === 'shipper' && e.preventDefault()}
+          className={`nav-item ${userRole === 'Shipper' ? 'disabled' : ''}`}
+          onClick={(e) => userRole === 'Shipper' && e.preventDefault()}
         >
           <Package2 size={20} />
           <span>Products</span>
@@ -48,8 +48,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
         
         <NavLink 
           to="/admin/categories" 
-          className={`nav-item ${userRole === 'shipper' ? 'disabled' : ''}`}
-          onClick={(e) => userRole === 'shipper' && e.preventDefault()}
+          className={`nav-item ${userRole === 'Shipper' ? 'disabled' : ''}`}
+          onClick={(e) => userRole === 'Shipper' && e.preventDefault()}
         >
           <LayoutGrid size={20} />
           <span>Categories</span>
@@ -57,8 +57,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
 
         <NavLink 
           to="/admin/orders" 
-          className={`nav-item ${userRole === 'shipper' ? 'disabled' : ''}`}
-          onClick={(e) => userRole === 'shipper' && e.preventDefault()}
+          className={`nav-item ${userRole === 'Shipper' ? 'disabled' : ''}`}
+          onClick={(e) => userRole === 'Shipper' && e.preventDefault()}
         >
           <ShoppingBag size={20} />
           <span>Orders</span>
@@ -66,8 +66,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
 
         <NavLink 
           to="/admin/promotions" 
-          className={`nav-item ${userRole === 'shipper' ? 'disabled' : ''}`}
-          onClick={(e) => userRole === 'shipper' && e.preventDefault()}
+          className={`nav-item ${userRole === 'Shipper' ? 'disabled' : ''}`}
+          onClick={(e) => userRole === 'Shipper' && e.preventDefault()}
         >
           <Tag size={20} />
           <span>Promotions</span>
@@ -75,8 +75,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
 
         <NavLink 
           to="/admin/staff" 
-          className={`nav-item ${userRole === 'shipper' ? 'disabled' : ''}`}
-          onClick={(e) => userRole === 'shipper' && e.preventDefault()}
+          className={`nav-item ${userRole === 'Shipper' ? 'disabled' : ''}`}
+          onClick={(e) => userRole === 'Shipper' && e.preventDefault()}
         >
           <Users size={20} />
           <span>Staff Management</span>
@@ -85,9 +85,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
         <div className="nav-item-with-subtabs">
           <NavLink 
             to="/admin/assigned-orders" 
-            className={`nav-item ${userRole === 'admin' ? 'disabled' : ''}`}
+            className={`nav-item ${userRole === 'Admin' ? 'disabled' : ''}`}
             onClick={(e) => {
-              if (userRole === 'admin') {
+              if (userRole === 'Admin') {
                 e.preventDefault();
               }
             }}
@@ -97,7 +97,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
                 <Truck size={20} />
                 <span>Assigned Orders</span>
               </div>
-              {userRole === 'shipper' && (
+              {userRole === 'Shipper' && (
                 <button 
                   className="subtab-toggle"
                   onClick={(e) => {
@@ -112,7 +112,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
             </div>
           </NavLink>
 
-          {userRole === 'shipper' && showSubtab && (
+          {userRole === 'Shipper' && showSubtab && (
             <NavLink 
               to="/admin/assigned-orders/my-orders"
               className="nav-subtab"

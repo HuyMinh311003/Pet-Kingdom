@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { orderApi } from "../../../services/api/orderApi";
+import { orderApi } from "../../../services/admin-api/orderApi";
 import "./OrderList.css";
 
 type Order = {

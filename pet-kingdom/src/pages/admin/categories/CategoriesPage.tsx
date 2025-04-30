@@ -1,153 +1,116 @@
 import React, { useState, useEffect } from 'react';
 import { Category } from '../../../types/admin';
+import SidebarPreview from '../../../components/admin/categories/SidebarPreview';
+import CategoryForm from '../../../components/admin/categories/CategoryForm';
+import { api } from '../../../services/customer-api/api';
 import './CategoriesPage.css';
 
 const CategoriesPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [activeMenus, setActiveMenus] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState<Partial<Category>>({
     type: 'pet',
     isActive: true,
+    order: 0,
   });
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
+  // Fetch categories on mount
   useEffect(() => {
-    // TODO: Fetch categories from API
-    // Using mock data for now
-    const mockCategories: Category[] = [
-      {
-        id: '1',
-        name: 'Dogs',
-        type: 'pet',
-        description: 'All breeds of dogs',
-        isActive: true
-      },
-      {
-        id: '2',
-        name: 'Cats',
-        type: 'pet',
-        description: 'All breeds of cats',
-        isActive: true
-      },
-      {
-        id: '3',
-        name: 'Pet Tools',
-        type: 'tool',
-        description: 'Essential tools for pet care',
-        isActive: true
-      }
-    ];
-    setCategories(mockCategories);
+    fetchCategories();
   }, []);
 
-  const handleAddCategory = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement API call to add category
-    setCategories([...categories, {
-      ...newCategory,
-      id: Date.now().toString()
-    } as Category]);
-    setNewCategory({
-      type: 'pet',
-      isActive: true,
-    });
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories?includeInactive=true');
+      if (response.data.success) {
+        // We get a properly organized tree from the backend now
+        setCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleToggleMenu = (categoryId: string) => {
+    setActiveMenus(current =>
+      current.includes(categoryId)
+        ? current.filter(id => id !== categoryId)
+        : [...current, categoryId]
+    );
+  };
+
+  const handleSelectCategory = (category: Category) => {
+    setSelectedCategory(category);
     setIsAddingCategory(false);
   };
 
-  const handleUpdateCategory = (e: React.FormEvent) => {
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCategory) return;
-
-    // TODO: Implement API call to update category
-    setCategories(categories.map(cat =>
-      cat.id === editingCategory.id ? editingCategory : cat
-    ));
-    setEditingCategory(null);
+    try {
+      const response = await api.post('/categories', newCategory);
+      if (response.data.success) {
+        await fetchCategories(); // Refresh full category tree
+        setIsAddingCategory(false);
+        setNewCategory({
+          type: 'pet',
+          isActive: true,
+          order: 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
   };
 
-  const handleDeleteCategory = (id: string) => {
-    // TODO: Implement API call to delete category
-    setCategories(categories.filter(cat => cat.id !== id));
+  const handleUpdateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCategory?._id) return;
+
+    try {
+      const response = await api.put(`/categories/${selectedCategory._id}`, selectedCategory);
+      if (response.data.success) {
+        await fetchCategories(); // Refresh full category tree
+        setSelectedCategory(null);
+      }
+    } catch (error) {
+      console.error('Error updating category:', error);
+    }
   };
 
-  const handleStatusToggle = (id: string, isActive: boolean) => {
-    // TODO: Implement API call to update category status
-    setCategories(categories.map(cat =>
-      cat.id === id ? { ...cat, isActive } : cat
-    ));
+  const handleDeleteCategory = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const response = await api.delete(`/categories/${id}`);
+      if (response.data.success) {
+        await fetchCategories(); // Refresh full category tree
+        setSelectedCategory(null);
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Could not delete category. It may have subcategories or products.');
+    }
   };
 
-  const categoryForm = (
-    category: Partial<Category>,
-    onSubmit: (e: React.FormEvent) => void,
-    onCancel: () => void,
-    submitText: string
-  ) => (
-    <form onSubmit={onSubmit} className="category-form">
-      <div className="form-group">
-        <label htmlFor="categoryName">Category Name</label>
-        <input
-          id="categoryName"
-          type="text"
-          required
-          value={category.name || ''}
-          onChange={e => {
-            if (editingCategory) {
-              setEditingCategory({ ...editingCategory, name: e.target.value });
-            } else {
-              setNewCategory({ ...newCategory, name: e.target.value });
-            }
-          }}
-        />
-      </div>
+  const handleStatusToggle = async (id: string) => {
+    try {
+      const response = await api.patch(`/categories/${id}/toggle-status`);
+      if (response.data.success) {
+        await fetchCategories(); // Refresh full category tree
+      }
+    } catch (error) {
+      console.error('Error toggling category status:', error);
+      alert('Could not toggle category status. It may have active subcategories.');
+    }
+  };
 
-      <div className="form-group">
-        <label htmlFor="categoryType">Type</label>
-        <select
-          id="categoryType"
-          required
-          value={category.type}
-          onChange={e => {
-            if (editingCategory) {
-              setEditingCategory({ ...editingCategory, type: e.target.value as 'pet' | 'tool' });
-            } else {
-              setNewCategory({ ...newCategory, type: e.target.value as 'pet' | 'tool' });
-            }
-          }}
-        >
-          <option value="pet">Pet</option>
-          <option value="tool">Tool</option>
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="categoryDescription">Description</label>
-        <textarea
-          id="categoryDescription"
-          value={category.description || ''}
-          onChange={e => {
-            if (editingCategory) {
-              setEditingCategory({ ...editingCategory, description: e.target.value });
-            } else {
-              setNewCategory({ ...newCategory, description: e.target.value });
-            }
-          }}
-        />
-      </div>
-
-      <div className="form-actions">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="cancel-btn"
-        >
-          Cancel
-        </button>
-        <button type="submit" className="submit-btn">
-          {submitText}
-        </button>
-      </div>
-    </form>
+  // Get all categories except the current one being edited (to avoid circular references)
+  const availableParents = categories.filter(
+    cat => cat._id !== selectedCategory?._id
   );
 
   return (
@@ -156,58 +119,57 @@ const CategoriesPage: React.FC = () => {
         <h1>Categories Management</h1>
         <button
           className="add-category-btn"
-          onClick={() => setIsAddingCategory(true)}
+          onClick={() => {
+            setIsAddingCategory(true);
+            setSelectedCategory(null);
+          }}
         >
           Add New Category
         </button>
       </div>
 
-      {isAddingCategory && (
-        <div className="category-form-container">
-          {categoryForm(newCategory, handleAddCategory, () => setIsAddingCategory(false), 'Add Category')}
+      <div className="categories-container">
+        <div className="preview-container">
+          <SidebarPreview
+            categories={categories}
+            activeMenus={activeMenus}
+            onToggleMenu={handleToggleMenu}
+            onSelectCategory={handleSelectCategory}
+            onDeleteCategory={handleDeleteCategory}
+            onToggleStatus={handleStatusToggle}
+            selectedCategory={selectedCategory}
+          />
         </div>
-      )}
 
-      <div className="categories-list">
-        {categories.map(category => (
-          <div key={category.id} className="category-card">
-            {editingCategory?.id === category.id ? (
-              categoryForm(editingCategory, handleUpdateCategory, () => setEditingCategory(null), 'Update Category')
-            ) : (
-              <>
-                <div className="category-header">
-                  <h3>{category.name}</h3>
-                  <span className={`type-badge ${category.type}`}>
-                    {category.type.charAt(0).toUpperCase() + category.type.slice(1)}
-                  </span>
-                </div>
-
-                <p className="category-description">{category.description}</p>
-
-                <div className="category-actions">
-                  <button
-                    className={`status-toggle-btn ${category.isActive ? 'deactivate' : 'activate'}`}
-                    onClick={() => handleStatusToggle(category.id, !category.isActive)}
-                  >
-                    {category.isActive ? 'Deactivate' : 'Activate'}
-                  </button>
-                  <button
-                    className="edit-btn"
-                    onClick={() => setEditingCategory(category)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteCategory(category.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+        <div className="form-container">
+          {isAddingCategory ? (
+            <CategoryForm
+              category={newCategory}
+              availableParents={availableParents}
+              onSubmit={handleAddCategory}
+              onChange={updates => setNewCategory(current => ({ ...current, ...updates }))}
+              onCancel={() => setIsAddingCategory(false)}
+              submitText="Add Category"
+              isNew={true}
+            />
+          ) : selectedCategory ? (
+            <CategoryForm
+              category={selectedCategory}
+              availableParents={availableParents}
+              onSubmit={handleUpdateCategory}
+              onChange={updates => setSelectedCategory(current => 
+                current ? { ...current, ...updates } : null
+              )}
+              onCancel={() => setSelectedCategory(null)}
+              submitText="Update Category"
+            />
+          ) : (
+            <div className="no-selection">
+              <h2>No Category Selected</h2>
+              <p>Select a category from the preview to edit it, or click "Add New Category" to create one.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

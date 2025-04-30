@@ -1,39 +1,39 @@
 import { TabPermission } from '../types/role';
 
-export const adminTabs: TabPermission[] = [
+export const AdminTabs: TabPermission[] = [
   {
-    path: '/admin/categories',
+    path: '/Admin/categories',
     title: 'Category Manager',
-    allowedRoles: ['admin']
+    allowedRoles: ['Admin']
   },
   {
-    path: '/admin/products',
+    path: '/Admin/products',
     title: 'Product Management', 
-    allowedRoles: ['admin']
+    allowedRoles: ['Admin']
   },
   {
-    path: '/admin/orders',
+    path: '/Admin/orders',
     title: 'Order Management',
-    allowedRoles: ['admin']
+    allowedRoles: ['Admin']
   },
   {
-    path: '/admin/staff',
+    path: '/Admin/staff',
     title: 'Staff Accounts',
-    allowedRoles: ['admin']
+    allowedRoles: ['Admin']
   },
   {
-    path: '/admin/assigned-orders',
+    path: '/Admin/assigned-orders',
     title: 'Assigned Orders',
-    allowedRoles: ['shipper']
+    allowedRoles: ['Shipper']
   },
   {
-    path: '/admin/analytics',
+    path: '/Admin/analytics',
     title: 'Analytics',
-    allowedRoles: ['admin']
+    allowedRoles: ['Admin']
   },
   {
-    path: '/admin/promotions',
+    path: '/Admin/promotions',
     title: 'Promotions',
-    allowedRoles: ['admin']
+    allowedRoles: ['Admin']
   }
 ];

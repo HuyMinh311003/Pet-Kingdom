@@ -11,6 +11,14 @@
   z-index: 1000;
 }
 
+/* group labels muted, leaf options dark */
+.edit-product-form select optgroup {
+  color: #6b7280;      /* muted text */
+}
+.edit-product-form select option {
+  color: #111827;      /* dark text */
+}
+
 .modal-content {
   background: white;
   border-radius: 0.75rem;

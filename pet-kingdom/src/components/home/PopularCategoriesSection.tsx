@@ -1,7 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./HomeStyle.css";
 
 export interface Category {
+    id: string;
     name: string;
     image: string;
     count: string;
@@ -12,13 +14,23 @@ interface PopularCategoriesSectionProps {
 }
 
 const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({ categories }) => {
+    const navigate = useNavigate();
+
+    const handleCategoryClick = (category: Category) => {
+        navigate(`/products?category=${category.id}&name=${category.name}`);
+    };
+
     return (
         <section id="categories-section" className="categories-section">
             <div className="section-container">
                 <h2 className="section-title">Popular Categories</h2>
                 <div className="categories-grid">
-                    {categories.map((category, index) => (
-                        <div key={index} className="category-card">
+                    {categories.map((category) => (
+                        <div 
+                            key={category.id} 
+                            className="category-card"
+                            onClick={() => handleCategoryClick(category)}
+                        >
                             <img
                                 src={category.image}
                                 alt={category.name}
