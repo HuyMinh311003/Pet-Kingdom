@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
-import { Product as AdminProduct } from '../../../types/admin';
-import api from '../../../services/admin-api/axiosConfig';
+import { Product as AdminProduct } from "../../../types/admin";
+import api from "../../../services/admin-api/axiosConfig";
 import "./ProductsPage.css";
 import { productApi } from "../../../services/admin-api/productApi";
 
@@ -36,8 +36,10 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
-  const [productType, setProductType] = useState<'pet' | 'tool'>('tool');
+  const [selectedCategory, setSelectedCategory] = useState<
+    Category | undefined
+  >();
+  const [productType, setProductType] = useState<"pet" | "tool">("tool");
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     isActive: true,
     stock: 0,
@@ -50,35 +52,37 @@ const ProductsPage: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await api.get('/categories');
-        console.log('Categories response:', response.data);
+        const response = await api.get("/categories");
+        console.log("Categories response:", response.data);
         setCategories(response.data.data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
       }
     };
 
     const fetchProducts = async () => {
       try {
-        const response = await api.get('/products', {
+        const response = await api.get("/products", {
           params: { categoryId },
         });
         setProducts(response.data.data.products);
-        const cat = findNode(categories, categoryId);
-        if (cat) setProductType(cat.type);
+        if (categoryId) {
+          const cat = findNode(categories, categoryId);
+          if (cat) setProductType(cat.type);
+        }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       }
     };
 
     fetchCategories();
     fetchProducts();
-  }, [categoryId]);
+  }, [categories, categoryId]);
 
   useEffect(() => {
     const opts: Option[] = [];
     const traverse = (nodes: Category[], parent: string) => {
-      nodes.forEach(n => {
+      nodes.forEach((n) => {
         const curr = parent ? `${parent}/${n.name}` : n.name;
         if (n.children && n.children.length) {
           traverse(n.children, curr);
@@ -87,7 +91,7 @@ const ProductsPage: React.FC = () => {
         }
       });
     };
-    traverse(categories, '');
+    traverse(categories, "");
     setOptions(opts);
   }, [categories]);
 
@@ -105,19 +109,19 @@ const ProductsPage: React.FC = () => {
     setSelectedImage(file);
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
       const uploadRes = await productApi.uploadImage(formData);
-      setNewProduct(prev => ({ ...prev, imageUrl: uploadRes.url }));
+      setNewProduct((prev) => ({ ...prev, imageUrl: uploadRes.url }));
     } catch (err) {
-      console.error('Error uploading image:', err);
-      alert('Failed to upload image');
+      console.error("Error uploading image:", err);
+      alert("Failed to upload image");
     }
   };
 
   const handleCategoryChange = (categoryId: string) => {
     const category = findNode(categories, categoryId);
     setSelectedCategory(category);
-    const type = category?.type || 'tool';
+    const type = category?.type || "tool";
     setProductType(type);
 
     setNewProduct({
@@ -129,21 +133,29 @@ const ProductsPage: React.FC = () => {
       vaccinated: undefined,
       brand: undefined,
       // Set appropriate stock
-      stock: type === 'pet' ? 1 : 0,
+      stock: type === "pet" ? 1 : 0,
     });
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     // A. Validate
-    if (productType === 'pet') {
-      if (!newProduct.birthday || !newProduct.gender || newProduct.vaccinated === undefined) {
-        alert('Fill Birthday, Gender, Vaccination');
+    if (productType === "pet") {
+      if (
+        !newProduct.birthday ||
+        !newProduct.gender ||
+        newProduct.vaccinated === undefined
+      ) {
+        alert("Fill Birthday, Gender, Vaccination");
         return;
       }
     } else {
-      if (!newProduct.brand || newProduct.stock === undefined || newProduct.stock < 0) {
-        alert('Fill Brand và Stock >= 0');
+      if (
+        !newProduct.brand ||
+        newProduct.stock === undefined ||
+        newProduct.stock < 0
+      ) {
+        alert("Fill Brand và Stock >= 0");
         return;
       }
     }
@@ -155,16 +167,16 @@ const ProductsPage: React.FC = () => {
       price: newProduct.price,
       categoryId: newProduct.categoryId,
       type: productType,
-      stock: productType === 'pet' ? 1 : newProduct.stock,
+      stock: productType === "pet" ? 1 : newProduct.stock,
       imageUrl: newProduct.imageUrl,
       isActive: newProduct.isActive,
     };
-    if (productType === 'pet') {
+    if (productType === "pet") {
       payload.birthday = newProduct.birthday;
       payload.gender = newProduct.gender;
       payload.vaccinated = newProduct.vaccinated;
     }
-    if (productType === 'tool') {
+    if (productType === "tool") {
       payload.brand = newProduct.brand;
     }
 
@@ -172,39 +184,45 @@ const ProductsPage: React.FC = () => {
       const res = await productApi.createProduct(payload);
       if (res.success) {
         // C. Reset form + reload list
-        setNewProduct({ isActive: true, stock: productType === 'pet' ? 1 : 0, price: 0 });
+        setNewProduct({
+          isActive: true,
+          stock: productType === "pet" ? 1 : 0,
+          price: 0,
+        });
         setSelectedImage(null);
         const prodRes = await productApi.getProducts({ category: categoryId });
         setProducts(prodRes.data.products);
       } else {
-        alert('Create failed: ' + res.message);
+        alert("Create failed: " + res.message);
       }
     } catch (err) {
-      console.error('Error creating product:', err);
-      alert('Error creating product');
+      console.error("Error creating product:", err);
+      alert("Error creating product");
     }
   };
 
   const handleUpdateProduct = (id: string, updates: Partial<Product>) => {
     // TODO: Implement API call to update product
-    setProducts(products.map((prod) => (prod.id === id ? { ...prod, ...updates } : prod)));
+    setProducts(
+      products.map((prod) => (prod.id === id ? { ...prod, ...updates } : prod))
+    );
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xoá sản phẩm này không?')) {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?")) {
       return;
     }
 
     try {
       const res = await productApi.deleteProduct(id);
       if (res.success) {
-        setProducts(prev => prev.filter(prod => prod.id !== id));
+        setProducts((prev) => prev.filter((prod) => prod.id !== id));
       } else {
-        alert('Xoá thất bại: ' + res.message);
+        alert("Xoá thất bại: " + res.message);
       }
     } catch (err) {
-      console.error('Error deleting product:', err);
-      alert('Đã có lỗi khi xoá sản phẩm.');
+      console.error("Error deleting product:", err);
+      alert("Đã có lỗi khi xoá sản phẩm.");
     }
   };
 
@@ -239,23 +257,25 @@ const ProductsPage: React.FC = () => {
               type="text"
               placeholder="Product Name"
               value={newProduct.name || ""}
-              onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, name: e.target.value })
+              }
               required
             />
           </div>
 
           <div className="form-group">
-          <label htmlFor="productCategory">Category</label>
+            <label htmlFor="productCategory">Category</label>
             <select
               id="productCategory"
               value={newProduct.categoryId || ""}
-              onChange={e => handleCategoryChange(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               required
             >
-              {categories.map(parent => (
+              {categories.map((parent) =>
                 parent.children && parent.children.length ? (
                   <optgroup key={parent._id} label={parent.name}>
-                    {parent.children.map(child => (
+                    {parent.children.map((child) => (
                       <option key={child._id} value={child._id}>
                         {child.name}
                       </option>
@@ -266,7 +286,7 @@ const ProductsPage: React.FC = () => {
                     {parent.name}
                   </option>
                 )
-              ))}
+              )}
             </select>
           </div>
 
@@ -276,13 +296,15 @@ const ProductsPage: React.FC = () => {
               id="productDescription"
               placeholder="Description"
               value={newProduct.description || ""}
-              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, description: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Pet-specific fields */}
-          {productType === 'pet' && (
+          {productType === "pet" && (
             <>
               <div className="form-group">
                 <label htmlFor="productBirthday">Birthday</label>
@@ -290,7 +312,9 @@ const ProductsPage: React.FC = () => {
                   id="productBirthday"
                   type="date"
                   value={newProduct.birthday || ""}
-                  onChange={(e) => setNewProduct({ ...newProduct, birthday: e.target.value })}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, birthday: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -300,10 +324,12 @@ const ProductsPage: React.FC = () => {
                 <select
                   id="productGender"
                   value={newProduct.gender || ""}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    gender: e.target.value as "male" | "female",
-                  })}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      gender: e.target.value as "male" | "female",
+                    })
+                  }
                   required
                 >
                   <option value="">Select Gender</option>
@@ -316,11 +342,17 @@ const ProductsPage: React.FC = () => {
                 <label htmlFor="productVaccinated">Vaccination Status</label>
                 <select
                   id="productVaccinated"
-                  value={newProduct.vaccinated !== undefined ? String(newProduct.vaccinated) : ""}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    vaccinated: e.target.value === "true",
-                  })}
+                  value={
+                    newProduct.vaccinated !== undefined
+                      ? String(newProduct.vaccinated)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      vaccinated: e.target.value === "true",
+                    })
+                  }
                   required
                 >
                   <option value="">Select Vaccination Status</option>
@@ -342,15 +374,23 @@ const ProductsPage: React.FC = () => {
           )}
 
           {/* Tool-specific fields */}
-          {productType === 'tool' && (
+          {productType === "tool" && (
             <>
               <div className="form-group">
                 <label htmlFor="productBrand">Brand</label>
                 <input
                   id="productBrand"
                   type="text"
-                  value={typeof newProduct.brand === "string" ? newProduct.brand : (typeof newProduct.brand === "number" ? String(newProduct.brand) : "")}
-                  onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
+                  value={
+                    typeof newProduct.brand === "string"
+                      ? newProduct.brand
+                      : typeof newProduct.brand === "number"
+                      ? String(newProduct.brand)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, brand: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -361,11 +401,19 @@ const ProductsPage: React.FC = () => {
                   id="productStock"
                   type="number"
                   min="0"
-                  value={typeof newProduct.stock === "number" ? newProduct.stock : (typeof newProduct.stock === "string" ? newProduct.stock : "")}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    stock: Number(e.target.value),
-                  })}
+                  value={
+                    typeof newProduct.stock === "number"
+                      ? newProduct.stock
+                      : typeof newProduct.stock === "string"
+                      ? newProduct.stock
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      stock: Number(e.target.value),
+                    })
+                  }
                   required
                 />
               </div>
@@ -380,10 +428,12 @@ const ProductsPage: React.FC = () => {
               min="0"
               step="1000"
               value={newProduct.price}
-              onChange={(e) => setNewProduct({
-                ...newProduct,
-                price: parseInt(e.target.value),
-              })}
+              onChange={(e) =>
+                setNewProduct({
+                  ...newProduct,
+                  price: parseInt(e.target.value),
+                })
+              }
               required
             />
           </div>
@@ -427,10 +477,14 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${product.isActive ? "active" : "inactive"}`}
-                  onClick={() => handleUpdateProduct(product.id, {
-                    isActive: !product.isActive,
-                  })}
+                  className={`status-btn ${
+                    product.isActive ? "active" : "inactive"
+                  }`}
+                  onClick={() =>
+                    handleUpdateProduct(product.id, {
+                      isActive: !product.isActive,
+                    })
+                  }
                 >
                   {product.isActive ? "Active" : "Inactive"}
                 </button>
