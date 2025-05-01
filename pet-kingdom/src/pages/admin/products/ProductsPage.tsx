@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
-import { Product as AdminProduct } from '../../../types/admin';
-import api from '../../../services/admin-api/axiosConfig';
-import "./ProductsPage.css";
+import { Product as AdminProduct } from "../../../types/admin";
+import api from "../../../services/admin-api/axiosConfig";
 import { productApi } from "../../../services/admin-api/productApi";
+import "./ProductsPage.css";
 
 interface Product extends AdminProduct {
   [key: string]: string | number | boolean | undefined;
@@ -17,10 +17,7 @@ interface Category {
   isActive: boolean;
   children?: Category[];
 }
-interface Option {
-  _id: string;
-  path: string;
-}
+
 const findNode = (nodes: Category[], id: string): Category | undefined => {
   for (const n of nodes) {
     if (n._id === id) return n;
@@ -31,13 +28,26 @@ const findNode = (nodes: Category[], id: string): Category | undefined => {
   }
   return undefined;
 };
+
+const findLeaf = (nodes: Category[]): Category | null => {
+  for (const n of nodes) {
+    if (!n.children || n.children.length === 0) return n;
+    const leaf = findLeaf(n.children);
+    if (leaf) return leaf;
+  }
+  return null;
+};
+
 const ProductsPage: React.FC = () => {
-  const { categoryId } = useParams();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { categoryId: paramCatId } = useParams<{ categoryId?: string }>();
+
+  // STATES
   const [categories, setCategories] = useState<Category[]>([]);
-  const [options, setOptions] = useState<Option[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
-  const [productType, setProductType] = useState<'pet' | 'tool'>('tool');
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
+  const [productType, setProductType] = useState<"pet" | "tool">("tool");
+  const [products, setProducts] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     isActive: true,
     stock: 0,
@@ -48,178 +58,189 @@ const ProductsPage: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get('/categories');
-        console.log('Categories response:', response.data);
-        setCategories(response.data.data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
+    api
+      .get("/categories")
+      .then(({ data }) => setCategories(data.data))
+      .catch((err) => console.error("Fetch categories error:", err));
+  }, []);
 
-    const fetchProducts = async () => {
-      try {
-        const response = await api.get('/products', {
-          params: { categoryId },
-        });
-        setProducts(response.data.data.products);
-        const cat = findNode(categories, categoryId);
-        if (cat) setProductType(cat.type);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-
-    fetchCategories();
-    fetchProducts();
-  }, [categoryId]);
-
+  // Khi categories có dữ liệu, chọn default category (param hoặc leaf đầu tiên)
   useEffect(() => {
-    const opts: Option[] = [];
-    const traverse = (nodes: Category[], parent: string) => {
-      nodes.forEach(n => {
-        const curr = parent ? `${parent}/${n.name}` : n.name;
-        if (n.children && n.children.length) {
-          traverse(n.children, curr);
-        } else {
-          opts.push({ _id: n._id, path: curr });
-        }
-      });
-    };
-    traverse(categories, '');
-    setOptions(opts);
-  }, [categories]);
+    if (!categories.length) return;
 
-  // Update page title based on category
+    const defaultCat =
+      (paramCatId && findNode(categories, paramCatId)) || findLeaf(categories);
+
+    if (defaultCat) {
+      setSelectedCategory(defaultCat);
+    }
+  }, [categories, paramCatId]);
+
+  // 3) Mỗi khi selectedCategory thay đổi → 
+  //     reset form mới theo type  
+  //     fetch products cho category đó  
   useEffect(() => {
-    const currentCategory = categories.find((cat) => cat._id === categoryId);
-    document.title = currentCategory
-      ? `${currentCategory.name} Products - Pet Kingdom Admin`
-      : "All Products - Pet Kingdom Admin";
-  }, [categoryId, categories]);
+    if (!selectedCategory) return;
 
+    // cập nhật type & reset newProduct
+    setProductType(selectedCategory.type);
+    setNewProduct({
+      categoryId: selectedCategory._id,
+      isActive: true,
+      stock: selectedCategory.type === "pet" ? 1 : 0,
+      price: 0,
+    });
+
+    // fetch products
+    api
+      .get("/products", { params: { category: selectedCategory._id } })
+      .then(({ data }) => setProducts(data.data.products))
+      .catch((err) => console.error("Fetch products error:", err));
+  }, [selectedCategory]);
+
+  // HANDLER khi user chọn category khác trong <select>
+  const handleCategoryChange = (catId: string) => {
+    const cat = findNode(categories, catId);
+    if (cat) {
+      setSelectedCategory(cat);
+    }
+  };
+
+  // UPDATE document.title
+  useEffect(() => {
+    if (selectedCategory) {
+      document.title = `${selectedCategory.name} Products - Pet Kingdom Admin`;
+    } else {
+      document.title = "All Products - Pet Kingdom Admin";
+    }
+  }, [selectedCategory]);
+
+  // IMAGE UPLOAD
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setSelectedImage(file);
+
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
       const uploadRes = await productApi.uploadImage(formData);
-      setNewProduct(prev => ({ ...prev, imageUrl: uploadRes.url }));
+      setNewProduct((prev) => ({ ...prev, imageUrl: uploadRes.url }));
     } catch (err) {
-      console.error('Error uploading image:', err);
-      alert('Failed to upload image');
+      console.error("Error uploading image:", err);
+      alert("Failed to upload image");
     }
   };
 
-  const handleCategoryChange = (categoryId: string) => {
-    const category = findNode(categories, categoryId);
-    setSelectedCategory(category);
-    const type = category?.type || 'tool';
-    setProductType(type);
-
-    setNewProduct({
-      ...newProduct,
-      categoryId,
-      // Reset type-specific fields
-      birthday: undefined,
-      gender: undefined,
-      vaccinated: undefined,
-      brand: undefined,
-      // Set appropriate stock
-      stock: type === 'pet' ? 1 : 0,
-    });
-  };
-
+  // ADD NEW PRODUCT
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    // A. Validate
-    if (productType === 'pet') {
-      if (!newProduct.birthday || !newProduct.gender || newProduct.vaccinated === undefined) {
-        alert('Fill Birthday, Gender, Vaccination');
+
+    // validate
+    if (productType === "pet") {
+      if (
+        !newProduct.birthday ||
+        !newProduct.gender ||
+        newProduct.vaccinated === undefined
+      ) {
+        alert("Fill Birthday, Gender, Vaccination");
         return;
       }
     } else {
-      if (!newProduct.brand || newProduct.stock === undefined || newProduct.stock < 0) {
-        alert('Fill Brand và Stock >= 0');
+      if (
+        !newProduct.brand ||
+        newProduct.stock === undefined ||
+        newProduct.stock < 0
+      ) {
+        alert("Fill Brand và Stock >= 0");
         return;
       }
     }
 
-    // B. Build payload
+    // build payload
     const payload: any = {
       name: newProduct.name,
       description: newProduct.description,
       price: newProduct.price,
       categoryId: newProduct.categoryId,
       type: productType,
-      stock: productType === 'pet' ? 1 : newProduct.stock,
+      stock: productType === "pet" ? 1 : newProduct.stock,
       imageUrl: newProduct.imageUrl,
       isActive: newProduct.isActive,
     };
-    if (productType === 'pet') {
+    if (productType === "pet") {
       payload.birthday = newProduct.birthday;
       payload.gender = newProduct.gender;
       payload.vaccinated = newProduct.vaccinated;
     }
-    if (productType === 'tool') {
+    if (productType === "tool") {
       payload.brand = newProduct.brand;
     }
 
     try {
       const res = await productApi.createProduct(payload);
       if (res.success) {
-        // C. Reset form + reload list
-        setNewProduct({ isActive: true, stock: productType === 'pet' ? 1 : 0, price: 0 });
+        // reset form + reload list
+        setNewProduct({
+          isActive: true,
+          stock: productType === "pet" ? 1 : 0,
+          price: 0,
+        });
         setSelectedImage(null);
-        const prodRes = await productApi.getProducts({ category: categoryId });
-        setProducts(prodRes.data.products);
+
+        // gọi lại fetch products qua selectedCategory
+        if (selectedCategory) {
+          api
+            .get("/products", {
+              params: { category: selectedCategory._id },
+            })
+            .then(({ data }) => setProducts(data.data.products))
+            .catch(console.error);
+        }
       } else {
-        alert('Create failed: ' + res.message);
+        alert("Create failed: " + res.message);
       }
     } catch (err) {
-      console.error('Error creating product:', err);
-      alert('Error creating product');
+      console.error("Error creating product:", err);
+      alert("Error creating product");
     }
   };
 
+  // UPDATE PRODUCT (chỉ mock state)
   const handleUpdateProduct = (id: string, updates: Partial<Product>) => {
-    // TODO: Implement API call to update product
-    setProducts(products.map((prod) => (prod.id === id ? { ...prod, ...updates } : prod)));
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
+    );
   };
 
+  // DELETE PRODUCT
   const handleDeleteProduct = async (id: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xoá sản phẩm này không?')) {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?"))
       return;
-    }
-
     try {
       const res = await productApi.deleteProduct(id);
       if (res.success) {
-        setProducts(prev => prev.filter(prod => prod.id !== id));
+        setProducts((prev) => prev.filter((p) => p.id !== id));
       } else {
-        alert('Xoá thất bại: ' + res.message);
+        alert("Xoá thất bại: " + res.message);
       }
     } catch (err) {
-      console.error('Error deleting product:', err);
-      alert('Đã có lỗi khi xoá sản phẩm.');
+      console.error("Error deleting product:", err);
+      alert("Đã có lỗi khi xoá sản phẩm.");
     }
   };
 
+  // EDIT MODAL
   const handleEditClick = (product: Product) => {
     setSelectedProduct(product);
     setIsEditModalOpen(true);
   };
-
   const handleModalClose = () => {
     setSelectedProduct(null);
     setIsEditModalOpen(false);
   };
-
-  const handleSaveProduct = (updatedProduct: Product) => {
-    handleUpdateProduct(updatedProduct.id, updatedProduct);
+  const handleSaveProduct = (updated: Product) => {
+    handleUpdateProduct(updated.id, updated);
   };
 
   return (
@@ -229,33 +250,24 @@ const ProductsPage: React.FC = () => {
       </div>
 
       <div className="products-grid">
+        {/* —————————————————————— ADD FORM —————————————————————— */}
         <form onSubmit={handleAddProduct} className="add-product-form">
           <h2>Add new product</h2>
 
+          {/* Category */}
           <div className="form-group">
-            <label htmlFor="productName">Product Name</label>
-            <input
-              id="productName"
-              type="text"
-              placeholder="Product Name"
-              value={newProduct.name || ""}
-              onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-          <label htmlFor="productCategory">Category</label>
+            <label htmlFor="productCategory">Category</label>
             <select
               id="productCategory"
-              value={newProduct.categoryId || ""}
-              onChange={e => handleCategoryChange(e.target.value)}
+              value={selectedCategory?._id || ""}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               required
             >
-              {categories.map(parent => (
+
+              {categories.map((parent) =>
                 parent.children && parent.children.length ? (
                   <optgroup key={parent._id} label={parent.name}>
-                    {parent.children.map(child => (
+                    {parent.children.map((child) => (
                       <option key={child._id} value={child._id}>
                         {child.name}
                       </option>
@@ -266,23 +278,44 @@ const ProductsPage: React.FC = () => {
                     {parent.name}
                   </option>
                 )
-              ))}
+              )}
             </select>
           </div>
 
+          {/* Name */}
+          <div className="form-group">
+            <label htmlFor="productName">Product Name</label>
+            <input
+              id="productName"
+              type="text"
+              placeholder="Product Name"
+              value={newProduct.name || ""}
+              onChange={(e) =>
+                setNewProduct((prev) => ({ ...prev, name: e.target.value }))
+              }
+              required
+            />
+          </div>
+
+          {/* Description */}
           <div className="form-group">
             <label htmlFor="productDescription">Description</label>
             <textarea
               id="productDescription"
               placeholder="Description"
               value={newProduct.description || ""}
-              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+              onChange={(e) =>
+                setNewProduct((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               required
             />
           </div>
 
-          {/* Pet-specific fields */}
-          {productType === 'pet' && (
+          {/* Pet-specific */}
+          {productType === "pet" && (
             <>
               <div className="form-group">
                 <label htmlFor="productBirthday">Birthday</label>
@@ -290,7 +323,12 @@ const ProductsPage: React.FC = () => {
                   id="productBirthday"
                   type="date"
                   value={newProduct.birthday || ""}
-                  onChange={(e) => setNewProduct({ ...newProduct, birthday: e.target.value })}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      birthday: e.target.value,
+                    }))
+                  }
                   required
                 />
               </div>
@@ -300,10 +338,12 @@ const ProductsPage: React.FC = () => {
                 <select
                   id="productGender"
                   value={newProduct.gender || ""}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    gender: e.target.value as "male" | "female",
-                  })}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      gender: e.target.value as "male" | "female",
+                    }))
+                  }
                   required
                 >
                   <option value="">Select Gender</option>
@@ -316,11 +356,17 @@ const ProductsPage: React.FC = () => {
                 <label htmlFor="productVaccinated">Vaccination Status</label>
                 <select
                   id="productVaccinated"
-                  value={newProduct.vaccinated !== undefined ? String(newProduct.vaccinated) : ""}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    vaccinated: e.target.value === "true",
-                  })}
+                  value={
+                    newProduct.vaccinated !== undefined
+                      ? String(newProduct.vaccinated)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      vaccinated: e.target.value === "true",
+                    }))
+                  }
                   required
                 >
                   <option value="">Select Vaccination Status</option>
@@ -341,16 +387,21 @@ const ProductsPage: React.FC = () => {
             </>
           )}
 
-          {/* Tool-specific fields */}
-          {productType === 'tool' && (
+          {/* Tool-specific */}
+          {productType === "tool" && (
             <>
               <div className="form-group">
                 <label htmlFor="productBrand">Brand</label>
                 <input
                   id="productBrand"
                   type="text"
-                  value={typeof newProduct.brand === "string" ? newProduct.brand : (typeof newProduct.brand === "number" ? String(newProduct.brand) : "")}
-                  onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
+                  value={newProduct.brand || ""}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      brand: e.target.value,
+                    }))
+                  }
                   required
                 />
               </div>
@@ -361,17 +412,20 @@ const ProductsPage: React.FC = () => {
                   id="productStock"
                   type="number"
                   min="0"
-                  value={typeof newProduct.stock === "number" ? newProduct.stock : (typeof newProduct.stock === "string" ? newProduct.stock : "")}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    stock: Number(e.target.value),
-                  })}
+                  value={newProduct.stock ?? ""}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      stock: Number(e.target.value),
+                    }))
+                  }
                   required
                 />
               </div>
             </>
           )}
 
+          {/* Price */}
           <div className="form-group">
             <label htmlFor="productPrice">Price (VND)</label>
             <input
@@ -379,15 +433,18 @@ const ProductsPage: React.FC = () => {
               type="number"
               min="0"
               step="1000"
-              value={newProduct.price}
-              onChange={(e) => setNewProduct({
-                ...newProduct,
-                price: parseInt(e.target.value),
-              })}
+              value={newProduct.price ?? ""}
+              onChange={(e) =>
+                setNewProduct((prev) => ({
+                  ...prev,
+                  price: parseInt(e.target.value, 10),
+                }))
+              }
               required
             />
           </div>
 
+          {/* Image */}
           <div className="form-group">
             <label htmlFor="productImage">Product Image</label>
             <input
@@ -409,6 +466,7 @@ const ProductsPage: React.FC = () => {
           <button type="submit">Add Product</button>
         </form>
 
+        {/* —————————————————————— LIST PRODUCTS —————————————————————— */}
         <div className="products-list">
           {products.map((product) => (
             <div key={product.id} className="product-item">
@@ -427,10 +485,13 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${product.isActive ? "active" : "inactive"}`}
-                  onClick={() => handleUpdateProduct(product.id, {
-                    isActive: !product.isActive,
-                  })}
+                  className={`status-btn ${product.isActive ? "active" : "inactive"
+                    }`}
+                  onClick={() =>
+                    handleUpdateProduct(product.id, {
+                      isActive: !product.isActive,
+                    })
+                  }
                 >
                   {product.isActive ? "Active" : "Inactive"}
                 </button>
@@ -452,6 +513,7 @@ const ProductsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* EDIT MODAL */}
       <ProductEditModal
         product={selectedProduct}
         categories={categories}
