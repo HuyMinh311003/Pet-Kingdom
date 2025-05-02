@@ -11,6 +11,8 @@ export interface Product {
   age?: number;
   gender?: 'male' | 'female';
   vaccinated?: boolean;
+  brand?: string;
+  type?: string
 }
 
 export interface Category {

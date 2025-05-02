@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
-import { Product as AdminProduct } from "../../../types/admin";
-import api from "../../../services/admin-api/axiosConfig";
+import { Product } from "../../../types/admin";
+import { categoryApi } from "../../../services/admin-api/categoryApi";
 import { productApi } from "../../../services/admin-api/productApi";
 import "./ProductsPage.css";
 
-interface Product extends AdminProduct {
-  [key: string]: string | number | boolean | undefined;
-}
 
 interface Category {
   _id: string;
@@ -57,14 +54,19 @@ const ProductsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // 1) Load all categories (active only)
   useEffect(() => {
-    api
-      .get("/categories")
-      .then(({ data }) => setCategories(data.data))
+    categoryApi
+      .getCategories()
+      .then((res) => {
+        if (res.success) {
+          setCategories(res.data);
+        }
+      })
       .catch((err) => console.error("Fetch categories error:", err));
   }, []);
 
-  // Khi categories có dữ liệu, chọn default category (param hoặc leaf đầu tiên)
+  // 2) Choose default category once categories arrive
   useEffect(() => {
     if (!categories.length) return;
 
@@ -91,14 +93,18 @@ const ProductsPage: React.FC = () => {
       price: 0,
     });
 
-    // fetch products
-    api
-      .get("/products", { params: { category: selectedCategory._id } })
-      .then(({ data }) => setProducts(data.data.products))
+    // fetch products for that category
+    productApi
+      .getProductsByCategory(selectedCategory._id)
+      .then((res) => {
+        if (res.success) {
+          setProducts(res.data.products);
+        }
+      })
       .catch((err) => console.error("Fetch products error:", err));
   }, [selectedCategory]);
 
-  // HANDLER khi user chọn category khác trong <select>
+  // 4) Handler khi user chọn category khác từ dropdown
   const handleCategoryChange = (catId: string) => {
     const cat = findNode(categories, catId);
     if (cat) {
@@ -106,7 +112,7 @@ const ProductsPage: React.FC = () => {
     }
   };
 
-  // UPDATE document.title
+  // 5) Update document.title
   useEffect(() => {
     if (selectedCategory) {
       document.title = `${selectedCategory.name} Products - Pet Kingdom Admin`;
@@ -188,14 +194,13 @@ const ProductsPage: React.FC = () => {
         });
         setSelectedImage(null);
 
-        // gọi lại fetch products qua selectedCategory
         if (selectedCategory) {
-          api
-            .get("/products", {
-              params: { category: selectedCategory._id },
-            })
-            .then(({ data }) => setProducts(data.data.products))
-            .catch(console.error);
+          const listRes = await productApi.getProductsByCategory(
+            selectedCategory._id
+          );
+          if (listRes.success) {
+            setProducts(listRes.data.products);
+          }
         }
       } else {
         alert("Create failed: " + res.message);

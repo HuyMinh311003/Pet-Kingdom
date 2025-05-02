@@ -36,7 +36,25 @@ export const productApi = {
     return response.data;
   },
 
-  uploadImage: async (imageData: FormData) => {
+  getProductsByCategory: async (
+    categoryId: string
+  ): Promise<{
+    success: boolean;
+    data: { products: Product[]; pagination?: any };
+    message?: string;
+  }> => {
+    const response = await api.get('/products', {
+      params: { category: categoryId }
+    });
+    return response.data;
+  },
+
+  // uploadImage rồi trả về đúng url
+  uploadImage: async (imageData: FormData): Promise<{
+    success: boolean;
+    url: string;
+    message?: string;
+  }> => {
     const response = await api.post('/products/upload', imageData);
     return response.data;
   },

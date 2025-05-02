@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './ProductEditModal.css';
-import { Product as AdminProduct } from '../../../types/admin';
+import { Product } from '../../../types/admin';
 
-interface Product extends AdminProduct {
-  [key: string]: string | number | boolean | undefined;
-}
+
 
 interface Category {
   _id: string;
