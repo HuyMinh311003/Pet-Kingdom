@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Category } from '../../../types/admin';
 import SidebarPreview from '../../../components/admin/categories/SidebarPreview';
 import CategoryForm from '../../../components/admin/categories/CategoryForm';
-import { api } from '../../../services/customer-api/api';
+import { categoryApi } from '../../../services/admin-api/categoryApi';
 import './CategoriesPage.css';
 
 const CategoriesPage: React.FC = () => {
@@ -23,10 +23,9 @@ const CategoriesPage: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/categories?includeInactive=true');
-      if (response.data.success) {
-        // We get a properly organized tree from the backend now
-        setCategories(response.data.data);
+      const res = await categoryApi.getCategories(true);
+      if (res.success) {
+        setCategories(res.data);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -49,15 +48,11 @@ const CategoriesPage: React.FC = () => {
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await api.post('/categories', newCategory);
-      if (response.data.success) {
-        await fetchCategories(); // Refresh full category tree
+      const res = await categoryApi.createCategory(newCategory);
+      if (res.success) {
+        await fetchCategories();
         setIsAddingCategory(false);
-        setNewCategory({
-          type: 'pet',
-          isActive: true,
-          order: 0,
-        });
+        setNewCategory({ type: 'pet', isActive: true, order: 0 });
       }
     } catch (error) {
       console.error('Error adding category:', error);
@@ -69,9 +64,9 @@ const CategoriesPage: React.FC = () => {
     if (!selectedCategory?._id) return;
 
     try {
-      const response = await api.put(`/categories/${selectedCategory._id}`, selectedCategory);
-      if (response.data.success) {
-        await fetchCategories(); // Refresh full category tree
+      const res = await categoryApi.updateCategory(selectedCategory._id, selectedCategory);
+      if (res.success) {
+        await fetchCategories();
         setSelectedCategory(null);
       }
     } catch (error) {
@@ -80,14 +75,18 @@ const CategoriesPage: React.FC = () => {
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this category? This action cannot be undone.'
+      )
+    ) {
       return;
     }
-    
+
     try {
-      const response = await api.delete(`/categories/${id}`);
-      if (response.data.success) {
-        await fetchCategories(); // Refresh full category tree
+      const res = await categoryApi.deleteCategory(id);
+      if (res.success) {
+        await fetchCategories();
         setSelectedCategory(null);
       }
     } catch (error) {
@@ -98,9 +97,9 @@ const CategoriesPage: React.FC = () => {
 
   const handleStatusToggle = async (id: string) => {
     try {
-      const response = await api.patch(`/categories/${id}/toggle-status`);
-      if (response.data.success) {
-        await fetchCategories(); // Refresh full category tree
+      const res = await categoryApi.toggleCategoryStatus(id);
+      if (res.success) {
+        await fetchCategories();
       }
     } catch (error) {
       console.error('Error toggling category status:', error);
@@ -147,7 +146,9 @@ const CategoriesPage: React.FC = () => {
               category={newCategory}
               availableParents={availableParents}
               onSubmit={handleAddCategory}
-              onChange={updates => setNewCategory(current => ({ ...current, ...updates }))}
+              onChange={updates =>
+                setNewCategory(current => ({ ...current, ...updates }))
+              }
               onCancel={() => setIsAddingCategory(false)}
               submitText="Add Category"
               isNew={true}
@@ -157,16 +158,21 @@ const CategoriesPage: React.FC = () => {
               category={selectedCategory}
               availableParents={availableParents}
               onSubmit={handleUpdateCategory}
-              onChange={updates => setSelectedCategory(current => 
-                current ? { ...current, ...updates } : null
-              )}
+              onChange={updates =>
+                setSelectedCategory(current =>
+                  current ? { ...current, ...updates } : null
+                )
+              }
               onCancel={() => setSelectedCategory(null)}
               submitText="Update Category"
             />
           ) : (
             <div className="no-selection">
               <h2>No Category Selected</h2>
-              <p>Select a category from the preview to edit it, or click "Add New Category" to create one.</p>
+              <p>
+                Select a category from the preview to edit it, or click "Add New
+                Category" to create one.
+              </p>
             </div>
           )}
         </div>

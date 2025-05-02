@@ -1,24 +1,50 @@
-import { Category, CategoryResponse } from '../../types/category';
-import { api } from '../customer-api/api';
+import api from './axiosConfig';
+import { Category } from '../../types/admin';
 
-export const categoryService = {
-    getCategoriesByType: async (type: 'pets' | 'tools'): Promise<Category[]> => {
-        try {
-            const response = await api.get<CategoryResponse>(`/categories?type=${type}`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-            return [];
-        }
-    },
+export const categoryApi = {
+  // Lấy full cây danh mục, với tuỳ chọn includeInactive
+  getCategories: async (includeInactive = false): Promise<{
+    success: boolean;
+    data: Category[];
+  }> => {
+    const response = await api.get('/categories', {
+      params: { includeInactive }
+    });
+    return response.data;
+  },
 
-    getCategoryChildren: async (categoryId: string): Promise<Category[]> => {
-        try {
-            const response = await api.get<CategoryResponse>(`/categories/${categoryId}/children`);
-            return response.data.data;
-        } catch (error) {
-            console.error('Error fetching category children:', error);
-            return [];
-        }
-    }
+  createCategory: async (category: Partial<Category>): Promise<{
+    success: boolean;
+    data: Category;
+    message?: string;
+  }> => {
+    const response = await api.post('/categories', category);
+    return response.data;
+  },
+
+  updateCategory: async (id: string, updates: Partial<Category>): Promise<{
+    success: boolean;
+    data: Category;
+    message?: string;
+  }> => {
+    const response = await api.put(`/categories/${id}`, updates);
+    return response.data;
+  },
+
+  deleteCategory: async (id: string): Promise<{
+    success: boolean;
+    message?: string;
+  }> => {
+    const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
+
+  toggleCategoryStatus: async (id: string): Promise<{
+    success: boolean;
+    data: { id: string; isActive: boolean };
+    message?: string;
+  }> => {
+    const response = await api.patch(`/categories/${id}/toggle-status`);
+    return response.data;
+  },
 };
