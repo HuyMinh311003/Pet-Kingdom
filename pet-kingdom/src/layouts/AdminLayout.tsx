@@ -1,14 +1,13 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import AdminSidebar from '../components/admin/sidebar/AdminSidebar';
-import { UserRole } from '../types/role';
-import './AdminLayout.css';
+import React, { useContext } from "react";
+import { Outlet } from "react-router-dom";
+import AdminSidebar from "../components/admin/sidebar/AdminSidebar";
+import { UserRoleContext } from "../contexts/UserRoleContext";
+import "./AdminLayout.css";
 
-interface Props {
-  userRole: UserRole;
-}
+const AdminLayout: React.FC = () => {
+  const { userRole } = useContext(UserRoleContext);
 
-const AdminLayout: React.FC<Props> = ({ userRole }) => {
+  if (!userRole) return null;
 
   return (
     <div className="admin-layout">

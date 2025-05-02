@@ -78,7 +78,9 @@ const ProductsPage: React.FC = () => {
     }
   }, [categories, paramCatId]);
 
-  // 3) When selectedCategory changes → reset form + fetch products
+  // 3) Mỗi khi selectedCategory thay đổi →
+  //     reset form mới theo type
+  //     fetch products cho category đó
   useEffect(() => {
     if (!selectedCategory) return;
 
@@ -266,7 +268,6 @@ const ProductsPage: React.FC = () => {
               onChange={(e) => handleCategoryChange(e.target.value)}
               required
             >
-
               {categories.map((parent) =>
                 parent.children && parent.children.length ? (
                   <optgroup key={parent._id} label={parent.name}>
@@ -488,8 +489,9 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${product.isActive ? "active" : "inactive"
-                    }`}
+                  className={`status-btn ${
+                    product.isActive ? "active" : "inactive"
+                  }`}
                   onClick={() =>
                     handleUpdateProduct(product.id, {
                       isActive: !product.isActive,

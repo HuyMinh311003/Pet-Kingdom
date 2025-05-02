@@ -57,10 +57,10 @@ export default function ProfilePage() {
           <Routes>
             {/* Khi vào /profile, hiển thị tab PersonalInfo */}
             <Route index element={<PersonalInfo />} />
-            <Route path="orders" element={<OrderList role="profile" />} />
+            <Route path="orders" element={<OrderList role="Customer" />} />
             <Route
               path="orders/:id"
-              element={<OrderDetailPage role="profile" />}
+              element={<OrderDetailPage role="Customer" />}
             />
             {/* <Route path="wishlist" element={<Wishlist />} /> */}
             {/* <Route path="promo-codes" element={<PromoCodes />} /> */}

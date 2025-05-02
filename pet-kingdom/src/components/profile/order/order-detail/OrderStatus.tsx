@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { UserRole } from "../../../../types/role";
 import {
   Dialog,
   DialogTitle,
@@ -7,6 +8,7 @@ import {
   Button,
 } from "@mui/material";
 import "./OrderDetailPage.css";
+import { orderApi } from "../../../../services/admin-api/orderApi";
 
 const getNextStatuses = (current: string) => {
   switch (current) {
@@ -16,27 +18,42 @@ const getNextStatuses = (current: string) => {
       return ["Đang giao", "Đã hủy"];
     case "Đang giao":
       return ["Đã giao", "Đã hủy"];
-    case "Đã giao":
-      return [];
-    case "Đã hủy":
-      return [];
     default:
       return [];
   }
 };
 
 type Props = {
-  role: "admin" | "profile";
+  role: UserRole;
   initialStatus: string;
+  viewMode: "assigned-orders" | "shipper-orders" | "default";
   onStatusChange: (newStatus: string) => void;
+  orderId: string;
 };
 
-const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
+const OrderStatus = ({
+  role,
+  initialStatus,
+  viewMode,
+  onStatusChange,
+  orderId,
+}: Props) => {
   const [previousStatus, setPreviousStatus] = useState<string | undefined>();
   const [currentStatus, setCurrentStatus] = useState(initialStatus);
-  const [selectedStatus, setSelectedStatus] = useState(currentStatus);
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // admin confirm
-  const [openCancelDialog, setOpenCancelDialog] = useState(false); // customer confirm
+  const [selectedStatus, setSelectedStatus] = useState(initialStatus);
+
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
+
+  //Shipper select order
+  const handleSelectOrder = async () => {
+    try {
+      await orderApi.assignOrderToShipper(orderId);
+      setOpenConfirmDialog(false);
+    } catch (error) {
+      console.error("Error assigning order", error);
+    }
+  };
 
   const handleAdminUpdate = () => {
     if (selectedStatus !== currentStatus) {
@@ -45,17 +62,14 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
   };
 
   const confirmAdminChange = () => {
-    setPreviousStatus(currentStatus);
+    setPreviousStatus(currentStatus); //lưu lại trước khi cập nhật để nếu bấm hủy thì nó nhảy sang kế tiếp, xong nó sẽ lùi và hủy
     setCurrentStatus(selectedStatus);
     onStatusChange(selectedStatus);
     setOpenConfirmDialog(false);
   };
 
   const handleCustomerClick = () => {
-    // Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "Chờ xác nhận"
-    if (currentStatus === "Chờ xác nhận") {
-      setOpenCancelDialog(true);
-    }
+    setOpenCancelDialog(true);
   };
 
   const confirmCustomerCancel = () => {
@@ -70,23 +84,72 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
     setOpenCancelDialog(false);
   };
 
-  // ADMIN VIEW
-  if (role === "admin") {
+  if (viewMode === "assigned-orders") {
+    // Shipper can only select the order
+    return (
+      <div className="order-status">
+        <div className="order-subtitle">Trạng thái đơn hàng: </div>
+        <span style={{ fontSize: "18px", margin: "0 20px" }}>
+          {currentStatus}
+        </span>
+        <button
+          className="order-status-button"
+          onClick={() => setOpenConfirmDialog(true)}
+        >
+          Chọn đơn hàng
+        </button>
+
+        {/* Confirm Select Order Dialog */}
+        <Dialog
+          open={openConfirmDialog}
+          onClose={cancelDialogs}
+          sx={{
+            "& .MuiPaper-root": {
+              borderRadius: "16px",
+              backgroundColor: "#fff",
+              width: "500px",
+              height: "200px",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{ fontWeight: "bold", fontSize: "20px", marginTop: "10px" }}
+          >
+            Xác nhận chọn đơn hàng
+          </DialogTitle>
+          <DialogContentText
+            sx={{ fontSize: "16px", color: "#444", pb: 2 }}
+            style={{ padding: "0 24px" }}
+          >
+            Bạn có chắc chắn muốn chọn đơn hàng này?
+          </DialogContentText>
+          <DialogActions sx={{ justifyContent: "flex-end", marginTop: "40px" }}>
+            <Button onClick={cancelDialogs}>Không</Button>
+            <Button
+              onClick={() => {
+                handleSelectOrder();
+              }}
+              autoFocus
+            >
+              Có
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    );
+  }
+
+  // Shipper (after select order) and Admin can change status
+  if (role === "Admin" || viewMode === "shipper-orders") {
     const nextOptions = getNextStatuses(currentStatus);
 
     return (
       <div className="order-status">
         <div className="order-subtitle">Trạng thái đơn hàng: </div>
         <select
-          style={{
-            margin: "0px 20px",
-            padding: "8px",
-            borderRadius: "0.375rem",
-            width: "10%",
-          }}
+          className="order-status-select"
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
-          disabled={nextOptions.length === 0}
         >
           <option value={currentStatus}>{currentStatus}</option>
           {nextOptions.map((status) => (
@@ -96,9 +159,9 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
           ))}
         </select>
         <button
-          className="status-button"
+          className="order-status-button"
           onClick={handleAdminUpdate}
-          disabled={selectedStatus === currentStatus || nextOptions.length === 0}
+          disabled={selectedStatus === currentStatus}
         >
           Cập nhật
         </button>
@@ -138,7 +201,7 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
     );
   }
 
-  // CUSTOMER VIEW
+  // Customer can only cancel the order if status is "Chờ xác nhận"
   return (
     <div className="order-status">
       <div className="order-subtitle">Trạng thái đơn hàng: </div>
@@ -146,7 +209,7 @@ const OrderStatus = ({ role, initialStatus, onStatusChange }: Props) => {
         {currentStatus}
       </span>
       <button
-        className="status-button"
+        className="order-status-button"
         onClick={handleCustomerClick}
         disabled={currentStatus !== "Chờ xác nhận"}
       >
