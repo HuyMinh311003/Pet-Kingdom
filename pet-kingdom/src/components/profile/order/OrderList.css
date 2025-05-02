@@ -20,13 +20,13 @@
   gap: 50px;
 }
 
-.pagination {
+.order-pagination {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
-.pagination button {
+.order-pagination button {
   margin: 0 5px;
   height: 30px;
   width: 30px;
@@ -36,13 +36,14 @@
   border-radius: 5px;
 }
 
-.pagination .active {
+.order-pagination .active {
   background-color: #ffc371;
   color: white;
   font-weight: bold;
+  border: none;
 }
 
-.pagination button:disabled {
+.order-pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

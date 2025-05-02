@@ -1,12 +1,15 @@
 .admin-sidebar {
-  width: 250px;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  background: #1a1c23;
-  color: #fff;
-  padding: 1rem;
   position: fixed;
   left: 0;
   top: 0;
+  width: 250px;
+  background: #1a1c23;
+  color: #fff;
+  padding: 1rem;
+  z-index: 1000;
 }
 
 .sidebar-header {
@@ -53,7 +56,7 @@
 }
 
 .nav-item.active {
-  background: #FFC371;
+  background: #ffc371;
   color: #000;
 }
 
@@ -106,15 +109,15 @@
 }
 
 .nav-subtab:hover {
-  color: #FFC371;
+  color: #ffc371;
   background: rgba(255, 255, 255, 0.1);
-  border-left-color: #FFC371;
+  border-left-color: #ffc371;
 }
 
 .nav-subtab.active {
-  color: #FFC371;
+  color: #ffc371;
   background: rgba(255, 255, 255, 0.05);
-  border-left-color: #FFC371;
+  border-left-color: #ffc371;
 }
 
 .nav-item-icon {
@@ -166,4 +169,33 @@
 
 .nav-item-with-subtabs {
   position: relative;
+}
+
+/* Logout */
+.logout-button-container {
+  margin-top: auto;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: left;
+}
+
+.logout-button:hover {
+  background-color: #e04343;
+}
+
+.logout-button .lucide-log-out {
+  font-size: 18px;
 }

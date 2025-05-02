@@ -259,7 +259,6 @@ const StaffPage: React.FC = () => {
                       <button
                         className="edit-btn"
                         onClick={() => handleEditStaff(member)}
-                        style={{ backgroundColor: "#e0f2fe", color: "#0369a1" }}
                       >
                         Edit
                       </button>
