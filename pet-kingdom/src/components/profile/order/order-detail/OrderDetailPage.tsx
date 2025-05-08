@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { UserRole } from "../../../../types/role";
+import { Order } from "../../../../types/order";
+import { orderApi } from "../../../../services/admin-api/orderApi";
 import OrderProgressBar from "./OrderProgressBar";
 import OrderStatus from "./OrderStatus";
 import OrderInfo from "./OrderInfo";
 import OrderProductList from "./OrderProductList";
-import { orderApi } from "../../../../services/admin-api/orderApi";
 import "./OrderDetailPage.css";
-import { Order } from "../../../../types/order";
 
 type ViewMode = "assigned-orders" | "shipper-orders" | "default";
 

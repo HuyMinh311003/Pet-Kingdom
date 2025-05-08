@@ -61,22 +61,40 @@ const OrderStatus = ({
     }
   };
 
-  const confirmAdminChange = () => {
-    setPreviousStatus(currentStatus); //lưu lại trước khi cập nhật để nếu bấm hủy thì nó nhảy sang kế tiếp, xong nó sẽ lùi và hủy
-    setCurrentStatus(selectedStatus);
-    onStatusChange(selectedStatus);
-    setOpenConfirmDialog(false);
+  const confirmAdminChange = async () => {
+    try {
+      await orderApi.updateOrderStatus(orderId, {
+        status: selectedStatus,
+      });
+
+      setPreviousStatus(currentStatus); //lưu lại trước khi cập nhật để nếu bấm hủy thì nó nhảy sang kế tiếp, xong nó sẽ lùi và hủy
+      setCurrentStatus(selectedStatus);
+      onStatusChange(selectedStatus);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    } finally {
+      setOpenConfirmDialog(false);
+    }
   };
 
   const handleCustomerClick = () => {
     setOpenCancelDialog(true);
   };
 
-  const confirmCustomerCancel = () => {
-    setPreviousStatus(currentStatus);
-    setCurrentStatus("Đã hủy");
-    onStatusChange("Đã hủy");
-    setOpenCancelDialog(false);
+  const confirmCustomerCancel = async () => {
+    try {
+      await orderApi.updateOrderStatus(orderId, {
+        status: "Đã hủy",
+      });
+
+      setPreviousStatus(currentStatus);
+      setCurrentStatus("Đã hủy");
+      onStatusChange("Đã hủy");
+    } catch (error) {
+      console.error("Error canceling order:", error);
+    } finally {
+      setOpenCancelDialog(false);
+    }
   };
 
   const cancelDialogs = () => {
