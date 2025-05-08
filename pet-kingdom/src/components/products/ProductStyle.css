@@ -337,3 +337,118 @@
         transform: translateY(0);
     }
 }
+
+/* Price Range Slider Styles */
+.price-range-container {
+    padding: 0 10px;
+}
+
+.range-slider {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    margin: 40px 0 60px 0;
+    background: #e5e7eb;
+    border-radius: 5px;
+}
+
+.range-slider .slider-track {
+    height: 5px;
+    position: absolute;
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 5px;
+}
+
+.range-slider .slider-range {
+    height: 5px;
+    position: absolute;
+    background: #FFC371;
+    border-radius: 5px;
+}
+
+.range-slider .thumb {
+    -webkit-appearance: none;
+    pointer-events: none;
+    position: absolute;
+    height: 0;
+    width: 100%;
+    outline: none;
+}
+
+.range-slider .thumb--left {
+    z-index: 3;
+}
+
+.range-slider .thumb--right {
+    z-index: 4;
+}
+
+.range-slider .thumb::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: all;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #FFC371;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.range-slider .thumb::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #FFC371;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    pointer-events: all;
+}
+
+.slider-markers {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 20px;
+}
+
+.slider-mark {
+    position: absolute;
+    width: 2px;
+    height: 10px;
+    background-color: #e5e7eb;
+    transform: translateX(-50%);
+}
+
+.slider-mark-label {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.price-inputs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.price-inputs input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.price-inputs span {
+    color: #6b7280;
+}

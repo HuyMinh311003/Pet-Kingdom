@@ -1,5 +1,7 @@
 .categories-page {
   padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .categories-header {
@@ -12,211 +14,69 @@
 .categories-header h1 {
   font-size: 1.875rem;
   color: #2a292a;
+  margin: 0;
 }
 
 .add-category-btn {
-  background-color: #ffc371;
-  color: white;
   padding: 0.75rem 1.5rem;
+  background: #FFC371;
+  color: white;
   border: none;
   border-radius: 0.5rem;
-  cursor: pointer;
   font-weight: 500;
+  cursor: pointer;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .add-category-btn:hover {
-  background-color: #ffb657;
+  background: #ffb657;
 }
 
-.category-form-container {
-  margin-bottom: 2rem;
-}
-
-.category-form {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  max-width: 600px;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #4b5563;
-  margin-bottom: 0.5rem;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.form-group textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.cancel-btn {
-  padding: 0.75rem 1.5rem;
-  background-color: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  color: #4b5563;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cancel-btn:hover {
-  background-color: #e5e7eb;
-}
-
-.submit-btn {
-  padding: 0.75rem 1.5rem;
-  background-color: #ffc371;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.submit-btn:hover {
-  background-color: #ffb657;
-}
-
-.categories-list {
+.categories-container {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: minmax(300px, 1fr) 2fr;
+  gap: 2rem;
+  align-items: start;
 }
 
-.category-card {
+.preview-container {
+  position: sticky;
+  top: 2rem;
+}
+
+.form-container {
+  min-width: 0;
+}
+
+.no-selection {
   background: white;
+  padding: 3rem 2rem;
   border-radius: 0.75rem;
-  padding: 1.5rem;
+  text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.category-header h3 {
-  margin: 0;
+.no-selection h2 {
+  font-size: 1.5rem;
   color: #2a292a;
-  font-size: 1.25rem;
+  margin: 0 0 1rem;
 }
 
-.type-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.type-badge.pet {
-  background-color: #dbeafe;
-  color: #1e40af;
-}
-
-.type-badge.tool {
-  background-color: #e0f2fe;
-  color: #0369a1;
-}
-
-.category-description {
+.no-selection p {
   color: #6b7280;
-  font-size: 0.875rem;
-  margin: 0 0 1.5rem 0;
+  margin: 0;
   line-height: 1.5;
 }
 
-.category-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.status-toggle-btn,
-.edit-btn,
-.delete-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.status-toggle-btn.activate {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.status-toggle-btn.deactivate {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.status-toggle-btn:hover {
-  opacity: 0.9;
-}
-
-.edit-btn {
-  background-color: #fef9c3;
-  color: #854d0e;
-}
-
-.edit-btn:hover {
-  background-color: #fef08a;
-}
-
-.delete-btn {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.delete-btn:hover {
-  background-color: #fecaca;
-}
-
-@media (max-width: 768px) {
-  .categories-list {
+@media (max-width: 1024px) {
+  .categories-container {
     grid-template-columns: 1fr;
   }
 
-  .category-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+  .preview-container {
+    position: static;
   }
 }

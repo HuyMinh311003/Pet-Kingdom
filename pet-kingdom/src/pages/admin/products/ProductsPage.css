@@ -9,6 +9,14 @@
   margin-bottom: 2rem;
 }
 
+/* group labels muted, leaf options dark */
+.add-product-form select optgroup {
+  color: #6b7280;
+}
+.add-product-form select option {
+  color: #111827;
+}
+
 .products-header h1 {
   font-size: 1.875rem;
   color: #2a292a;

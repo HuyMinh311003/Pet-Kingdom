@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:5000/api';
 
 // Create axios instance
-const api = axios.create({
+const  api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
@@ -72,3 +72,5 @@ export const staffApi = {
   deleteStaff: (id: string) => api.delete(`/users/staff/${id}`),
   toggleStaffStatus: (id: string) => api.patch(`/users/staff/${id}/toggle-status`)
 };
+
+export { api };

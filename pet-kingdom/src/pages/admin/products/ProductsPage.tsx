@@ -1,34 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
+import { Product } from "../../../types/admin";
+import { categoryApi } from "../../../services/admin-api/categoryApi";
+import { productApi } from "../../../services/admin-api/productApi";
 import "./ProductsPage.css";
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: string;
-  stock: number;
-  imageUrl: string;
-  isActive: boolean;
-  birthday?: string;
-  age?: number;
-  gender?: "male" | "female";
-  vaccinated?: boolean;
-}
 
 interface Category {
-  id: string;
+  _id: string;
   name: string;
   type: "pet" | "tool";
   isActive: boolean;
+  children?: Category[];
 }
 
+const findNode = (nodes: Category[], id: string): Category | undefined => {
+  for (const n of nodes) {
+    if (n._id === id) return n;
+    if (n.children) {
+      const hit = findNode(n.children, id);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
+};
+
+const findLeaf = (nodes: Category[]): Category | null => {
+  for (const n of nodes) {
+    if (!n.children || n.children.length === 0) return n;
+    const leaf = findLeaf(n.children);
+    if (leaf) return leaf;
+  }
+  return null;
+};
+
 const ProductsPage: React.FC = () => {
-  const { categoryId } = useParams();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { categoryId: paramCatId } = useParams<{ categoryId?: string }>();
+
+  // STATES
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
+  const [productType, setProductType] = useState<"pet" | "tool">("tool");
+  const [products, setProducts] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     isActive: true,
     stock: 0,
@@ -38,94 +54,198 @@ const ProductsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // 1) Load all categories (active only)
   useEffect(() => {
-    // TODO: Fetch categories and products from API
-    // For now using mock data
-    setCategories([
-      { id: "1", name: "Dogs", type: "pet", isActive: true },
-      { id: "2", name: "Cats", type: "pet", isActive: true },
-      { id: "3", name: "Pet Tools", type: "tool", isActive: true },
-    ]);
+    categoryApi
+      .getCategories()
+      .then((res) => {
+        if (res.success) {
+          setCategories(res.data);
+        }
+      })
+      .catch((err) => console.error("Fetch categories error:", err));
+  }, []);
 
-    // Mock products data
-    const mockProducts = [
-      {
-        id: "1",
-        name: "Golden Retriever Puppy",
-        description: "Friendly and intelligent puppy",
-        price: 15000000,
-        categoryId: "1",
-        stock: 3,
-        imageUrl: "/mock/golden.jpg",
-        isActive: true,
-      },
-      // Add more mock products as needed
-    ];
+  // 2) Choose default category once categories arrive
+  useEffect(() => {
+    if (!categories.length) return;
 
-    // Filter products by category if categoryId is provided
-    if (categoryId) {
-      setProducts(
-        mockProducts.filter((product) => product.categoryId === categoryId)
-      );
+    const defaultCat =
+      (paramCatId && findNode(categories, paramCatId)) || findLeaf(categories);
+
+    if (defaultCat) {
+      setSelectedCategory(defaultCat);
+    }
+  }, [categories, paramCatId]);
+
+  // 3) Mỗi khi selectedCategory thay đổi →
+  //     reset form mới theo type
+  //     fetch products cho category đó
+  useEffect(() => {
+    if (!selectedCategory) return;
+
+    // cập nhật type & reset newProduct
+    setProductType(selectedCategory.type);
+    setNewProduct({
+      categoryId: selectedCategory._id,
+      isActive: true,
+      stock: selectedCategory.type === "pet" ? 1 : 0,
+      price: 0,
+    });
+
+    // fetch products for that category
+    productApi
+      .getProductsByCategory(selectedCategory._id)
+      .then((res) => {
+        if (res.success) {
+          setProducts(res.data.products);
+        }
+      })
+      .catch((err) => console.error("Fetch products error:", err));
+  }, [selectedCategory]);
+
+  // 4) Handler khi user chọn category khác từ dropdown
+  const handleCategoryChange = (catId: string) => {
+    const cat = findNode(categories, catId);
+    if (cat) {
+      setSelectedCategory(cat);
+    }
+  };
+
+  // 5) Update document.title
+  useEffect(() => {
+    if (selectedCategory) {
+      document.title = `${selectedCategory.name} Products - Pet Kingdom Admin`;
     } else {
-      setProducts(mockProducts);
+      document.title = "All Products - Pet Kingdom Admin";
     }
-  }, [categoryId]);
+  }, [selectedCategory]);
 
-  // Update page title based on category
-  useEffect(() => {
-    const currentCategory = categories.find((cat) => cat.id === categoryId);
-    document.title = currentCategory
-      ? `${currentCategory.name} Products - Pet Kingdom Admin`
-      : "All Products - Pet Kingdom Admin";
-  }, [categoryId, categories]);
+  // IMAGE UPLOAD
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedImage(file);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setSelectedImage(e.target.files[0]);
-      // TODO: Implement image upload and get URL
-      setNewProduct({
-        ...newProduct,
-        imageUrl: URL.createObjectURL(e.target.files[0]),
-      });
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRes = await productApi.uploadImage(formData);
+      setNewProduct((prev) => ({ ...prev, imageUrl: uploadRes.url }));
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      alert("Failed to upload image");
     }
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  // ADD NEW PRODUCT
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement API call to add product
-    setProducts([
-      ...products,
-      { ...newProduct, id: Date.now().toString() } as Product,
-    ]);
-    setNewProduct({ isActive: true, stock: 0, price: 0 });
-    setSelectedImage(null);
+
+    // validate
+    if (productType === "pet") {
+      if (
+        !newProduct.birthday ||
+        !newProduct.gender ||
+        newProduct.vaccinated === undefined
+      ) {
+        alert("Fill Birthday, Gender, Vaccination");
+        return;
+      }
+    } else {
+      if (
+        !newProduct.brand ||
+        newProduct.stock === undefined ||
+        newProduct.stock < 0
+      ) {
+        alert("Fill Brand và Stock >= 0");
+        return;
+      }
+    }
+
+    // build payload
+    const payload: any = {
+      name: newProduct.name,
+      description: newProduct.description,
+      price: newProduct.price,
+      categoryId: newProduct.categoryId,
+      type: productType,
+      stock: productType === "pet" ? 1 : newProduct.stock,
+      imageUrl: newProduct.imageUrl,
+      isActive: newProduct.isActive,
+    };
+    if (productType === "pet") {
+      payload.birthday = newProduct.birthday;
+      payload.gender = newProduct.gender;
+      payload.vaccinated = newProduct.vaccinated;
+    }
+    if (productType === "tool") {
+      payload.brand = newProduct.brand;
+    }
+
+    try {
+      const res = await productApi.createProduct(payload);
+      if (res.success) {
+        // reset form + reload list
+        setNewProduct({
+          isActive: true,
+          stock: productType === "pet" ? 1 : 0,
+          price: 0,
+        });
+        setSelectedImage(null);
+
+        if (selectedCategory) {
+          const listRes = await productApi.getProductsByCategory(
+            selectedCategory._id
+          );
+          if (listRes.success) {
+            setProducts(listRes.data.products);
+          }
+        }
+      } else {
+        alert("Create failed: " + res.message);
+      }
+    } catch (err) {
+      console.error("Error creating product:", err);
+      alert("Error creating product");
+    }
   };
 
+  // UPDATE PRODUCT (chỉ mock state)
   const handleUpdateProduct = (id: string, updates: Partial<Product>) => {
-    // TODO: Implement API call to update product
-    setProducts(
-      products.map((prod) => (prod.id === id ? { ...prod, ...updates } : prod))
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
     );
   };
 
-  const handleDeleteProduct = (id: string) => {
-    // TODO: Implement API call to delete product
-    setProducts(products.filter((prod) => prod.id !== id));
+  // DELETE PRODUCT
+  const handleDeleteProduct = async (id: string) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?"))
+      return;
+    try {
+      const res = await productApi.deleteProduct(id);
+      if (res.success) {
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        alert("Xoá thất bại: " + res.message);
+      }
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      alert("Đã có lỗi khi xoá sản phẩm.");
+    }
   };
 
+  // EDIT MODAL
   const handleEditClick = (product: Product) => {
     setSelectedProduct(product);
     setIsEditModalOpen(true);
   };
-
   const handleModalClose = () => {
     setSelectedProduct(null);
     setIsEditModalOpen(false);
   };
-
-  const handleSaveProduct = (updatedProduct: Product) => {
-    handleUpdateProduct(updatedProduct.id, updatedProduct);
+  const handleSaveProduct = (updated: Product) => {
+    handleUpdateProduct(updated.id, updated);
   };
 
   return (
@@ -135,142 +255,201 @@ const ProductsPage: React.FC = () => {
       </div>
 
       <div className="products-grid">
+        {/* —————————————————————— ADD FORM —————————————————————— */}
         <form onSubmit={handleAddProduct} className="add-product-form">
           <h2>Add new product</h2>
-          <label htmlFor="productName">Name</label>
-          <input
-            type="text"
-            placeholder="Product Name"
-            value={newProduct.name || ""}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, name: e.target.value })
-            }
-            required
-            aria-label="Product Name"
-          />
 
-          <label htmlFor="productCategory">Category</label>
-          <select
-            id="productCategory"
-            value={newProduct.categoryId || ""}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, categoryId: e.target.value })
-            }
-            required
-          >
-            <option value="">Select Category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-
-          <label htmlFor="productDescription">Description</label>
-          <textarea
-            id="productDescription"
-            placeholder="Description"
-            value={newProduct.description || ""}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, description: e.target.value })
-            }
-            required
-          />
-          <label htmlFor="productBirthday">Birthday</label>
-          <input
-            id="productBirthday"
-            type="date"
-            value={newProduct.birthday || ""}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, birthday: e.target.value })
-            }
-          />
-
-          <label htmlFor="productAge">Age</label>
-          <input
-            id="productAge"
-            type="number"
-            min="0"
-            value={newProduct.age || ""}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, age: Number(e.target.value) })
-            }
-          />
-
-          <label htmlFor="productGender">Gender</label>
-          <select
-            id="productGender"
-            value={newProduct.gender || ""}
-            onChange={(e) =>
-              setNewProduct({
-                ...newProduct,
-                gender: e.target.value as "male" | "female",
-              })
-            }
-          >
-            <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-
-          <label htmlFor="productVaccinated">Vaccinate</label>
-          <select
-            id="productVaccinated"
-            value={
-              newProduct.vaccinated !== undefined
-                ? String(newProduct.vaccinated)
-                : ""
-            }
-            onChange={(e) =>
-              setNewProduct({
-                ...newProduct,
-                vaccinated: e.target.value === "true",
-              })
-            }
-          >
-            <option value="">Select Status</option>
-            <option value="true">Vacinated</option>
-            <option value="false">Not Vaccinated</option>
-          </select>
-
-          <div className="number-inputs">
-            <div>
-              <label htmlFor="productPrice">Price (VND)</label>
-              <input
-                id="productPrice"
-                type="number"
-                min="0"
-                step="1000"
-                value={newProduct.price}
-                onChange={(e) =>
-                  setNewProduct({
-                    ...newProduct,
-                    price: Number(e.target.value),
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="productStock">Stock</label>
-              <input
-                id="productStock"
-                type="number"
-                min="0"
-                value={newProduct.stock}
-                onChange={(e) =>
-                  setNewProduct({
-                    ...newProduct,
-                    stock: Number(e.target.value),
-                  })
-                }
-                required
-              />
-            </div>
+          {/* Category */}
+          <div className="form-group">
+            <label htmlFor="productCategory">Category</label>
+            <select
+              id="productCategory"
+              value={selectedCategory?._id || ""}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              required
+            >
+              {categories.map((parent) =>
+                parent.children && parent.children.length ? (
+                  <optgroup key={parent._id} label={parent.name}>
+                    {parent.children.map((child) => (
+                      <option key={child._id} value={child._id}>
+                        {child.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  <option key={parent._id} value={parent._id}>
+                    {parent.name}
+                  </option>
+                )
+              )}
+            </select>
           </div>
 
-          <div className="image-upload">
+          {/* Name */}
+          <div className="form-group">
+            <label htmlFor="productName">Product Name</label>
+            <input
+              id="productName"
+              type="text"
+              placeholder="Product Name"
+              value={newProduct.name || ""}
+              onChange={(e) =>
+                setNewProduct((prev) => ({ ...prev, name: e.target.value }))
+              }
+              required
+            />
+          </div>
+
+          {/* Description */}
+          <div className="form-group">
+            <label htmlFor="productDescription">Description</label>
+            <textarea
+              id="productDescription"
+              placeholder="Description"
+              value={newProduct.description || ""}
+              onChange={(e) =>
+                setNewProduct((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              required
+            />
+          </div>
+
+          {/* Pet-specific */}
+          {productType === "pet" && (
+            <>
+              <div className="form-group">
+                <label htmlFor="productBirthday">Birthday</label>
+                <input
+                  id="productBirthday"
+                  type="date"
+                  value={newProduct.birthday || ""}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      birthday: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="productGender">Gender</label>
+                <select
+                  id="productGender"
+                  value={newProduct.gender || ""}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      gender: e.target.value as "male" | "female",
+                    }))
+                  }
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="productVaccinated">Vaccination Status</label>
+                <select
+                  id="productVaccinated"
+                  value={
+                    newProduct.vaccinated !== undefined
+                      ? String(newProduct.vaccinated)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      vaccinated: e.target.value === "true",
+                    }))
+                  }
+                  required
+                >
+                  <option value="">Select Vaccination Status</option>
+                  <option value="true">Vaccinated</option>
+                  <option value="false">Not Vaccinated</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Stock</label>
+                <input
+                  type="number"
+                  value="1"
+                  disabled
+                  title="Pets can only have stock of 1"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Tool-specific */}
+          {productType === "tool" && (
+            <>
+              <div className="form-group">
+                <label htmlFor="productBrand">Brand</label>
+                <input
+                  id="productBrand"
+                  type="text"
+                  value={newProduct.brand || ""}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      brand: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="productStock">Stock</label>
+                <input
+                  id="productStock"
+                  type="number"
+                  min="0"
+                  value={newProduct.stock ?? ""}
+                  onChange={(e) =>
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      stock: Number(e.target.value),
+                    }))
+                  }
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {/* Price */}
+          <div className="form-group">
+            <label htmlFor="productPrice">Price (VND)</label>
+            <input
+              id="productPrice"
+              type="number"
+              min="0"
+              step="1000"
+              value={newProduct.price ?? ""}
+              onChange={(e) =>
+                setNewProduct((prev) => ({
+                  ...prev,
+                  price: parseInt(e.target.value, 10),
+                }))
+              }
+              required
+            />
+          </div>
+
+          {/* Image */}
+          <div className="form-group">
             <label htmlFor="productImage">Product Image</label>
             <input
               id="productImage"
@@ -291,6 +470,7 @@ const ProductsPage: React.FC = () => {
           <button type="submit">Add Product</button>
         </form>
 
+        {/* —————————————————————— LIST PRODUCTS —————————————————————— */}
         <div className="products-list">
           {products.map((product) => (
             <div key={product.id} className="product-item">
@@ -338,6 +518,7 @@ const ProductsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* EDIT MODAL */}
       <ProductEditModal
         product={selectedProduct}
         categories={categories}

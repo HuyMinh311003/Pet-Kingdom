@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./styles.css";
-import loginHeader from "../../assets/Login-Header.png";
+import loginHeader from "../../../assets/Login-Header.png";
 const LoginPage: React.FC = () => {
   const [showRegister, setShowRegister] = useState(false);
 

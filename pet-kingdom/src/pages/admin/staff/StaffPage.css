@@ -187,6 +187,7 @@ tr:last-child td {
 }
 
 .status-toggle-btn,
+.edit-btn,
 .delete-btn {
   padding: 0.5rem 1rem;
   border: none;
@@ -208,6 +209,15 @@ tr:last-child td {
 
 .status-toggle-btn:hover {
   opacity: 0.9;
+}
+
+.edit-btn {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.edit-btn:hover {
+  background-color: #bae6fd;
 }
 
 .delete-btn {

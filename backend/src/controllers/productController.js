@@ -14,7 +14,8 @@ exports.createProduct = async (req, res) => {
             birthday,
             gender,
             vaccinated,
-            type
+            type,
+            brand
         } = req.body;
 
         // Validate category exists
@@ -27,7 +28,7 @@ exports.createProduct = async (req, res) => {
         }
 
         // Create product
-        const product = new Product({
+        const productData = new Product({
             name,
             description,
             price,
@@ -35,15 +36,18 @@ exports.createProduct = async (req, res) => {
             stock,
             imageUrl,
             isActive: true,
-            type: category.type, // 'pet' or 'tool'
-            // Add pet specific fields if it's a pet
-            ...(category.type === 'pet' && {
-                birthday,
-                gender,
-                vaccinated
-            })
+            type: category.type
         });
+        if (category.type === 'pet') {
+            productData.birthday = birthday;
+            productData.gender = gender;
+            productData.vaccinated = vaccinated;
+        }
 
+        if (category.type === 'tool') {
+            productData.brand = brand;
+        }
+        const product = new Product(productData);
         await product.save();
 
         res.status(201).json({
@@ -59,23 +63,18 @@ exports.createProduct = async (req, res) => {
     }
 };
 
+// controllers/productController.js
 exports.getProducts = async (req, res) => {
     try {
-        const { 
-            category,
-            type,
-            minPrice,
-            maxPrice,
-            search,
-            sort,
-            page = 1,
-            limit = 10
-        } = req.query;
-
+        const { category, type, minPrice, maxPrice, search, sort, page = 1, limit = 10 } = req.query;
         const query = { isActive: true };
 
-        // Add filters
-        if (category) query.categoryId = category;
+        // === CHỈ DÙNG $in, không override nữa ===
+        if (category) {
+            const catIds = Array.isArray(category) ? category : category.split(',');
+            query.categoryId = { $in: catIds };
+        }
+
         if (type) query.type = type;
         if (minPrice || maxPrice) {
             query.price = {};
@@ -89,50 +88,32 @@ exports.getProducts = async (req, res) => {
             ];
         }
 
-        // Count total documents for pagination
         const total = await Product.countDocuments(query);
-
-        // Build query with pagination and sorting
-        let queryBuilder = Product.find(query)
+        let qb = Product.find(query)
             .skip((page - 1) * limit)
             .limit(limit);
 
-        // Add sorting
         if (sort) {
-            const sortOrder = sort.startsWith('-') ? -1 : 1;
-            const sortField = sort.replace(/^-/, '');
-            queryBuilder = queryBuilder.sort({ [sortField]: sortOrder });
+            const dir = sort.startsWith('-') ? -1 : 1;
+            const field = sort.replace(/^-/, '');
+            qb = qb.sort({ [field]: dir });
         } else {
-            queryBuilder = queryBuilder.sort({ createdAt: -1 });
+            qb = qb.sort({ createdAt: -1 });
         }
 
-        const products = await queryBuilder.populate('categoryId', 'name');
-
-        res.json({
-            success: true,
-            data: {
-                products,
-                pagination: {
-                    total,
-                    page: Number(page),
-                    pages: Math.ceil(total / limit)
-                }
-            }
-        });
+        const products = await qb.populate('categoryId', 'name');
+        res.json({ success: true, data: { products, pagination: { total, page: Number(page), pages: Math.ceil(total / limit) } } });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching products',
-            error: error.message
-        });
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error fetching products', error: error.message });
     }
 };
+
 
 exports.getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id)
             .populate('categoryId', 'name type');
-        
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -172,8 +153,8 @@ exports.getRelatedProducts = async (req, res) => {
             ],
             isActive: true
         })
-        .limit(4)
-        .populate('categoryId', 'name');
+            .limit(4)
+            .populate('categoryId', 'name');
 
         res.json({
             success: true,
@@ -191,7 +172,6 @@ exports.getRelatedProducts = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const updates = req.body;
-        
         // Prevent changing product type directly
         delete updates.type;
 
@@ -224,7 +204,6 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
-        
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -248,7 +227,6 @@ exports.deleteProduct = async (req, res) => {
 exports.toggleStatus = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -278,7 +256,6 @@ exports.toggleStatus = async (req, res) => {
 exports.updateStock = async (req, res) => {
     try {
         const { quantity } = req.body;
-        
         const product = await Product.findById(req.params.id);
         if (!product) {
             return res.status(404).json({

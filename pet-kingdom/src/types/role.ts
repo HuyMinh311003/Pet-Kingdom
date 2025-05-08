@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'shipper';
+export type UserRole = 'Admin' | 'Shipper' | 'Customer';
 
 export interface TabPermission {
   path: string;

@@ -33,13 +33,6 @@ export const updateCategory = (id: string, category: any) => api.put(`/categorie
 export const deleteCategory = (id: string) => api.delete(`/categories/${id}`);
 export const toggleCategoryStatus = (id: string) => api.patch(`/categories/${id}/toggle-status`);
 
-// Orders API
-export const getOrders = (params?: any) => api.get('/orders', { params });
-export const getOrderById = (id: string) => api.get(`/orders/${id}`);
-export const updateOrderStatus = (id: string, status: string, note: string = '') => 
-  api.patch(`/orders/${id}/status`, { status, note });
-export const getOrderAnalytics = (params?: any) => api.get('/orders/analytics', { params });
-
 // Promotions API 
 export const getPromotions = (params?: any) => api.get('/promotions', { params });
 export const createPromotion = (promotion: any) => api.post('/promotions', promotion);

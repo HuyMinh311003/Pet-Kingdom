@@ -1,7 +1,7 @@
 const shipper = async (req, res, next) => {
     try {
-        if (req.user.role !== 'Shipper' && req.user.role !== 'Admin') {
-            throw new Error('Access denied. Shipper or Admin only.');
+        if (req.user.role !== 'Shipper') {
+            throw new Error('Access denied. Shipper only.');
         }
         next();
     } catch (error) {

@@ -317,21 +317,115 @@ exports.getOrderAnalytics = async (req, res) => {
     }
 };
 
-// Add new function for shipper assigned orders
-exports.getOrdersByShipper = async (req, res) => {
+// Danh sách order đã xác nhận nhưng shipper chưa chọn
+exports.getAssignedOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ assignedTo: req.user._id })
+        const { page = 1, limit = 10 } = req.query;
+
+        const query = {
+            status: 'Đã xác nhận',
+            assignedTo: null
+        };
+
+        const total = await Order.countDocuments(query);
+
+        const orders = await Order.find(query)
             .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
             .populate('user', 'name email')
             .populate('items.product', 'name imageUrl');
+
         res.json({
             success: true,
-            data: orders
+            data: {
+                orders,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / limit)
+                }
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching assigned orders',
+            error: error.message
+        });
+    }
+};
+
+// Show danh sách order shipper đã chọn
+exports.getShipperOrders = async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        const total = await Order.countDocuments({ assignedTo: req.user._id });
+
+        const orders = await Order.find({ assignedTo: req.user._id })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('user', 'name email')
+            .populate('items.product', 'name imageUrl');
+            
+        res.json({
+            success: true,
+            data: {
+                orders,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / limit)
+                }
+            }
         });
     } catch (error) {
         res.status(500).json({
             success: false,
             message: 'Error fetching orders for shipper',
+            error: error.message
+        });
+    }
+};
+
+//Shipper chọn order
+exports.assignOrderToShipper = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        if (order.assignedTo) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order is already assigned to a shipper'
+            });
+        }
+
+        if (order.status !== 'Đã xác nhận') {
+            return res.status(400).json({
+                success: false,
+                message: 'Only confirmed orders can be assigned'
+            });
+        }
+
+        order.assignedTo = req.user._id;
+        await order.save();
+
+        res.json({
+            success: true,
+            data: order
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error assigning order to shipper',
             error: error.message
         });
     }
