@@ -1,6 +1,5 @@
 .pk-hamburger-menu-container {
     position: relative;
-    display: inline-block;
 }
 
 .pk-hamburger-overlay {
@@ -14,30 +13,51 @@
 }
 
 @keyframes pkFadeIn {
-    to { opacity: 1; }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pkArrowLoop {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    50% {
+        transform: translateX(4px);
+    }
+}
+
+.pk-arrow-icon {
+    animation: pkArrowLoop 1.5s ease-in-out infinite;
 }
 
 .pk-hamburger-btn {
-    background: transparent;
+    position: fixed;
+    top: 85px;
+    left: 0;
+    background: #FF9800;
     border: none;
     cursor: pointer;
     padding: 0.75rem;
     z-index: 1100;
-    position: absolute;
-    top: -23px;
-    left: -32px;
-    transition: all 0.3s ease;
-    border-radius: 50%;
-}
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.pk-hamburger-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+  .pk-hamburger-btn:hover {
     transform: scale(1.05);
-}
-
-.pk-hamburger-btn:active {
+  }
+  
+  .pk-hamburger-btn:active {
     transform: scale(0.95);
-}
+  }
 
 .pk-hamburger-icon {
     width: 24px;
@@ -63,7 +83,9 @@
 }
 
 @keyframes pkSlideIn {
-    to { transform: translateX(0); }
+    to {
+        transform: translateX(0);
+    }
 }
 
 .pk-close-btn {
@@ -187,28 +209,30 @@
 
 .pk-submenu-container {
     border-left: 2px dotted rgba(0, 0, 0, 0.1);
-    margin-left: 8px;    
-    padding-left: 12px;  
-  }
-  
-  .pk-menu-list.level-1 .pk-menu-item .pk-menu-button-container {
+    margin-left: 8px;
+    padding-left: 12px;
+}
+
+.pk-menu-list.level-1 .pk-menu-item .pk-menu-button-container {
     background-color: rgba(0, 0, 0, 0.02);
-  }
-  .pk-menu-list.level-2 .pk-menu-item .pk-menu-button-container {
+}
+
+.pk-menu-list.level-2 .pk-menu-item .pk-menu-button-container {
     background-color: rgba(0, 0, 0, 0.04);
-  }
-  .pk-menu-list.level-3 .pk-menu-item .pk-menu-button-container {
+}
+
+.pk-menu-list.level-3 .pk-menu-item .pk-menu-button-container {
     background-color: rgba(0, 0, 0, 0.06);
-  }
-  
-  .pk-menu-item .pk-menu-button-container:hover {
+}
+
+.pk-menu-item .pk-menu-button-container:hover {
     background-color: rgba(255, 152, 0, 0.08);
-  }
-  .pk-menu-item .pk-menu-button-container:active {
+}
+
+.pk-menu-item .pk-menu-button-container:active {
     background-color: rgba(255, 152, 0, 0.12);
-  }
-  
-  .pk-submenu-container:not(.open) {
+}
+
+.pk-submenu-container:not(.open) {
     border-color: transparent;
-  }
-  
+}

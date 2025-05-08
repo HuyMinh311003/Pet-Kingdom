@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Menu, ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./HamburgerStyle.css";
+import "./LeftMenuStyle.css";
 
 interface Category {
     _id: string;
@@ -28,7 +28,7 @@ const STATIC_TABS: Category[] = [
     }
 ];
 
-const HamburgerSection: React.FC = () => {
+const LeftMenu: React.FC = () => {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -156,7 +156,7 @@ const HamburgerSection: React.FC = () => {
         <div className="pk-hamburger-menu-container">
             {!isOpen && (
                 <button className="pk-hamburger-btn" onClick={toggleMenu}>
-                    <Menu className="pk-hamburger-icon" />
+                    <ChevronRight className="pk-hamburger-icon pk-arrow-icon" />
                 </button>
             )}
 
@@ -177,4 +177,4 @@ const HamburgerSection: React.FC = () => {
     );
 };
 
-export default HamburgerSection;
+export default LeftMenu;
