@@ -3,6 +3,7 @@ import { PawPrint as Paw, User, ShoppingCart, Search } from "lucide-react";
 import "./HeaderStyle.css";
 import { useNavigate } from "react-router-dom";
 
+
 interface HeaderProps {
   cartItems: number;
 }

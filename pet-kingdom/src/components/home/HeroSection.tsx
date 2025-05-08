@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./HomeStyle.css";
 import { useNavigate } from "react-router-dom";
+import LeftMenu from "../navbar/left-menu/LeftMenu";
 
 export interface HeroSlide {
     image: string;
@@ -19,7 +20,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ heroSlides, currentSlide, set
     const navigate = useNavigate()
     return (
         <section id="hero-section" className="hero-section">
-            <div 
+            <div
                 className="hero-slide"
                 style={{
                     backgroundImage: `url(${heroSlides[currentSlide].image})`,
@@ -40,13 +41,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ heroSlides, currentSlide, set
                 </div>
             </div>
 
-            <button 
+            <button
                 onClick={() => setCurrentSlide(prev => prev === 0 ? heroSlides.length - 1 : prev - 1)}
                 className="hero-nav-btn hero-nav-btn--left"
             >
                 <ChevronLeft className="nav-icon" />
             </button>
-            <button 
+            <button
                 onClick={() => setCurrentSlide(prev => prev === heroSlides.length - 1 ? 0 : prev + 1)}
                 className="hero-nav-btn hero-nav-btn--right"
             >
