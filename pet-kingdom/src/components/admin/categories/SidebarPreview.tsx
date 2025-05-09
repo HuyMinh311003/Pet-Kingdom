@@ -22,7 +22,7 @@ const STATIC_TABS = [
     children: []
   },
   {
-    _id: 'accessories', 
+    _id: 'accessories',
     name: 'Vật dụng',
     type: 'tool',
     isActive: true,
@@ -55,72 +55,68 @@ const SidebarPreview: React.FC<SidebarPreviewProps> = ({
   });
 
   const renderMenuItems = (items: Category[], level: number = 0) => {
-    // Sort items by order before rendering
-    const sortedItems = [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
 
     return (
       <ul className={`preview-menu-list ${level > 0 ? 'preview-submenu' : ''}`}>
-        {sortedItems.map((item) => {
+        {items.map((item) => {
           const hasChildren = (item.children?.length ?? 0) > 0;
-          
+
           return (
-          <li 
-            key={item._id} 
-            className={`preview-menu-item ${selectedCategory?._id === item._id ? 'selected' : ''}`}
-            style={{ paddingLeft: `${level * 16}px` }}
-          >
-            <div className="preview-menu-button-container">
-              <span 
-                className={`preview-menu-text ${!item.isActive ? 'inactive' : ''}`}
-                onClick={() => onSelectCategory(item)}
-                title={`${item.name}${!item.isActive ? ' (Inactive)' : ''}`}
-              >
-                {item.name}
-                {!item.isActive && <span className="inactive-badge">Inactive</span>}
-                {level > 0 && <span className="order-badge" title="Display Order">
-                  {item.order || 0}
-                </span>}
-              </span>
-              <div className="preview-actions">
-                {level > 0 && (
-                  <>
+            <li
+              key={item._id}
+              className={`preview-menu-item ${selectedCategory?._id === item._id ? 'selected' : ''}`}
+              style={{ paddingLeft: `${level * 16}px` }}
+            >
+              <div className="preview-menu-button-container">
+                <span
+                  className={`preview-menu-text ${!item.isActive ? 'inactive' : ''}`}
+                  onClick={() => onSelectCategory(item)}
+                  title={`${item.name}${!item.isActive ? ' (Inactive)' : ''}`}
+                >
+                  {item.name}
+                  {!item.isActive && <span className="inactive-badge">Inactive</span>}
+                </span>
+                <div className="preview-actions">
+                  {level > 0 && (
+                    <>
+                      <button
+                        className="preview-action-btn"
+                        onClick={() => onToggleStatus(item._id)}
+                        title={item.isActive ? 'Deactivate' : 'Activate'}
+                      >
+                        <Power size={16} className={item.isActive ? 'active' : ''} />
+                      </button>
+                      <button
+                        className="preview-action-btn delete"
+                        onClick={() => onDeleteCategory(item._id)}
+                        title="Delete category"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </>
+                  )}
+                  {hasChildren && (
                     <button
-                      className="preview-action-btn"
-                      onClick={() => onToggleStatus(item._id)}
-                      title={item.isActive ? 'Deactivate' : 'Activate'}
+                      className="preview-chevron-button"
+                      onClick={() => onToggleMenu(item._id)}
+                      title={activeMenus.includes(item._id) ? 'Collapse' : 'Expand'}
                     >
-                      <Power size={16} className={item.isActive ? 'active' : ''} />
+                      <ChevronRight
+                        className={`preview-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
+                        size={18}
+                      />
                     </button>
-                    <button
-                      className="preview-action-btn delete"
-                      onClick={() => onDeleteCategory(item._id)}
-                      title="Delete category"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </>
-                )}
-                {hasChildren && (
-                  <button
-                    className="preview-chevron-button"
-                    onClick={() => onToggleMenu(item._id)}
-                    title={activeMenus.includes(item._id) ? 'Collapse' : 'Expand'}
-                  >
-                    <ChevronRight 
-                      className={`preview-menu-arrow ${activeMenus.includes(item._id) ? 'rotated' : ''}`}
-                      size={18}
-                    />
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-            {hasChildren && activeMenus.includes(item._id) && (
-              <div className={`preview-submenu-container ${activeMenus.includes(item._id) ? 'open' : ''}`}>
-                {renderMenuItems(item.children!, level + 1)}
-              </div>
-            )}
-          </li>
-        )})}
+              {hasChildren && activeMenus.includes(item._id) && (
+                <div className={`preview-submenu-container ${activeMenus.includes(item._id) ? 'open' : ''}`}>
+                  {renderMenuItems(item.children!, level + 1)}
+                </div>
+              )}
+            </li>
+          )
+        })}
       </ul>
     );
   };
