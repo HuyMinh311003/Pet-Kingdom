@@ -7,7 +7,6 @@ export interface Category {
   _id: string;
   name: string;
   type: 'pet' | 'tool';
-  order?: number;
   children?: Category[];
 }
 
@@ -39,12 +38,12 @@ const SidebarFilter: React.FC<Props> = ({
 
     return (
       <li key={cat._id} className={`filter-item ${selected.includes(cat._id) ? 'selected' : ''}`}>
-        <div className="filter-item-container" style={{ paddingLeft: `${16 + level*16}px` }}>
+        <div className="filter-item-container" style={{ paddingLeft: `${16 + level * 16}px` }}>
           {hasKids
             ? <button className="filter-expand-btn" onClick={() => toggleExpand(cat._id)}>
-                <ChevronRight className={`filter-arrow ${isOpen?'rotated':''}`} size={16}/>
-              </button>
-            : <div style={{ width: '20px' }}/>}
+              <ChevronRight className={`filter-arrow ${isOpen ? 'rotated' : ''}`} size={16} />
+            </button>
+            : <div style={{ width: '20px' }} />}
 
           {/* Khi click tên: chỉ select đúng id đó */}
           <span
@@ -54,13 +53,12 @@ const SidebarFilter: React.FC<Props> = ({
             {cat.name}
           </span>
 
-          <span className="filter-badge">{cat.order ?? 0}</span>
         </div>
 
         {/* con chỉ hiện khi isOpen */}
         {hasKids && isOpen && (
           <ul className="filter-sublist">
-            {cat.children!.map(c => renderNode(c, level+1))}
+            {cat.children!.map(c => renderNode(c, level + 1))}
           </ul>
         )}
       </li>
@@ -72,8 +70,8 @@ const SidebarFilter: React.FC<Props> = ({
   return (
     <div className="sidebar-filter">
       <div className="filter-tabs">
-        <button className={`tab-btn ${activeTab==='pet'?'active':''}`} onClick={()=>setActiveTab('pet')}>Thú cưng</button>
-        <button className={`tab-btn ${activeTab==='tool'?'active':''}`} onClick={()=>setActiveTab('tool')}>Vật dụng</button>
+        <button className={`tab-btn ${activeTab === 'pet' ? 'active' : ''}`} onClick={() => setActiveTab('pet')}>Thú cưng</button>
+        <button className={`tab-btn ${activeTab === 'tool' ? 'active' : ''}`} onClick={() => setActiveTab('tool')}>Vật dụng</button>
       </div>
       <div className="filter-tree">
         <ul className="filter-list">

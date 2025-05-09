@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, Filter } from 'lucide-react';
 import './ProductStyle.css';
 import ProductCard from './ProductCard';
@@ -34,6 +34,7 @@ export default function ProductList() {
   const [searchParams] = useSearchParams();
   const initialCategoryId = searchParams.get('category');
   const categoryName = searchParams.get('name');
+  const isFirstFilterRun = useRef(true);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'pet' | 'tool'>('pet');
@@ -50,13 +51,39 @@ export default function ProductList() {
   const [loading, setLoading] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-  // 1) Load categories (nested)
   useEffect(() => {
-    api.get('/categories').then(res => {
-      const tree = res.data.data as CatType[];
-      setCategories(tree);
-    });
+    let mounted = true;
+    const fetchInitialData = async () => {
+      setLoading(true);
+      try {
+        // song song lấy categories và all products
+        const [catRes, prodRes] = await Promise.all([
+          api.get('/categories'),
+          api.get('/products'),
+        ]);
+
+        if (!mounted) return;
+
+        // 1) set categories tree
+        const tree = catRes.data.data as CatType[];
+        setCategories(tree);
+
+        // 2) set all products + tính maxPrice, priceRange
+        const all = prodRes.data.data.products as Product[];
+        setProducts(all);
+        const maxPrice = all.reduce((mx, p) => Math.max(mx, p.price), 0);
+        setOverallMaxPrice(maxPrice);
+        setPriceRange({ min: 0, max: maxPrice });
+      } catch (err) {
+        console.error('Error fetching initial data:', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchInitialData();
+    return () => { mounted = false; };
   }, []);
+
 
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
   useEffect(() => {
@@ -81,36 +108,17 @@ export default function ProductList() {
     }
   }, [categories, initialCategoryId]);
 
-  // 3) Load toàn bộ products để tính overallMaxPrice
   useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get('/products');
-        if (res.data.success) {
-          const all = res.data.data.products as Product[];
-          const maxPrice = all.reduce((mx, p) => Math.max(mx, p.price), 0);
-          setOverallMaxPrice(maxPrice);
-          setPriceRange({ min: 0, max: maxPrice });
-        }
-      } catch (err) {
-        console.error('Error fetching all products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
-  }, []);
+    if (isFirstFilterRun.current) {
+      isFirstFilterRun.current = false;
+      return;
+    }
 
-  // 4) Load products theo filter category + priceRange
-  useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchFiltered = async () => {
       setLoading(true);
       try {
         const params: any = {};
-        if (selectedCategories.length) {
-          params.category = selectedCategories.join(',');
-        }
+        if (selectedCategories.length) params.category = selectedCategories.join(',');
         if (priceRange.min > 0) params.minPrice = priceRange.min;
         if (priceRange.max < overallMaxPrice) params.maxPrice = priceRange.max;
 
@@ -124,8 +132,9 @@ export default function ProductList() {
         setLoading(false);
       }
     };
-    fetchProducts();
+    fetchFiltered();
   }, [selectedCategories, priceRange, overallMaxPrice]);
+
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
     setExpandedSections(prev => ({ ...prev, [sec]: !prev[sec] }));
@@ -218,16 +227,14 @@ export default function ProductList() {
               >
                 PRICE RANGE
                 <ChevronDown
-                  className={`filter-icon ${
-                    expandedSections.priceRange ? 'expanded' : ''
-                  }`}
+                  className={`filter-icon ${expandedSections.priceRange ? 'expanded' : ''
+                    }`}
                   size={20}
                 />
               </button>
               <div
-                className={`filter-content ${
-                  expandedSections.priceRange ? 'expanded' : ''
-                }`}
+                className={`filter-content ${expandedSections.priceRange ? 'expanded' : ''
+                  }`}
               >
                 <PriceRangeSlider
                   min={0}
