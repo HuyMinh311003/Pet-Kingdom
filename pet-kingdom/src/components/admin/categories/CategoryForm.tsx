@@ -1,6 +1,7 @@
 import React from 'react';
 import { Category } from '../../../types/admin';
 import './CategoryForm.css';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 interface CategoryFormProps {
   category: Partial<Category>;
@@ -76,49 +77,17 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
       </div>
 
       <div className="form-section">
-        <h3>Display Settings</h3>
-        <div className="form-group">
-          <label htmlFor="categoryOrder">Display Order</label>
-          <input
-            id="categoryOrder"
-            type="number"
-            min="0"
-            value={category.order || 0}
-            onChange={e => onChange({ order: parseInt(e.target.value) })}
+        <div className="c-form-group">
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={category.isActive}
+                onChange={e => onChange({ isActive: e.target.checked })}
+                color="primary"
+              />
+            }
+            label="Active"
           />
-          <small>Lower numbers appear first</small>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="categoryIcon">Icon (Optional)</label>
-          <input
-            id="categoryIcon"
-            type="text"
-            value={category.icon || ''}
-            onChange={e => onChange({ icon: e.target.value })}
-            placeholder="Enter icon name or URL"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="categoryDescription">Description</label>
-          <textarea
-            id="categoryDescription"
-            value={category.description || ''}
-            onChange={e => onChange({ description: e.target.value })}
-            placeholder="Enter category description"
-          />
-        </div>
-
-        <div className="form-group checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={category.isActive}
-              onChange={e => onChange({ isActive: e.target.checked })}
-            />
-            <span>Active</span>
-          </label>
           <small>Inactive categories will not be visible to customers</small>
         </div>
       </div>

@@ -18,12 +18,9 @@ export interface Product {
 export interface Category {
   _id: string;
   name: string;
-  description?: string;
   type: 'pet' | 'tool';
   parent?: string | Category;
   isActive: boolean;
-  order: number;
-  icon?: string | null;
   children?: Category[];
 }
 

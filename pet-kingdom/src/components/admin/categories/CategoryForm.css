@@ -22,8 +22,6 @@
 }
 
 .form-section {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
   background: #f9fafb;
   border-radius: 0.5rem;
 }
@@ -34,26 +32,25 @@
   margin: 0 0 1rem;
 }
 
-.form-group {
+.c-form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group:last-child {
+.c-form-group:last-child {
   margin-bottom: 0;
 }
 
-.form-group label {
-  display: block;
+.c-form-group label {
   font-size: 0.875rem;
   font-weight: 500;
   color: #4b5563;
   margin-bottom: 0.5rem;
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group select,
-.form-group textarea {
+.c-form-group input[type="text"],
+.c-form-group input[type="number"],
+.c-form-group select,
+.c-form-group textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #e5e7eb;
@@ -62,49 +59,26 @@
   transition: border-color 0.2s;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="number"]:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.c-form-group input[type="text"]:focus,
+.c-form-group input[type="number"]:focus,
+.c-form-group select:focus,
+.c-form-group textarea:focus {
   outline: none;
   border-color: #FFC371;
   box-shadow: 0 0 0 3px rgba(255, 195, 113, 0.1);
 }
 
-.form-group textarea {
+.c-form-group textarea {
   min-height: 100px;
   resize: vertical;
 }
 
-.form-group small {
+.c-form-group small {
   display: block;
   color: #6b7280;
   font-size: 0.75rem;
   margin-top: 0.5rem;
 }
-
-.checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.checkbox-group label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  cursor: pointer;
-}
-
-.checkbox-group input[type="checkbox"] {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 0.25rem;
-  border: 2px solid #e5e7eb;
-  cursor: pointer;
-}
-
 .form-actions {
   display: flex;
   justify-content: flex-end;

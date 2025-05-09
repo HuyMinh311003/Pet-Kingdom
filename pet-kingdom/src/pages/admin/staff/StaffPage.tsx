@@ -1,98 +1,83 @@
 // Update in StaffPage.tsx
 import React, { useState, useEffect } from "react";
 import "./StaffPage.css";
-
-interface StaffMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "admin" | "shipper";
-  phoneNumber: string;
-  isActive: boolean;
-  joinDate: string;
-  password: string;
-}
+import { staffApi } from "../../../services/admin-api/staffApi";
+import { User } from "../../../types/user";
 
 const StaffPage: React.FC = () => {
-  const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [newStaff, setNewStaff] = useState<Partial<StaffMember>>({
-    role: "shipper",
+  const [staff, setStaff] = useState<User[]>([]);
+  const [newStaff, setNewStaff] = useState<Partial<User>>({
+    role: "Shipper",
     isActive: true,
   });
   const [editingId, setEditingId] = useState<string | null>(null);
-  //Điều kiện bật tắt popup, state là true thì bật popup
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const mockStaff: StaffMember[] = [
-      {
-        id: "1",
-        name: "John Smith",
-        email: "john.smith@petkingdom.com",
-        role: "admin",
-        phoneNumber: "0123456789",
-        isActive: true,
-        joinDate: "2025-01-01",
-        password: "123456",
-      },
-      {
-        id: "2",
-        name: "Jane Doe",
-        email: "jane.doe@petkingdom.com",
-        role: "shipper",
-        phoneNumber: "0987654321",
-        isActive: true,
-        joinDate: "2025-02-15",
-        password: "123456",
-      },
-    ];
-    setStaff(mockStaff);
+    fetchStaff();
   }, []);
 
-  const handleAddStaff = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isEditing && editingId) {
-      setStaff(
-        staff.map((member) =>
-          member.id === editingId
-            ? { ...member, ...(newStaff as StaffMember) }
-            : member
-        )
-      );
-    } else {
-      setStaff([
-        ...staff,
-        {
-          ...newStaff,
-          id: Date.now().toString(),
-          joinDate: new Date().toISOString().split("T")[0],
-        } as StaffMember,
-      ]);
+  const fetchStaff = async () => {
+    try {
+      const data = await staffApi.getStaffList();
+      console.log("Response data:", data); // 👉 kiểm tra kiểu dữ liệu trả về
+      const visibleStaff = data.filter((s) => !s.isDeleted);
+      setStaff(visibleStaff);
+    } catch (error) {
+      console.error("Failed to fetch staff:", error);
     }
-    setNewStaff({ role: "shipper", isActive: true });
+  };
+
+  const handleAddStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (isEditing && editingId) {
+        const updated = await staffApi.updateStaff(editingId, newStaff);
+      setStaff(staff.map((s) => (s._id === editingId ? updated.data : s)));
+      } else {
+        const created = await staffApi.createStaff(newStaff);
+      setStaff([...staff, created.data]);
+      }
+      resetForm();
+    } catch (error) {
+      console.error("Failed to save staff:", error);
+    }
+  };
+
+  const handleEditStaff = (member: User) => {
+    setNewStaff(member);
+    setIsAddingStaff(true);
+    setIsEditing(true);
+    setEditingId(member._id);
+  };
+
+  const handleUpdateStaffStatus = async (id: string) => {
+    try {
+      const updated = await staffApi.toggleStaffStatus(id);
+      console.log("Updated staff from API:", updated); // 👉 Kiểm tra response từ API
+      setStaff(staff.map((s) =>
+        s._id === id ? { ...s, isActive: updated.data.isActive } : s
+      ));
+    } catch (error) {
+      console.error("Failed to toggle status:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setNewStaff({ role: "Shipper", isActive: true });
     setIsAddingStaff(false);
     setIsEditing(false);
     setEditingId(null);
   };
 
-  const handleEditStaff = (member: StaffMember) => {
-    setNewStaff(member);
-    setIsAddingStaff(true);
-    setIsEditing(true);
-    setEditingId(member.id);
-  };
-
-  const handleUpdateStaffStatus = (id: string, isActive: boolean) => {
-    setStaff(
-      staff.map((member) =>
-        member.id === id ? { ...member, isActive } : member
-      )
-    );
-  };
-
-  const handleDeleteStaff = (id: string) => {
-    setStaff(staff.filter((member) => member.id !== id));
+  const handleDeleteStaff = async (id: string) => {
+    try {
+      await staffApi.updateStaff(id, { isDeleted: true });
+      setStaff(staff.filter((s) => s._id !== id)); // ẩn trên UI
+    } catch (error) {
+      console.error("Failed to delete staff:", error);
+    }
   };
 
   return (
@@ -103,7 +88,7 @@ const StaffPage: React.FC = () => {
           className="add-staff-btn"
           onClick={() => {
             setIsAddingStaff(true);
-            setNewStaff({ role: "shipper", isActive: true });
+            setNewStaff({ role: "Shipper", isActive: true });
             setIsEditing(false);
           }}
         >
@@ -166,9 +151,9 @@ const StaffPage: React.FC = () => {
                   id="staffPhone"
                   type="tel"
                   required
-                  value={newStaff.phoneNumber || ""}
+                  value={newStaff.phone || ""}
                   onChange={(e) =>
-                    setNewStaff({ ...newStaff, phoneNumber: e.target.value })
+                    setNewStaff({ ...newStaff, phone: e.target.value })
                   }
                 />
               </div>
@@ -182,7 +167,7 @@ const StaffPage: React.FC = () => {
                   onChange={(e) =>
                     setNewStaff({
                       ...newStaff,
-                      role: e.target.value as "admin" | "shipper",
+                      role: e.target.value as "Admin" | "Shipper",
                     })
                   }
                 >
@@ -224,10 +209,10 @@ const StaffPage: React.FC = () => {
             </thead>
             <tbody>
               {staff.map((member) => (
-                <tr key={member.id}>
+                <tr key={member._id}>
                   <td style={{ fontWeight: 600 }}>{member.name}</td>
                   <td>{member.email}</td>
-                  <td>{member.phoneNumber}</td>
+                  <td>{member.phone}</td>
                   <td>
                     <span className={`role-badge ${member.role}`}>
                       {member.role.charAt(0).toUpperCase() +
@@ -237,9 +222,8 @@ const StaffPage: React.FC = () => {
                   <td>{new Date(member.joinDate).toLocaleDateString()}</td>
                   <td>
                     <span
-                      className={`status-badge ${
-                        member.isActive ? "active" : "inactive"
-                      }`}
+                      className={`status-badge ${member.isActive ? "active" : "inactive"
+                        }`}
                     >
                       {member.isActive ? "Active" : "Inactive"}
                     </span>
@@ -247,11 +231,10 @@ const StaffPage: React.FC = () => {
                   <td>
                     <div className="action-buttons">
                       <button
-                        className={`status-toggle-btn ${
-                          member.isActive ? "deactivate" : "activate"
-                        }`}
+                        className={`status-toggle-btn ${member.isActive ? "deactivate" : "activate"
+                          }`}
                         onClick={() =>
-                          handleUpdateStaffStatus(member.id, !member.isActive)
+                          handleUpdateStaffStatus(member._id)
                         }
                       >
                         {member.isActive ? "Deactivate" : "Activate"}
@@ -264,7 +247,7 @@ const StaffPage: React.FC = () => {
                       </button>
                       <button
                         className="delete-btn"
-                        onClick={() => handleDeleteStaff(member.id)}
+                        onClick={() => handleDeleteStaff(member._id)}
                       >
                         Delete
                       </button>
