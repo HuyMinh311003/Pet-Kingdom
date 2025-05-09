@@ -5,15 +5,7 @@ import ProductCard from './ProductCard';
 import api from '../../services/admin-api/axiosConfig';
 import { useSearchParams } from 'react-router-dom';
 import PriceRangeSlider from './filters/PriceRangeSlider';
-import SidebarFilter, { Category as CatType } from './SidebarFilter';
-
-interface Category {
-  _id: string;
-  name: string;
-  type: 'pet' | 'tool';
-  parent: string | null;
-  children?: Category[];
-}
+import SidebarFilter, { Category } from './SidebarFilter';
 
 interface Product {
   id: string;
@@ -65,7 +57,7 @@ export default function ProductList() {
         if (!mounted) return;
 
         // 1) set categories tree
-        const tree = catRes.data.data as CatType[];
+        const tree = catRes.data.data as Category[];
         setCategories(tree);
 
         // 2) set all products + tính maxPrice, priceRange

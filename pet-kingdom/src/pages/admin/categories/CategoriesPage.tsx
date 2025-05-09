@@ -13,7 +13,6 @@ const CategoriesPage: React.FC = () => {
   const [newCategory, setNewCategory] = useState<Partial<Category>>({
     type: 'pet',
     isActive: true,
-    order: 0,
   });
 
   // Fetch categories on mount
@@ -52,7 +51,7 @@ const CategoriesPage: React.FC = () => {
       if (res.success) {
         await fetchCategories();
         setIsAddingCategory(false);
-        setNewCategory({ type: 'pet', isActive: true, order: 0 });
+        setNewCategory({ type: 'pet', isActive: true});
       }
     } catch (error) {
       console.error('Error adding category:', error);
