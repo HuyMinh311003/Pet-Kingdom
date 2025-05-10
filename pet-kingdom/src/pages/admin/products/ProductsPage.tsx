@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
 import { Product } from "../../../types/admin";
@@ -54,6 +54,8 @@ const ProductsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevTypeRef = useRef<"pet" | "tool">(productType);
   // 1) Load all categories (active only)
   useEffect(() => {
     categoryApi
@@ -78,31 +80,41 @@ const ProductsPage: React.FC = () => {
     }
   }, [categories, paramCatId]);
 
-  // 3) Mỗi khi selectedCategory thay đổi →
-  //     reset form mới theo type
-  //     fetch products cho category đó
   useEffect(() => {
     if (!selectedCategory) return;
 
-    // cập nhật type & reset newProduct
-    setProductType(selectedCategory.type);
-    setNewProduct({
-      categoryId: selectedCategory._id,
-      isActive: true,
-      stock: selectedCategory.type === "pet" ? 1 : 0,
-      price: 0,
-    });
-
-    // fetch products for that category
+    const newType = selectedCategory.type;
+    // Nếu type thay đổi so với trước đó → reset toàn bộ form
+    if (prevTypeRef.current !== newType) {
+      setProductType(newType);
+      setNewProduct({
+        categoryId: selectedCategory._id,
+        isActive: true,
+        stock: newType === "pet" ? 1 : 0,
+        price: 0,
+        // reset thêm các field khác tùy type:
+        ...(newType === "pet"
+          ? { birthday: "", gender: undefined, vaccinated: undefined }
+          : { brand: "", /* tool-specific */ }
+        )
+      });
+    } else {
+      // Cùng type thì chỉ update categoryId, giữ nguyên các giá trị khác
+      setNewProduct(prev => ({
+        ...prev,
+        categoryId: selectedCategory._id
+      }));
+    }
+    // Cập nhật lại prevType
+    prevTypeRef.current = newType;
     productApi
       .getProductsByCategory(selectedCategory._id)
-      .then((res) => {
-        if (res.success) {
-          setProducts(res.data.products);
-        }
+      .then(res => {
+        if (res.success) setProducts(res.data.products);
       })
-      .catch((err) => console.error("Fetch products error:", err));
+      .catch(err => console.error("Fetch products error:", err));
   }, [selectedCategory]);
+
 
   // 4) Handler khi user chọn category khác từ dropdown
   const handleCategoryChange = (catId: string) => {
@@ -188,12 +200,20 @@ const ProductsPage: React.FC = () => {
       if (res.success) {
         // reset form + reload list
         setNewProduct({
+          categoryId: selectedCategory!._id,
           isActive: true,
-          stock: productType === "pet" ? 1 : 0,
+          stock: selectedCategory!.type === "pet" ? 1 : 0,
           price: 0,
+          // reset các field khác nếu cần:
+          name: "",
+          description: "",
+          brand: "",
+          birthday: "",
+          gender: undefined,
+          vaccinated: undefined
         });
         setSelectedImage(null);
-
+        if (fileInputRef.current) fileInputRef.current.value = "";
         if (selectedCategory) {
           const listRes = await productApi.getProductsByCategory(
             selectedCategory._id
@@ -489,6 +509,7 @@ const ProductsPage: React.FC = () => {
           <div className="form-group">
             <label htmlFor="productImage">Product Image</label>
             <input
+              ref={fileInputRef}
               id="productImage"
               type="file"
               accept="image/*"
@@ -526,9 +547,8 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${
-                    product.isActive ? "active" : "inactive"
-                  }`}
+                  className={`status-btn ${product.isActive ? "active" : "inactive"
+                    }`}
                   onClick={() =>
                     handleUpdateProduct(product.id, {
                       isActive: !product.isActive,

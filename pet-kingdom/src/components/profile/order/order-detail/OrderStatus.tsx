@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import "./OrderDetailPage.css";
 import { orderApi } from "../../../../services/admin-api/orderApi";
+import { useNavigate } from "react-router-dom";
 
 const getNextStatuses = (current: string) => {
   switch (current) {
@@ -45,11 +46,14 @@ const OrderStatus = ({
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
 
+  const navigate = useNavigate();
+
   //Shipper select order
   const handleSelectOrder = async () => {
     try {
       await orderApi.assignOrderToShipper(orderId);
       setOpenConfirmDialog(false);
+      navigate("/shipper-orders");
     } catch (error) {
       console.error("Error assigning order", error);
     }
