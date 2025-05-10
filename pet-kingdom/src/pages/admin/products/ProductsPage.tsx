@@ -107,6 +107,12 @@ const ProductsPage: React.FC = () => {
     }
     // Cập nhật lại prevType
     prevTypeRef.current = newType;
+    productApi
+      .getProductsByCategory(selectedCategory._id)
+      .then(res => {
+        if (res.success) setProducts(res.data.products);
+      })
+      .catch(err => console.error("Fetch products error:", err));
   }, [selectedCategory]);
 
 
