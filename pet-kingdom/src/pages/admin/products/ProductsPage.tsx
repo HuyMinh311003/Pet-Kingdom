@@ -232,11 +232,47 @@ const ProductsPage: React.FC = () => {
   };
 
   // UPDATE PRODUCT (chỉ mock state)
-  const handleUpdateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-    );
-  };
+  const handleUpdateProduct = async (id: string, updates: Partial<Product>) => {
+  try {
+    const product = products.find((p) => p.id === id);
+    if (!product) return alert("Product not found");
+
+    const type = updates.type || product.type;
+
+    // Validate theo type
+    if (type === "pet") {
+      if (
+        updates.birthday === undefined ||
+        updates.gender === undefined ||
+        updates.vaccinated === undefined
+      ) {
+        alert("Pet update missing fields: birthday, gender, vaccinated");
+        return;
+      }
+    } else if (type === "tool") {
+      if (
+        updates.brand === undefined ||
+        updates.stock === undefined
+      ) {
+        alert("Tool update missing fields: brand, stock");
+        return;
+      }
+    }
+
+    const res = await productApi.updateProduct(id, updates);
+    if (res.success) {
+      setProducts((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
+      );
+    } else {
+      alert("Update failed: " + res.message);
+    }
+  } catch (err) {
+    console.error("Error updating product:", err);
+    alert("Có lỗi xảy ra khi cập nhật sản phẩm.");
+  }
+};
+
 
   // DELETE PRODUCT
   const handleDeleteProduct = async (id: string) => {
@@ -257,6 +293,7 @@ const ProductsPage: React.FC = () => {
 
   // EDIT MODAL
   const handleEditClick = (product: Product) => {
+      console.log("Clicked Edit Product:", product); // 👉 ADD THIS LINE
     setSelectedProduct(product);
     setIsEditModalOpen(true);
   };

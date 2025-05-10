@@ -17,5 +17,6 @@ router.put('/profile/:id/password', auth, userController.changePassword);
 router.get('/', [auth, admin], userController.getUsers);
 router.post('/staff', [auth, admin], userController.createStaff);
 router.patch('/:id/toggle-status', [auth, admin], userController.toggleStatus);
+router.delete('/:id', [auth, admin], userController.deleteUser);
 
 module.exports = router;
