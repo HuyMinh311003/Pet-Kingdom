@@ -219,7 +219,7 @@ const StaffPage: React.FC = () => {
                         member.role.slice(1)}
                     </span>
                   </td>
-                  <td>{new Date(member.joinDate).toLocaleDateString()}</td>
+                  <td>{new Date(member.createAt).toLocaleDateString()}</td>
                   <td>
                     <span
                       className={`status-badge ${member.isActive ? "active" : "inactive"
