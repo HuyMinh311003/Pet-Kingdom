@@ -34,10 +34,10 @@ const StaffPage: React.FC = () => {
     try {
       if (isEditing && editingId) {
         const updated = await staffApi.updateStaff(editingId, newStaff);
-      setStaff(staff.map((s) => (s._id === editingId ? updated.data : s)));
+        setStaff(staff.map((s) => (s._id === editingId ? updated.data : s)));
       } else {
         const created = await staffApi.createStaff(newStaff);
-      setStaff([...staff, created.data]);
+        setStaff([...staff, created.data]);
       }
       resetForm();
     } catch (error) {
@@ -56,9 +56,11 @@ const StaffPage: React.FC = () => {
     try {
       const updated = await staffApi.toggleStaffStatus(id);
       console.log("Updated staff from API:", updated); // 👉 Kiểm tra response từ API
-      setStaff(staff.map((s) =>
-        s._id === id ? { ...s, isActive: updated.data.isActive } : s
-      ));
+      setStaff(
+        staff.map((s) =>
+          s._id === id ? { ...s, isActive: updated.data.isActive } : s
+        )
+      );
     } catch (error) {
       console.error("Failed to toggle status:", error);
     }
@@ -219,11 +221,12 @@ const StaffPage: React.FC = () => {
                         member.role.slice(1)}
                     </span>
                   </td>
-                  <td>{new Date(member.joinDate).toLocaleDateString()}</td>
+                  <td>{new Date(member.createdAt).toLocaleDateString()}</td>
                   <td>
                     <span
-                      className={`status-badge ${member.isActive ? "active" : "inactive"
-                        }`}
+                      className={`status-badge ${
+                        member.isActive ? "active" : "inactive"
+                      }`}
                     >
                       {member.isActive ? "Active" : "Inactive"}
                     </span>
@@ -231,11 +234,10 @@ const StaffPage: React.FC = () => {
                   <td>
                     <div className="action-buttons">
                       <button
-                        className={`status-toggle-btn ${member.isActive ? "deactivate" : "activate"
-                          }`}
-                        onClick={() =>
-                          handleUpdateStaffStatus(member._id)
-                        }
+                        className={`status-toggle-btn ${
+                          member.isActive ? "deactivate" : "activate"
+                        }`}
+                        onClick={() => handleUpdateStaffStatus(member._id)}
                       >
                         {member.isActive ? "Deactivate" : "Activate"}
                       </button>
