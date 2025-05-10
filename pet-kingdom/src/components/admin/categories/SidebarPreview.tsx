@@ -13,7 +13,7 @@ interface SidebarPreviewProps {
   selectedCategory: Category | null;
 }
 
-const STATIC_TABS = [
+const STATIC_TABS: Category[] = [
   {
     _id: 'pets',
     name: 'Thú cưng',

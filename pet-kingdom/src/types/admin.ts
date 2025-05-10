@@ -19,7 +19,7 @@ export interface Category {
   _id: string;
   name: string;
   type: 'pet' | 'tool';
-  parent?: string | Category;
+  parent?: string | null;
   isActive: boolean;
   children?: Category[];
 }

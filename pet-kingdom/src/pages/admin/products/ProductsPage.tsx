@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
 import { Product } from "../../../types/admin";
@@ -53,7 +53,7 @@ const ProductsPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   // 1) Load all categories (active only)
   useEffect(() => {
     categoryApi
@@ -188,12 +188,20 @@ const ProductsPage: React.FC = () => {
       if (res.success) {
         // reset form + reload list
         setNewProduct({
+          categoryId: selectedCategory!._id,
           isActive: true,
-          stock: productType === "pet" ? 1 : 0,
+          stock: selectedCategory!.type === "pet" ? 1 : 0,
           price: 0,
+          // reset các field khác nếu cần:
+          name: "",
+          description: "",
+          brand: "",
+          birthday: "",
+          gender: undefined,
+          vaccinated: undefined
         });
         setSelectedImage(null);
-
+        if (fileInputRef.current) fileInputRef.current.value = "";
         if (selectedCategory) {
           const listRes = await productApi.getProductsByCategory(
             selectedCategory._id
@@ -452,6 +460,7 @@ const ProductsPage: React.FC = () => {
           <div className="form-group">
             <label htmlFor="productImage">Product Image</label>
             <input
+              ref={fileInputRef}
               id="productImage"
               type="file"
               accept="image/*"
@@ -489,9 +498,8 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${
-                    product.isActive ? "active" : "inactive"
-                  }`}
+                  className={`status-btn ${product.isActive ? "active" : "inactive"
+                    }`}
                   onClick={() =>
                     handleUpdateProduct(product.id, {
                       isActive: !product.isActive,
