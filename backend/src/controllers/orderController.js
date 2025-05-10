@@ -95,7 +95,8 @@ exports.getOrders = async (req, res) => {
             startDate,
             endDate,
             page = 1,
-            limit = 10
+            limit = 10,
+            sort = "desc"  // Mặc định là "desc"
         } = req.query;
 
         const query = {};
@@ -108,15 +109,12 @@ exports.getOrders = async (req, res) => {
             if (endDate) query.createdAt.$lte = new Date(endDate);
         }
 
-        // Admin can see all orders, customers see only their orders
-        if (req.user.role === 'Customer') {
-            query.user = req.user._id;
-        }
-
         const total = await Order.countDocuments(query);
 
+        const sortOrder = sort === "asc" ? 1 : -1;  // Sort ascending (1) hoặc descending (-1)
+
         const orders = await Order.find(query)
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: sortOrder }) 
             .skip((page - 1) * limit)
             .limit(limit)
             .populate('user', 'name email')
@@ -179,15 +177,16 @@ exports.getOrderById = async (req, res) => {
 
 exports.getUserOrders = async (req, res) => {
     try {
-        const { status, page = 1, limit = 10 } = req.query;
+        const { status, page = 1, limit = 10, sort = 'desc' } = req.query;
         const query = { user: req.params.userId };
 
         if (status) query.status = status;
 
         const total = await Order.countDocuments(query);
+        const sortOrder = sort === 'asc' ? 1 : -1;
 
         const orders = await Order.find(query)
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: sortOrder })
             .skip((page - 1) * limit)
             .limit(limit)
             .populate('items.product', 'name imageUrl');
@@ -320,7 +319,7 @@ exports.getOrderAnalytics = async (req, res) => {
 // Danh sách order đã xác nhận nhưng shipper chưa chọn
 exports.getAssignedOrders = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, sort = 'desc' } = req.query;
 
         const query = {
             status: 'Đã xác nhận',
@@ -328,9 +327,10 @@ exports.getAssignedOrders = async (req, res) => {
         };
 
         const total = await Order.countDocuments(query);
+        const sortOrder = sort === 'asc' ? 1 : -1;
 
         const orders = await Order.find(query)
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: sortOrder })
             .skip((page - 1) * limit)
             .limit(limit)
             .populate('user', 'name email')
@@ -359,11 +359,16 @@ exports.getAssignedOrders = async (req, res) => {
 // Show danh sách order shipper đã chọn
 exports.getShipperOrders = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
-        const total = await Order.countDocuments({ assignedTo: req.user._id });
+        const { page = 1, limit = 10, sort = 'desc', status } = req.query;
 
-        const orders = await Order.find({ assignedTo: req.user._id })
-            .sort({ createdAt: -1 })
+        const query = { assignedTo: req.user._id };
+        if (status) query.status = status;
+
+        const total = await Order.countDocuments(query);
+        const sortOrder = sort === 'asc' ? 1 : -1;
+
+        const orders = await Order.find(query)
+            .sort({ createdAt: sortOrder })
             .skip((page - 1) * limit)
             .limit(limit)
             .populate('user', 'name email')

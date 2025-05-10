@@ -17,37 +17,57 @@ const OrderList = ({ role, viewMode }: Props) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [ordersPerPage, setOrdersPerPage] = useState<number>(10);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  useEffect(() => {
+    if (role === "Customer") {
+      setOrdersPerPage(5);
+    } else {
+      setOrdersPerPage(10);
+    }
+  }, [role]);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         let data;
+        let total;
 
+        // Construct query parameters
+        const queryParams = {
+          page: currentPage,
+          limit: ordersPerPage,
+          status: statusFilter,
+          sort: sortOrder === "asc" ? "asc" : "desc", // Handle sorting by createdAt
+        };
+
+        // Fetch orders based on role
         if (role === "Admin") {
-          const response = await orderApi.getOrders({ page: 1, limit: 10 });
+          const response = await orderApi.getOrders(queryParams);
           data = response.data.orders;
+          total = response.data.pagination.pages;
         } else if (role === "Shipper") {
           if (viewMode === "assigned-orders") {
-            const response = await orderApi.getAssignedOrders({
-              page: 1,
-              limit: 10,
-            });
+            const response = await orderApi.getAssignedOrders(queryParams);
             data = response.data.orders;
+            total = response.data.pagination.pages;
           } else if (viewMode === "shipper-orders") {
-            const response = await orderApi.getShipperOrders({
-              page: 1,
-              limit: 10,
-            });
+            const response = await orderApi.getShipperOrders(queryParams);
             data = response.data.orders;
-          } else {
-            data = [];
+            total = response.data.pagination.pages;
           }
         } else if (role === "Customer") {
-          const response = await orderApi.getUserOrders({ page: 1, limit: 5 });
+          const response = await orderApi.getUserOrders(queryParams);
           data = response.data.orders;
+          total = response.data.pagination.pages;
         }
 
         setOrders(data);
+        setTotalPages(total);
         setLoading(false);
       } catch (error) {
         setError("Failed to load orders.");
@@ -56,14 +76,7 @@ const OrderList = ({ role, viewMode }: Props) => {
     };
 
     fetchOrders();
-  }, [role, viewMode]);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 5;
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
+  }, [role, viewMode, currentPage, ordersPerPage, statusFilter, sortOrder]); // Add statusFilter and sortOrder to dependencies
 
   const handleClick = (id: string, status: string) => {
     let path = "";
@@ -102,15 +115,43 @@ const OrderList = ({ role, viewMode }: Props) => {
     }
   };
 
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(event.target.value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const handleSortOrderChange = (order: "asc" | "desc") => {
+    setSortOrder(order);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="order-list">
-      <h2 style={{ marginBottom: "25px" }}>Orders List</h2>
+      <div className="order-header">
+        <h2 style={{ marginBottom: "25px" }}>Danh sách đơn hàng</h2>
+        <div className="order-filters">
+          {viewMode !== "assigned-orders" && (
+            <select onChange={handleStatusChange} value={statusFilter}>
+              <option value="">Tất cả</option>
+              <option value="Chờ xác nhận">Chờ xác nhận</option>
+              <option value="Đã xác nhận">Đã xác nhận</option>
+              <option value="Đang giao">Đang giao</option>
+              <option value="Đã giao">Đã giao</option>
+              <option value="Đã hủy">Đã hủy</option>
+            </select>
+          )}
+
+          <button onClick={() => handleSortOrderChange("asc")}>↑ Date</button>
+          <button onClick={() => handleSortOrderChange("desc")}>↓ Date</button>
+        </div>
+      </div>
+
       {loading && <div>Loading...</div>}
       {error && <div className="error-message">{error}</div>}
       {orders.length === 0 && !loading && !error ? (
-        <div className="no-orders">No orders available.</div>
+        <div className="no-orders">Hiện không có đơn hàng</div>
       ) : (
-        currentOrders.map((order) => (
+        orders.map((order) => (
           <div
             key={order._id}
             onClick={() => handleClick(order._id, order.status)}
@@ -131,6 +172,8 @@ const OrderList = ({ role, viewMode }: Props) => {
           </div>
         ))
       )}
+
+      {/* Pagination */}
       <div className="order-pagination">
         <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
           {"<<"}

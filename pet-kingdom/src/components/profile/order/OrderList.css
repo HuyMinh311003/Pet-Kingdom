@@ -80,3 +80,32 @@
   background-color: #fecaca;
   color: #991b1b;
 }
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.order-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.order-filters select,
+.order-filters button {
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background-color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.order-filters button:hover {
+  background-color: #ffc371;
+  color: white;
+}
