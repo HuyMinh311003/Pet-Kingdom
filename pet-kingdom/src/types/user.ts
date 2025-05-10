@@ -8,6 +8,9 @@ export interface User {
   avatar: string | null;
   addresses: Address[];
   lastLogin: string | null;
+  joinDate: string;
+  password: string;
+  isDeleted?: boolean;
 }
 
 export interface Address {

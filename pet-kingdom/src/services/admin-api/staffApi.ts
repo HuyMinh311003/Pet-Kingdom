@@ -1,30 +1,27 @@
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:5000/api';
+import api from './axiosConfig';
+import { User } from '../../types/user';
 
 export const staffApi = {
-  getStaffList: async () => {
-    const response = await axios.get(`${BASE_URL}/users/staff`);
+  getStaffList: async (): Promise<User[]> => {
+    const response = await api.get('/users', { params: { role: 'Shipper' } });
+    return response.data.data.users;
+  },
+
+  createStaff: async (staffData: Partial<User>): Promise<User> => {
+    const response = await api.post('/users/staff', {
+      ...staffData,
+      role: 'Shipper',
+    });
     return response.data;
   },
 
-  createStaff: async (staffData: any) => {
-    const response = await axios.post(`${BASE_URL}/users/staff`, staffData);
+  updateStaff: async (id: string, staffData: Partial<User>): Promise<User> => {
+    const response = await api.put(`/users/profile/${id}`, staffData);
     return response.data;
   },
 
-  updateStaff: async (id: string, staffData: any) => {
-    const response = await axios.put(`${BASE_URL}/users/staff/${id}`, staffData);
-    return response.data;
-  },
-
-  deleteStaff: async (id: string) => {
-    const response = await axios.delete(`${BASE_URL}/users/staff/${id}`);
-    return response.data;
-  },
-
-  toggleStaffStatus: async (id: string) => {
-    const response = await axios.patch(`${BASE_URL}/users/${id}/toggle-status`);
+  toggleStaffStatus: async (id: string): Promise<{ success: boolean; data: User }> => {
+    const response = await api.patch(`/users/${id}/toggle-status`);
     return response.data;
   }
-};
+};  
