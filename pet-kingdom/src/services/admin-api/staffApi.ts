@@ -7,7 +7,7 @@ export const staffApi = {
     return response.data.data.users;
   },
 
-  createStaff: async (staffData: Partial<User>): Promise<User> => {
+  createStaff: async (staffData: Partial<User>): Promise<{ success: boolean; data: User }> => {
     const response = await api.post('/users/staff', {
       ...staffData,
       role: 'Shipper',
@@ -15,7 +15,7 @@ export const staffApi = {
     return response.data;
   },
 
-  updateStaff: async (id: string, staffData: Partial<User>): Promise<User> => {
+  updateStaff: async (id: string, staffData: Partial<User>): Promise<{ success: boolean; data: User }> => {
     const response = await api.put(`/users/profile/${id}`, staffData);
     return response.data;
   },
