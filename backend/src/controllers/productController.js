@@ -1,5 +1,7 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const Reservation = require('../models/Reservation');
+const mongoose = require('mongoose');
 
 exports.createProduct = async (req, res) => {
     try {
@@ -63,19 +65,28 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-// controllers/productController.js
 exports.getProducts = async (req, res) => {
     try {
-        const { category, type, minPrice, maxPrice, search, sort, page = 1, limit = 10 } = req.query;
-        const query = { isActive: true };
+        const {
+            category,
+            type,
+            minPrice,
+            maxPrice,
+            search,
+            sort,
+            page = 1,
+            limit = 10
+        } = req.query;
 
-        // === CHỈ DÙNG $in, không override nữa ===
+        // 1) Build base query
+        const query = { isActive: true };
         if (category) {
             const catIds = Array.isArray(category) ? category : category.split(',');
             query.categoryId = { $in: catIds };
         }
-
-        if (type) query.type = type;
+        if (type) {
+            query.type = type;
+        }
         if (minPrice || maxPrice) {
             query.price = {};
             if (minPrice) query.price.$gte = Number(minPrice);
@@ -88,10 +99,11 @@ exports.getProducts = async (req, res) => {
             ];
         }
 
+        // 2) Count & fetch page
         const total = await Product.countDocuments(query);
         let qb = Product.find(query)
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(Number(limit));
 
         if (sort) {
             const dir = sort.startsWith('-') ? -1 : 1;
@@ -101,11 +113,47 @@ exports.getProducts = async (req, res) => {
             qb = qb.sort({ createdAt: -1 });
         }
 
+        // 3) Populate and execute
         const products = await qb.populate('categoryId', 'name');
-        res.json({ success: true, data: { products, pagination: { total, page: Number(page), pages: Math.ceil(total / limit) } } });
+
+        // 4) Compute reserved quantities
+        const productIds = products.map(p => p._id);
+        const reservedAgg = await Reservation.aggregate([
+            { $match: { product: { $in: productIds.map(id => new mongoose.Types.ObjectId(id)) } } },
+            { $group: { _id: '$product', total: { $sum: '$quantity' } } }
+        ]);
+        const reservedMap = reservedAgg.reduce((acc, cur) => {
+            acc[cur._id.toString()] = cur.total;
+            return acc;
+        }, {});
+
+        // 5) Add `available` to each product
+        const productsWithAvailable = products.map(p => {
+            const obj = p.toObject();
+            const reserved = reservedMap[obj._id.toString()] || 0;
+            obj.available = obj.stock - reserved;
+            return obj;
+        });
+
+        // 6) Send response (unchanged pagination structure)
+        res.json({
+            success: true,
+            data: {
+                products: productsWithAvailable,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / Number(limit))
+                }
+            }
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Error fetching products', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching products',
+            error: error.message
+        });
     }
 };
 

@@ -6,6 +6,7 @@ import api from '../../services/admin-api/axiosConfig';
 import { useSearchParams } from 'react-router-dom';
 import PriceRangeSlider from './filters/PriceRangeSlider';
 import SidebarFilter, { Category } from './SidebarFilter';
+import { productsApi } from '../../services/customer-api/api';
 
 interface Product {
   id: string;
@@ -15,7 +16,7 @@ interface Product {
   imageUrl: string;
   categoryId: string;
   type: 'pet' | 'tool';
-  stock: number;
+  available: number;
   birthday?: string;
   gender?: 'male' | 'female';
   vaccinated?: boolean;
@@ -42,6 +43,21 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await productsApi.getProducts();
+      // giả sử API trả về { success, data: { products: Product[] } }
+      if (res.data.success) {
+        setProducts(res.data.data.products);
+      }
+    } catch (err) {
+      console.error('Error loading products:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -244,10 +260,14 @@ export default function ProductList() {
               products.map(p => (
                 <ProductCard
                   key={p.id}
+                  id={p.id}
                   image={p.imageUrl}
                   title={p.name}
                   description={p.description}
                   price={p.price}
+                  stock={p.available}
+                  type={p.type}
+                  onAddSuccess={fetchProducts}
                 />
               ))
             )}
