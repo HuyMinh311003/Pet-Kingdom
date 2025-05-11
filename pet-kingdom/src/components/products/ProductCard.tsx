@@ -6,12 +6,8 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { cartApi } from "../../services/customer-api/api";
 
-import ReCAPTCHA from 'react-google-recaptcha';
-import { useRef } from "react";
 
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 interface ProductCardProps {
   id: string;
   image: string;
@@ -20,60 +16,25 @@ interface ProductCardProps {
   price: number;
   stock: number;
   type: "pet" | "tool";
-  onAddSuccess?: () => void;
+  onAdd: () => void;
 }
 
 export default function ProductCard({
-  id, image, title, description, price, stock, type, onAddSuccess
+  id, image, title, description, price, stock, type, onAdd
 }: ProductCardProps) {
   const navigate = useNavigate();
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const isPet = type === "pet";
   const addLabel = isPet ? "Adopt" : "Add to Cart";
 
-  // AFTER
-  const handleAddToCart = () => {
+
+  const handleAddToCart = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-      const role = localStorage.getItem("userRole");
-      if (role !== "Customer") {
-        alert("Chỉ Customer mới được thêm vào giỏ hàng");
-        return;
-      }
-      if (!recaptchaRef.current) {
-        alert("reCAPTCHA chưa sẵn sàng, vui lòng thử lại");
-        return;
-      }
-      recaptchaRef.current.execute();
+      onAdd();
     } catch (err: any) {
-      alert(err.message || "Có lỗi xảy ra, vui lòng thử lại");
+      alert(err || "Thêm vào giỏ hàng thất bại");
     }
   };
 
-
-  //callback khi reCAPTCHA trả về token
-  const onCaptchaResolved = async (captchaToken: string | null) => {
-    if (!captchaToken) {
-      alert("Vui lòng hoàn thành CAPTCHA");
-      return;
-    }
-
-    try {
-      const userId = localStorage.getItem("userId")!;
-      await cartApi.addItem(userId, id, 1, captchaToken);
-      alert("Đã thêm vào giỏ hàng");
-      onAddSuccess?.();
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Thêm vào giỏ hàng thất bại");
-    } finally {
-      // Reset widget để dùng cho lần sau
-      recaptchaRef.current?.reset();
-    }
-  };
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardMedia
@@ -114,19 +75,6 @@ export default function ProductCard({
           color="error"
         ></Button>
       </CardActions>
-      <ReCAPTCHA
-        sitekey={RECAPTCHA_SITE_KEY}
-        size="invisible"
-        ref={recaptchaRef}
-        onChange={onCaptchaResolved}
-        onErrored={() => {
-          alert("Không thể tải reCAPTCHA, vui lòng kiểm tra Internet");
-        }}
-        onExpired={() => {
-          alert("reCAPTCHA hết hạn, vui lòng thử lại");
-          recaptchaRef.current?.reset();
-        }}
-      />
     </Card>
   );
 }

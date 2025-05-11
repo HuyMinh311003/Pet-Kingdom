@@ -6,8 +6,10 @@ import api from '../../services/admin-api/axiosConfig';
 import { useSearchParams } from 'react-router-dom';
 import PriceRangeSlider from './filters/PriceRangeSlider';
 import SidebarFilter, { Category } from './SidebarFilter';
-import { productsApi } from '../../services/customer-api/api';
+import { cartApi, productsApi } from '../../services/customer-api/api';
+import ReCAPTCHA from 'react-google-recaptcha';
 
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 interface Product {
   id: string;
   name: string;
@@ -29,6 +31,9 @@ export default function ProductList() {
   const categoryName = searchParams.get('name');
   const isFirstFilterRun = useRef(true);
 
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [pendingAdd, setPendingAdd] = useState<string | null>(null);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'pet' | 'tool'>('pet');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -43,6 +48,60 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+  const tryAddToCart = async (productId: string, captchaToken?: string) => {
+    const userId = localStorage.getItem('userId')!;
+    return cartApi.addItem(userId, productId, 1, captchaToken);
+  };
+
+  // xử lý khi click ADD
+  const handleAdd = async (productId: string) => {
+    // kiểm auth/role nếu cần
+    const token = localStorage.getItem("token");
+    if (!token) { /* redirect login */ return; }
+    const role = localStorage.getItem("userRole");
+    if (role !== "Customer") {
+      alert("Chỉ Customer mới được thêm vào giỏ hàng");
+      return;
+    }
+
+    try {
+      // 5 lần đầu → ok
+      await tryAddToCart(productId);
+      alert("Đã thêm vào giỏ hàng");
+      fetchProducts(); // hoặc whatever onAddSuccess của bạn
+    } catch (err: any) {
+      const status = err.response?.status;
+      const msg = err.response?.data?.message;
+      // server trả 429 + "Captcha required" → bật widget
+      if (status === 429 && msg === 'Captcha required') {
+        setPendingAdd(productId);
+        recaptchaRef.current?.execute();
+        return;
+      }
+      alert(msg || "Thêm vào giỏ hàng thất bại");
+    }
+  };
+
+  // callback khi CAPTCHA resolve xong
+  const onCaptchaResolved = async (captchaToken: string | null) => {
+    if (!captchaToken || !pendingAdd) {
+      alert("Vui lòng hoàn thành CAPTCHA");
+      recaptchaRef.current?.reset();
+      setPendingAdd(null);
+      return;
+    }
+    try {
+      await tryAddToCart(pendingAdd, captchaToken);
+      alert("Đã thêm vào giỏ hàng");
+      fetchProducts();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Xác thực CAPTCHA thất bại");
+    } finally {
+      recaptchaRef.current?.reset();
+      setPendingAdd(null);
+    }
+  };
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -267,11 +326,22 @@ export default function ProductList() {
                   price={p.price}
                   stock={p.available}
                   type={p.type}
-                  onAddSuccess={fetchProducts}
+                  onAdd={() => { handleAdd(p.id); }}
                 />
               ))
             )}
           </div>
+          <ReCAPTCHA
+            sitekey={RECAPTCHA_SITE_KEY}
+            size="invisible"
+            ref={recaptchaRef}
+            onChange={onCaptchaResolved}
+            onErrored={() => alert("Không thể tải CAPTCHA")}
+            onExpired={() => {
+              alert("CAPTCHA hết hạn, vui lòng thử lại");
+              recaptchaRef.current?.reset();
+            }}
+          />
         </div>
       </div>
     </div>
