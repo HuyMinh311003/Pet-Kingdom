@@ -8,16 +8,16 @@ import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
+  id: string;
   image: string;
   title: string;
-  description: string;
   price: number;
 }
 
 export default function ProductCard({
+  id,
   image,
   title,
-  description,
   price,
 }: ProductCardProps) {
   const navigate = useNavigate();
@@ -31,17 +31,14 @@ export default function ProductCard({
         }}
         image={image}
         title={title}
-        onClick={() => navigate("/products/detail")}
+        onClick={() => navigate(`/products/${id}`)}
       />
       <CardContent>
         <Typography gutterBottom variant="h6" component="div">
-          {title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {description}
+          <strong>{title}</strong>
         </Typography>
         <Typography variant="subtitle1" color="text.primary" sx={{ mt: 1 }}>
-          ${price.toFixed(2)}
+          {price.toLocaleString()}₫
         </Typography>
       </CardContent>
       <CardActions className="botton-bar">

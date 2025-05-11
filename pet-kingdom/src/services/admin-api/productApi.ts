@@ -1,8 +1,8 @@
-import { Product } from '../../types/admin';
-import api from './axiosConfig';
+import { Product } from "../../types/admin";
+import api from "./axiosConfig";
 export const productApi = {
   getProducts: async (params?: any) => {
-    const response = await api.get('/products', { params });
+    const response = await api.get("/products", { params });
     return response.data;
   },
 
@@ -12,12 +12,12 @@ export const productApi = {
   },
 
   createProduct: async (product: Partial<Product>) => {
-    const response = await api.post('/products', product);
+    const response = await api.post("/products", product);
     return response.data;
   },
 
   updateProduct: async (id: string, product: Partial<Product>) => {
-    const response = await  api.put(`/products/${id}`, product);
+    const response = await api.put(`/products/${id}`, product);
     return response.data;
   },
 
@@ -43,19 +43,32 @@ export const productApi = {
     data: { products: Product[]; pagination?: any };
     message?: string;
   }> => {
-    const response = await api.get('/products', {
-      params: { category: categoryId }
+    const response = await api.get("/products", {
+      params: { category: categoryId },
     });
     return response.data;
   },
 
   // uploadImage rồi trả về đúng url
-  uploadImage: async (imageData: FormData): Promise<{
+  uploadImage: async (
+    imageData: FormData
+  ): Promise<{
     success: boolean;
     url: string;
     message?: string;
   }> => {
-    const response = await api.post('/products/upload', imageData);
+    const response = await api.post("/products/upload", imageData);
+    return response.data;
+  },
+
+  getRelatedProducts: async (
+    id: string
+  ): Promise<{
+    success: boolean;
+    data: Product[];
+    message?: string;
+  }> => {
+    const response = await api.get(`/products/${id}/related`);
     return response.data;
   },
 };

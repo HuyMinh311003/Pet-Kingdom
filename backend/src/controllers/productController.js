@@ -10,11 +10,11 @@ exports.createProduct = async (req, res) => {
             categoryId,
             stock,
             imageUrl,
-            // Pet specific fields
+            type,
+            // Specific fields
             birthday,
             gender,
             vaccinated,
-            type,
             brand
         } = req.body;
 
@@ -144,21 +144,31 @@ exports.getRelatedProducts = async (req, res) => {
             });
         }
 
-        // Get related products based on category and type
-        const relatedProducts = await Product.find({
-            _id: { $ne: product._id }, // Exclude current product
-            $or: [
-                { categoryId: product.categoryId }, // Same category
-                { type: product.type } // Same type (pet/tool)
-            ],
-            isActive: true
-        })
-            .limit(4)
-            .populate('categoryId', 'name');
+        // Use aggregation to get random 4 related products by category or type
+        const relatedProducts = await Product.aggregate([
+            {
+                $match: {
+                    _id: { $ne: product._id },
+                    isActive: true,
+                    $or: [
+                        { categoryId: product.categoryId },
+                        { type: product.type }
+                    ]
+                }
+            },
+            { $sample: { size: 4 } } // <-- random sampling
+        ]);
+
+        // Optionally populate categoryId if needed manually
+        // (aggregate doesn't support populate directly)
+        const populatedProducts = await Product.populate(relatedProducts, {
+            path: 'categoryId',
+            select: 'name'
+        });
 
         res.json({
             success: true,
-            data: relatedProducts
+            data: populatedProducts
         });
     } catch (error) {
         res.status(500).json({
@@ -168,6 +178,7 @@ exports.getRelatedProducts = async (req, res) => {
         });
     }
 };
+
 
 exports.updateProduct = async (req, res) => {
     try {
