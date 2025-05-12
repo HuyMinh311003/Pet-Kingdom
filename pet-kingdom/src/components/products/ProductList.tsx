@@ -18,7 +18,7 @@ interface Product {
   categoryId: string;
   type: 'pet' | 'tool';
   birthday?: string;
-  gender?: 'male' | 'female';
+  gender?: "male" | "female";
   vaccinated?: boolean;
   brand?: string;
   stock: number;
@@ -26,13 +26,13 @@ interface Product {
 
 export default function ProductList() {
   const [searchParams] = useSearchParams();
-  const initialCategoryId = searchParams.get('category');
-  const categoryName = searchParams.get('name');
+  const initialCategoryId = searchParams.get("category");
+  const categoryName = searchParams.get("name");
   const isFirstFilterRun = useRef(true);
 
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [activeTab, setActiveTab] = useState<'pet' | 'tool'>('pet');
+  const [activeTab, setActiveTab] = useState<"pet" | "tool">("pet");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     initialCategoryId ? [initialCategoryId] : []
   );
@@ -40,7 +40,7 @@ export default function ProductList() {
   const [overallMaxPrice, setOverallMaxPrice] = useState(0);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
   const [expandedSections, setExpandedSections] = useState({
-    priceRange: false
+    priceRange: false,
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,8 +118,8 @@ export default function ProductList() {
       setLoading(true);
       try {
         const [catRes, prodRes] = await Promise.all([
-          api.get('/categories'),
-          api.get('/products'),
+          api.get("/categories"),
+          api.get("/products"),
         ]);
 
         if (!mounted) return;
@@ -136,7 +136,7 @@ export default function ProductList() {
         setPriceRange({ min: 0, max: maxPrice });
         await fetchCart();
       } catch (err) {
-        console.error('Error fetching initial data:', err);
+        console.error("Error fetching initial data:", err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -179,17 +179,18 @@ export default function ProductList() {
       setLoading(true);
       try {
         const params: any = {};
-        if (selectedCategories.length) params.category = selectedCategories.join(',');
+        if (selectedCategories.length)
+          params.category = selectedCategories.join(",");
         if (priceRange.min > 0) params.minPrice = priceRange.min;
         if (priceRange.max < overallMaxPrice) params.maxPrice = priceRange.max;
 
-        const res = await api.get('/products', { params });
+        const res = await api.get("/products", { params });
         if (res.data.success) {
           setProducts(res.data.data.products);
         }
         await fetchCart();
       } catch (err) {
-        console.error('Error fetching filtered products:', err);
+        console.error("Error fetching filtered products:", err);
       } finally {
         setLoading(false);
       }
@@ -199,19 +200,19 @@ export default function ProductList() {
 
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
-    setExpandedSections(prev => ({ ...prev, [sec]: !prev[sec] }));
+    setExpandedSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
 
   // helper: lấy tất cả descendant leaf IDs
   const getDescendantLeafIds = (cat: Category): string[] => {
     if (!cat.children || !cat.children.length) {
       return [cat._id];
     }
-    return cat.children.flatMap(c => getDescendantLeafIds(c));
+    return cat.children.flatMap((c) => getDescendantLeafIds(c));
   };
 
   // select/unselect logic
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       // tìm node
       const findNode = (nodes: Category[]): Category | null => {
         for (const n of nodes) {
@@ -230,14 +231,14 @@ export default function ProductList() {
 
       if (node.children && node.children.length) {
         // parent toggle => select/unselect tất cả leaf
-        const anySel = leafIds.some(id => prev.includes(id));
+        const anySel = leafIds.some((id) => prev.includes(id));
         return anySel
-          ? prev.filter(id => !leafIds.includes(id))
+          ? prev.filter((id) => !leafIds.includes(id))
           : Array.from(new Set([...prev, ...leafIds]));
       } else {
         // leaf toggle đơn lẻ
         return prev.includes(categoryId)
-          ? prev.filter(id => id !== categoryId)
+          ? prev.filter((id) => id !== categoryId)
           : [...prev, categoryId];
       }
     });
@@ -251,12 +252,12 @@ export default function ProductList() {
     <div className="product-list">
       <div className="container">
         <div className="header">
-          <h1 className="title">{categoryName || 'PET PRODUCTS'}</h1>
+          <h1 className="title">{categoryName || "PET PRODUCTS"}</h1>
           <div className="header-right">
             <p className="results-count">{products.length} RESULTS</p>
             <button
               className="filter-toggle"
-              onClick={() => setIsMobileFiltersOpen(o => !o)}
+              onClick={() => setIsMobileFiltersOpen((o) => !o)}
             >
               <Filter size={20} /> <span>Filters</span>
             </button>
@@ -264,7 +265,9 @@ export default function ProductList() {
         </div>
 
         <div className="layout">
-          <div className={`sidebar ${isMobileFiltersOpen ? 'mobile-open' : ''}`}>
+          <div
+            className={`sidebar ${isMobileFiltersOpen ? "mobile-open" : ""}`}
+          >
             <div className="sidebar-header">
               <h2>Filters</h2>
               <button
@@ -284,19 +287,21 @@ export default function ProductList() {
             <div className="filter-section">
               <button
                 className="filter-header"
-                onClick={() => toggleSection('priceRange')}
+                onClick={() => toggleSection("priceRange")}
                 aria-expanded={expandedSections.priceRange}
               >
                 PRICE RANGE
                 <ChevronDown
-                  className={`filter-icon ${expandedSections.priceRange ? 'expanded' : ''
-                    }`}
+                  className={`filter-icon ${
+                    expandedSections.priceRange ? "expanded" : ""
+                  }`}
                   size={20}
                 />
               </button>
               <div
-                className={`filter-content ${expandedSections.priceRange ? 'expanded' : ''
-                  }`}
+                className={`filter-content ${
+                  expandedSections.priceRange ? "expanded" : ""
+                }`}
               >
                 <PriceRangeSlider
                   min={0}
@@ -311,13 +316,12 @@ export default function ProductList() {
             {loading ? (
               <div className="loading">Loading...</div>
             ) : (
-              products.map(p => (
+              products.map((p) => (
                 <ProductCard
                   key={p.id}
                   id={p.id}
                   image={p.imageUrl}
                   title={p.name}
-                  description={p.description}
                   price={p.price}
                   stock={p.type === 'pet' ? (p.stock > 0 ? 1 : 0) : p.stock}
                   type={p.type}

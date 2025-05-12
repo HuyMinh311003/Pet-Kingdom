@@ -11,9 +11,9 @@ import { useState } from "react";
 
 interface ProductCardProps {
   id: string;
+  id: string;
   image: string;
   title: string;
-  description: string;
   price: number;
   stock: number;
   type: "pet" | "tool";
@@ -22,7 +22,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({
-   image, title, description, price, stock, type, onAdd, inCart
+  id, image, title, price, stock, type, onAdd, inCart
 }: ProductCardProps) {
   const navigate = useNavigate();
   const [wish, setWish] = useState(false);
@@ -63,17 +63,14 @@ export default function ProductCard({
         }}
         image={image}
         title={title}
-        onClick={() => navigate("/products/detail")}
+        onClick={() => navigate(`/products/${id}`)}
       />
       <CardContent>
         <Typography gutterBottom variant="h6" component="div">
-          {title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {description}
+          <strong>{title}</strong>
         </Typography>
         <Typography variant="subtitle1" color="text.primary" sx={{ mt: 1 }}>
-          ${price.toFixed(2)}
+          {price.toLocaleString()}₫
         </Typography>
       </CardContent>
       <CardActions className="button-bar">
@@ -93,7 +90,7 @@ export default function ProductCard({
           startIcon={
             wish
               ? <Heart fill="red" stroke="red" />
-              : <Heart />        
+              : <Heart />
           }
           variant="outlined"
           color="error"

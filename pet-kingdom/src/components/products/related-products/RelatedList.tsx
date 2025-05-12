@@ -1,61 +1,40 @@
 import "./RelatedList.css";
-import "../ProductCard";
 import ProductCard from "../ProductCard";
-
-const products = [
-  {
-    id: 1,
-    title: "Premium Dog Bed",
-    description: "High-quality and comfortable dog bed for your pet.",
-    price: 175.0,
-    image:
-      "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 1,
-    title: "Premium Dog Bed",
-    description: "High-quality and comfortable dog bed for your pet.",
-    price: 175.0,
-    image:
-      "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 1,
-    title: "Premium Dog Bed",
-    description: "High-quality and comfortable dog bed for your pet.",
-    price: 175.0,
-    image:
-      "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 1,
-    title: "Premium Dog Bed",
-    description: "High-quality and comfortable dog bed for your pet.",
-    price: 175.0,
-    image:
-      "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 1,
-    title: "Premium Dog Bed",
-    description: "High-quality and comfortable dog bed for your pet.",
-    price: 175.0,
-    image:
-      "https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=800",
-  },
-];
+import { useEffect, useState } from "react";
+import { productApi } from "../../../services/admin-api/productApi";
+import { Product } from "../../../types/admin";
+import { useParams } from "react-router-dom";
 
 export default function RelatedList() {
+  const { id } = useParams(); // Lấy productId từ URL
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        if (!id) return;
+        const res = await productApi.getRelatedProducts(id);
+        if (res.success) {
+          setRelatedProducts(res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+      }
+    };
+
+    fetchRelatedProducts();
+  }, [id]);
+
   return (
     <div className="related-container">
       <p className="title">Sản phẩm liên quan</p>
       <div className="related-list">
-        {products.map((product) => (
+        {relatedProducts.map((product) => (
           <ProductCard
             key={product.id}
-            image={product.image}
-            title={product.title}
-            description={product.description}
+            id={product.id}
+            image={product.imageUrl}
+            title={product.name}
             price={product.price}
           />
         ))}

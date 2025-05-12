@@ -49,7 +49,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/products/detail" element={<ProductDetail />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/cart/checkout" element={<Checkout />} />
             </Route>
