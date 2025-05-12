@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown, Filter } from 'lucide-react';
 import './ProductStyle.css';
 import ProductCard from './ProductCard';
-import api from '../../services/admin-api/axiosConfig';
+import { api } from '../../services/customer-api/api';
 import { useSearchParams } from 'react-router-dom';
 import PriceRangeSlider from './filters/PriceRangeSlider';
 import SidebarFilter, { Category } from './SidebarFilter';
 import { cartApi, productsApi } from '../../services/customer-api/api';
-import ReCAPTCHA from 'react-google-recaptcha';
+import Toast, { ToastProps } from '../common/toast/Toast';
 
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 interface Product {
   id: string;
   name: string;
@@ -18,11 +17,11 @@ interface Product {
   imageUrl: string;
   categoryId: string;
   type: 'pet' | 'tool';
-  available: number;
   birthday?: string;
   gender?: 'male' | 'female';
   vaccinated?: boolean;
   brand?: string;
+  stock: number;
 }
 
 export default function ProductList() {
@@ -31,9 +30,7 @@ export default function ProductList() {
   const categoryName = searchParams.get('name');
   const isFirstFilterRun = useRef(true);
 
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const [pendingAdd, setPendingAdd] = useState<string | null>(null);
-
+  const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'pet' | 'tool'>('pet');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -48,10 +45,20 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-
-  const tryAddToCart = async (productId: string, captchaToken?: string) => {
-    const userId = localStorage.getItem('userId')!;
-    return cartApi.addItem(userId, productId, 1, captchaToken);
+  
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: ToastProps['severity'];
+  }>({ open: false, message: '', severity: 'info' });
+  const showToast = (
+    message: string,
+    severity: ToastProps['severity'] = 'info'
+  ) => {
+    setToast({ open: true, message, severity });
+  };
+  const handleToastClose = () => {
+    setToast(t => ({ ...t, open: false }));
   };
 
   // xử lý khi click ADD
@@ -61,69 +68,55 @@ export default function ProductList() {
     if (!token) { /* redirect login */ return; }
     const role = localStorage.getItem("userRole");
     if (role !== "Customer") {
-      alert("Chỉ Customer mới được thêm vào giỏ hàng");
+      showToast('Chỉ Customer mới được thêm vào giỏ hàng', 'warning')
       return;
     }
 
     try {
-      // 5 lần đầu → ok
-      await tryAddToCart(productId);
-      alert("Đã thêm vào giỏ hàng");
-      fetchProducts(); // hoặc whatever onAddSuccess của bạn
+      const userId = localStorage.getItem('userId')!;
+      await cartApi.addItem(userId, productId, 1);
+      showToast('Đã thêm vào giỏ hàng', 'success');
+      await Promise.all([fetchCart(), fetchProducts()]);
     } catch (err: any) {
-      const status = err.response?.status;
-      const msg = err.response?.data?.message;
-      // server trả 429 + "Captcha required" → bật widget
-      if (status === 429 && msg === 'Captcha required') {
-        setPendingAdd(productId);
-        recaptchaRef.current?.execute();
-        return;
+      showToast(err.response?.data?.message || 'Thêm vào giỏ hàng thất bại', 'error');
+    }
+  };
+
+
+  const fetchCart = useCallback(async () => {
+    const userId = localStorage.getItem('userId')!;
+    try {
+      const res = await cartApi.getCart(userId);
+      if (res.data.success) {
+        const ids = res.data.data.items.map((i: any) => i.product.id);
+        setCartItemIds(ids);
       }
-      alert(msg || "Thêm vào giỏ hàng thất bại");
+    } catch (err) {
+      console.error('Error loading cart:', err);
     }
-  };
+  }, []);
 
-  // callback khi CAPTCHA resolve xong
-  const onCaptchaResolved = async (captchaToken: string | null) => {
-    if (!captchaToken || !pendingAdd) {
-      alert("Vui lòng hoàn thành CAPTCHA");
-      recaptchaRef.current?.reset();
-      setPendingAdd(null);
-      return;
-    }
-    try {
-      await tryAddToCart(pendingAdd, captchaToken);
-      alert("Đã thêm vào giỏ hàng");
-      fetchProducts();
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Xác thực CAPTCHA thất bại");
-    } finally {
-      recaptchaRef.current?.reset();
-      setPendingAdd(null);
-    }
-  };
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const res = await productsApi.getProducts();
-      // giả sử API trả về { success, data: { products: Product[] } }
       if (res.data.success) {
         setProducts(res.data.data.products);
       }
+      await fetchCart();
     } catch (err) {
       console.error('Error loading products:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchCart]);
 
   useEffect(() => {
     let mounted = true;
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        // song song lấy categories và all products
         const [catRes, prodRes] = await Promise.all([
           api.get('/categories'),
           api.get('/products'),
@@ -141,6 +134,7 @@ export default function ProductList() {
         const maxPrice = all.reduce((mx, p) => Math.max(mx, p.price), 0);
         setOverallMaxPrice(maxPrice);
         setPriceRange({ min: 0, max: maxPrice });
+        await fetchCart();
       } catch (err) {
         console.error('Error fetching initial data:', err);
       } finally {
@@ -149,7 +143,7 @@ export default function ProductList() {
     };
     fetchInitialData();
     return () => { mounted = false; };
-  }, []);
+  }, [fetchCart]);
 
 
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
@@ -193,6 +187,7 @@ export default function ProductList() {
         if (res.data.success) {
           setProducts(res.data.data.products);
         }
+        await fetchCart();
       } catch (err) {
         console.error('Error fetching filtered products:', err);
       } finally {
@@ -200,7 +195,7 @@ export default function ProductList() {
       }
     };
     fetchFiltered();
-  }, [selectedCategories, priceRange, overallMaxPrice]);
+  }, [selectedCategories, priceRange, overallMaxPrice, fetchCart]);
 
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
@@ -324,26 +319,28 @@ export default function ProductList() {
                   title={p.name}
                   description={p.description}
                   price={p.price}
-                  stock={p.available}
+                  stock={p.type === 'pet' ? (p.stock > 0 ? 1 : 0) : p.stock}
                   type={p.type}
-                  onAdd={() => { handleAdd(p.id); }}
+                  inCart={cartItemIds.includes(p.id)}
+                  onAdd={() => {
+                    if (p.type === 'pet' && cartItemIds.includes(p.id)) {
+                      showToast('Bạn đã thêm thú cưng này vào giỏ hàng rồi', 'info');
+                    } else {
+                      handleAdd(p.id);
+                    }
+                  }}
                 />
               ))
             )}
           </div>
-          <ReCAPTCHA
-            sitekey={RECAPTCHA_SITE_KEY}
-            size="invisible"
-            ref={recaptchaRef}
-            onChange={onCaptchaResolved}
-            onErrored={() => alert("Không thể tải CAPTCHA")}
-            onExpired={() => {
-              alert("CAPTCHA hết hạn, vui lòng thử lại");
-              recaptchaRef.current?.reset();
-            }}
-          />
         </div>
       </div>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={handleToastClose}
+      />
     </div>
   );
 }

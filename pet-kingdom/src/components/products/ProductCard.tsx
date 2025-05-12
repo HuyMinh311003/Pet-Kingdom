@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 
 interface ProductCardProps {
@@ -16,16 +17,29 @@ interface ProductCardProps {
   price: number;
   stock: number;
   type: "pet" | "tool";
+  inCart: boolean;
   onAdd: () => void;
 }
 
 export default function ProductCard({
-  id, image, title, description, price, stock, type, onAdd
+   image, title, description, price, stock, type, onAdd, inCart
 }: ProductCardProps) {
   const navigate = useNavigate();
+  const [wish, setWish] = useState(false);
   const isPet = type === "pet";
-  const addLabel = isPet ? "Adopt" : "Add to Cart";
+  let label: string;
+  let disabled: boolean;
 
+  if (stock < 1) {
+    label = "Sold Out";
+    disabled = true;
+  } else if (isPet) {
+    label = inCart ? "Adopted" : "Adopt";
+    disabled = inCart;
+  } else {
+    label = "Add to Cart";
+    disabled = false;
+  }
 
   const handleAddToCart = async () => {
     try {
@@ -34,6 +48,11 @@ export default function ProductCard({
       alert(err || "Thêm vào giỏ hàng thất bại");
     }
   };
+
+  const handleWishlistClick = () => {
+    setWish(prev => !prev);
+  };
+  const wishlistLabel = wish ? "Wishlisted" : "Add to Wishlist";
 
   return (
     <Card sx={{ maxWidth: 345 }}>
@@ -57,7 +76,7 @@ export default function ProductCard({
           ${price.toFixed(2)}
         </Typography>
       </CardContent>
-      <CardActions className="botton-bar">
+      <CardActions className="button-bar">
         <Button
           onClick={handleAddToCart}
           className="btn"
@@ -66,14 +85,21 @@ export default function ProductCard({
           variant="outlined"
           disabled={stock < 1}
         >
-          {stock > 0 ? addLabel : "Sold Out"}
+          {label}
         </Button>
         <Button
+          onClick={handleWishlistClick}
           size="small"
-          startIcon={<Heart />}
-          variant="text"
+          startIcon={
+            wish
+              ? <Heart fill="red" stroke="red" />
+              : <Heart />        
+          }
+          variant="outlined"
           color="error"
-        ></Button>
+        >
+          {wishlistLabel}
+        </Button>
       </CardActions>
     </Card>
   );

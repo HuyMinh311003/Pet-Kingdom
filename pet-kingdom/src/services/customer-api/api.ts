@@ -86,12 +86,10 @@ export const cartApi = {
     userId: string,
     productId: string,
     quantity: number,
-    captchaToken?: string
   ) =>
     api.post(`/cart/${userId}/items`, {
       productId,
       quantity,
-      captchaToken
     }),
 
   updateQuantity: (

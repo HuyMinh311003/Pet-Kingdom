@@ -23,7 +23,6 @@ const Cart: React.FC = () => {
   };
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const userId = localStorage.getItem("userId") || "";
-  const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -92,28 +91,6 @@ const Cart: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // 3) Khi `now` thay đổi, remove những item đã hết TTL
-  useEffect(() => {
-    cartItems.forEach(item => {
-      const expireMs = new Date(item.expiresAt).getTime();
-      if (now >= expireMs) {
-        // tự động xóa
-        handleRemove(item.productId);
-      }
-    });
-  }, [now, cartItems]);
-
-  const formatTimeLeft = (ms: number) => {
-    const totalSec = Math.max(0, Math.ceil(ms / 1000));
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  };
 
   return (
     <div className="cart-container">
@@ -125,8 +102,6 @@ const Cart: React.FC = () => {
       </p>
       <div className="cart-items">
         {cartItems.map((item) => {
-          const expireMs = new Date(item.expiresAt).getTime();
-          const timeLeftMs = expireMs - now;
           return (
             <div key={item.productId} className="cart-card">
               <img src={item.image} alt={item.name} className="cart-image" />
@@ -141,9 +116,7 @@ const Cart: React.FC = () => {
                     ${item.price.toFixed(2)}
                   </p>
                 </div>
-                <div className="countdown">
-                  Expires in: {formatTimeLeft(timeLeftMs)}
-                </div>
+               
                 <div className="quantity-control">
                   <button
                     onClick={() => handleDecrement(item)}

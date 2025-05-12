@@ -1,12 +1,12 @@
 require('dotenv').config({ path: './src/config/.env' });
 const express = require('express');
 const cors = require('cors');
+
 const connectDB = require('./src/config/database');
 const { errorHandler } = require('./src/utils/errorHandler');
 const { initializeAdmin } = require('./src/config/init');
 const config = require('./src/config/config');
 const path = require('path');
-
 // Import routes
 const userRoutes = require('./src/routes/userRoutes');
 const categoryRoutes = require('./src/routes/categoryRoutes');
@@ -15,9 +15,7 @@ const orderRoutes = require('./src/routes/orderRoutes');
 const cartRoutes = require('./src/routes/cartRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 const promotionRoutes = require('./src/routes/promotionRoutes');
-
 const app = express();
-
 // Connect to MongoDB
 connectDB();
 
@@ -67,7 +65,7 @@ const startServer = async () => {
     try {
         // Initialize admin user
         await initializeAdmin();
-        
+
         // Start server
         app.listen(PORT, () => {
             console.log(`Server running in ${config.server.env} mode on port ${PORT}`);

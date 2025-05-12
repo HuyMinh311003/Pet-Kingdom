@@ -1,7 +1,6 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const Reservation = require('../models/Reservation');
-const mongoose = require('mongoose');
+
 
 exports.createProduct = async (req, res) => {
     try {
@@ -116,30 +115,16 @@ exports.getProducts = async (req, res) => {
         // 3) Populate and execute
         const products = await qb.populate('categoryId', 'name');
 
-        // 4) Compute reserved quantities
-        const productIds = products.map(p => p._id);
-        const reservedAgg = await Reservation.aggregate([
-            { $match: { product: { $in: productIds.map(id => new mongoose.Types.ObjectId(id)) } } },
-            { $group: { _id: '$product', total: { $sum: '$quantity' } } }
-        ]);
-        const reservedMap = reservedAgg.reduce((acc, cur) => {
-            acc[cur._id.toString()] = cur.total;
-            return acc;
-        }, {});
-
-        // 5) Add `available` to each product
-        const productsWithAvailable = products.map(p => {
+        const productsList = products.map(p => {
             const obj = p.toObject();
-            const reserved = reservedMap[obj._id.toString()] || 0;
-            obj.available = obj.stock - reserved;
+            obj.available = obj.stock;
             return obj;
         });
 
-        // 6) Send response (unchanged pagination structure)
         res.json({
             success: true,
             data: {
-                products: productsWithAvailable,
+                products: productsList,
                 pagination: {
                     total,
                     page: Number(page),

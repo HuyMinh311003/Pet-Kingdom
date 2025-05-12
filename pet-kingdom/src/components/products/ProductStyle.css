@@ -211,19 +211,24 @@
     gap: 1.5rem;
 }
 
-.botton-bar {
-    display: flex;
-    justify-content: center !important;
-    .btn{
-        display: flex;
-        align-self: center;
-        justify-self: center;
-    }
-
-    .css-d8i980-MuiButton-startIcon{
-        margin-right: 0 !important;
-    }
+/* ProductCard Actions */
+.button-bar {
+    display: flex !important;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    padding: 0 8px;
 }
+
+.button-bar .MuiButton-root {
+    width: 100%;
+    margin-left: 0;
+}
+
+.button-bar .MuiButton-startIcon {
+    margin-right: 8px !important;
+}
+
 
 .product-card {
     position: relative;
