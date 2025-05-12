@@ -11,7 +11,6 @@ import { useState } from "react";
 
 interface ProductCardProps {
   id: string;
-  id: string;
   image: string;
   title: string;
   price: number;
