@@ -1,10 +1,38 @@
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+import { Product } from "../../../types/admin";
+import { productApi } from "../../../services/admin-api/productApi";
+
 import RelatedList from "../../../components/products/related-products/RelatedList";
-import "./ProductDetail.css";
 import BackButton from "../../../components/common/back-button/BackButton";
+import "./ProductDetail.css";
 
 export default function ProductDetail() {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [product, setProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchProduct = async () => {
+      try {
+        const res = await productApi.getProductById(id);
+        setProduct(res.data);
+      } catch (err) {
+        console.error("Failed to fetch product:", err);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  if (!product) {
+    return (
+      <div className="product-detail-loading-message">
+        Không thể tải sản phẩm...
+      </div>
+    );
+  }
 
   return (
     <div className="product-detail-page" style={{ position: "relative" }}>
@@ -16,33 +44,45 @@ export default function ProductDetail() {
         <div className="image-container">
           <img
             className="product-image"
-            src="https://images.unsplash.com/photo-1591946614720-90a587da4a36?auto=format&fit=crop&q=80&w=800"
+            src={product.imageUrl}
+            alt={product.name}
           />
         </div>
         <div className="info-container">
-          <p className="product-title">Chó vàng</p>
-          <div className="price">
-            <p className="old-price">800.000₫</p>
-            <p className="product-price">600.000₫</p>
+          <p className="product-title">{product.name}</p>
+          <div className="first-info">
+            <p>{product.price.toLocaleString()}₫</p>
+            <p style={{ marginLeft: "50px" }}>Số lượng: {product.stock}</p>
           </div>
-          <p className="text">Số lượng: 1</p>
-          <div className="sub-description">
-            <p className="text">Ngày sinh: 10/5/2018</p>
-            <p className="text">Tuổi: 7</p>
-            <p className="text">Giới tính: Đực</p>
-          </div>
-          <p className="text">Tiêm chủng: Đã tiêm</p>
+
+          {product.type === "pet" && (
+            <div className="second-info">
+              <p>
+                Ngày sinh:{" "}
+                {product.birthday &&
+                  new Date(product.birthday).toLocaleDateString("vi-VN")}
+              </p>
+              <p>Giới tính: {product.gender === "male" ? "Đực" : "Cái"}</p>
+              <p>Tiêm chủng: {product.vaccinated ? "Đã tiêm" : "Chưa tiêm"}</p>
+            </div>
+          )}
+
+          {product.type === "tool" && product.brand && (
+            <div className="second-info">
+              <p>Thương hiệu: {product.brand}</p>
+            </div>
+          )}
+
           <div className="main-description">
-            <p className="text">Mô tả: </p>
-            <p className="text">
-              Đây là một mô tả dài nói về sản phẩm. Sản phẩm này được nhập khẩu
-              từ nước ngoài với chất lượng tốt. Nó sẽ đem lại cho bạn trải
-              nghiệm tốt nhất. Bạn sẽ không phải lo lắng về chất lượng sản phẩm!
-            </p>
+            <p>Mô tả: </p>
+            <p>{product.description}</p>
           </div>
           <div className="button-list">
-            <button className="add-to-cart">Thêm vào giỏ hàng</button>
-            <button className="go-to-cart" onClick={() => navigate("/cart")}>
+            <button className="pdetail-add-to-cart">Thêm vào giỏ hàng</button>
+            <button
+              className="pdetail-go-to-cart"
+              onClick={() => navigate("/cart")}
+            >
               Đi đến giỏ hàng
             </button>
           </div>

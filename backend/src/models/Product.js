@@ -54,7 +54,6 @@ const productSchema = new mongoose.Schema({
     },
     vaccinated: {
         type: Boolean,
-        default: false,
         required: function() {
             return this.type === 'pet';
         }

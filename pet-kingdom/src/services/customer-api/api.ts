@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:5000/api';
 
 // Create axios instance
-const  api = axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
@@ -18,6 +18,21 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export const authApi = {
+  //  http://localhost:5000/api/users/login
+  login: (email: string, password: string) =>
+    api.post('/users/login', { email, password }),
+
+  // http://localhost:5000/api/users/register
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    phone: string
+  ) => api.post('/users/register', { name, email, password, phone }),
+};
+
 
 // Products API
 export const productsApi = {
@@ -44,11 +59,11 @@ export const categoriesApi = {
 export const ordersApi = {
   getOrders: () => api.get('/orders'),
   getOrder: (id: string) => api.get(`/orders/${id}`),
-  updateOrderStatus: (id: string, status: string, note?: string) => 
+  updateOrderStatus: (id: string, status: string, note?: string) =>
     api.patch(`/orders/${id}/status`, { status, note }),
   getOrderAnalytics: () => api.get('/orders/analytics'),
   getAssignedOrders: () => api.get('/orders/assigned'),
-  assignOrder: (orderId: string, shipperId: string) => 
+  assignOrder: (orderId: string, shipperId: string) =>
     api.patch(`/orders/${orderId}/assign`, { shipperId })
 };
 
@@ -60,17 +75,41 @@ export const promotionsApi = {
   updatePromotion: (id: string, data: any) => api.put(`/promotions/${id}`, data),
   deletePromotion: (id: string) => api.delete(`/promotions/${id}`),
   toggleStatus: (id: string) => api.patch(`/promotions/${id}/toggle-status`),
-  validatePromoCode: (code: string, orderValue: number) => 
+  validatePromoCode: (code: string, orderValue: number) =>
     api.post('/promotions/validate', { code, orderValue })
 };
+export const cartApi = {
+  getCart: (userId: string) =>
+    api.get(`/cart/${userId}`),
 
-// Staff/User Management API
-export const staffApi = {
-  getStaff: () => api.get('/users/staff'),
-  createStaff: (data: any) => api.post('/users/staff', data),
-  updateStaff: (id: string, data: any) => api.put(`/users/staff/${id}`, data),
-  deleteStaff: (id: string) => api.delete(`/users/staff/${id}`),
-  toggleStaffStatus: (id: string) => api.patch(`/users/staff/${id}/toggle-status`)
+  addItem: (
+    userId: string,
+    productId: string,
+    quantity: number,
+  ) =>
+    api.post(`/cart/${userId}/items`, {
+      productId,
+      quantity,
+    }),
+
+  updateQuantity: (
+    userId: string,
+    productId: string,
+    quantity: number
+  ) =>
+    api.put(`/cart/${userId}/items`, {
+      productId,
+      quantity
+    }),
+  removeItem: (
+    userId: string,
+    productId: string
+  ) =>
+    api.delete(`/cart/${userId}/items`, {
+      data: { productId }
+    }),
+  clearCart: (userId: string) =>
+    api.delete(`/cart/${userId}`)
 };
 
 export { api };
