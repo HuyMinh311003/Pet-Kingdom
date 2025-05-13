@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
 
+
 exports.createProduct = async (req, res) => {
     try {
         const {
@@ -63,19 +64,28 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-// controllers/productController.js
 exports.getProducts = async (req, res) => {
     try {
-        const { category, type, minPrice, maxPrice, search, sort, page = 1, limit = 10 } = req.query;
-        const query = { isActive: true };
+        const {
+            category,
+            type,
+            minPrice,
+            maxPrice,
+            search,
+            sort,
+            page = 1,
+            limit = 10
+        } = req.query;
 
-        // === CHỈ DÙNG $in, không override nữa ===
+        // 1) Build base query
+        const query = { isActive: true };
         if (category) {
             const catIds = Array.isArray(category) ? category : category.split(',');
             query.categoryId = { $in: catIds };
         }
-
-        if (type) query.type = type;
+        if (type) {
+            query.type = type;
+        }
         if (minPrice || maxPrice) {
             query.price = {};
             if (minPrice) query.price.$gte = Number(minPrice);
@@ -88,10 +98,11 @@ exports.getProducts = async (req, res) => {
             ];
         }
 
+        // 2) Count & fetch page
         const total = await Product.countDocuments(query);
         let qb = Product.find(query)
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(Number(limit));
 
         if (sort) {
             const dir = sort.startsWith('-') ? -1 : 1;
@@ -101,11 +112,33 @@ exports.getProducts = async (req, res) => {
             qb = qb.sort({ createdAt: -1 });
         }
 
+        // 3) Populate and execute
         const products = await qb.populate('categoryId', 'name');
-        res.json({ success: true, data: { products, pagination: { total, page: Number(page), pages: Math.ceil(total / limit) } } });
+
+        const productsList = products.map(p => {
+            const obj = p.toObject();
+            obj.available = obj.stock;
+            return obj;
+        });
+
+        res.json({
+            success: true,
+            data: {
+                products: productsList,
+                pagination: {
+                    total,
+                    page: Number(page),
+                    pages: Math.ceil(total / Number(limit))
+                }
+            }
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Error fetching products', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching products',
+            error: error.message
+        });
     }
 };
 

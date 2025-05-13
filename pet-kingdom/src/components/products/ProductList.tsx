@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronDown, Filter } from "lucide-react";
-import "./ProductStyle.css";
-import ProductCard from "./ProductCard";
-import api from "../../services/admin-api/axiosConfig";
-import { useSearchParams } from "react-router-dom";
-import PriceRangeSlider from "./filters/PriceRangeSlider";
-import SidebarFilter, { Category } from "./SidebarFilter";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { ChevronDown, Filter } from 'lucide-react';
+import './ProductStyle.css';
+import ProductCard from './ProductCard';
+import { api } from '../../services/customer-api/api';
+import { useSearchParams } from 'react-router-dom';
+import PriceRangeSlider from './filters/PriceRangeSlider';
+import SidebarFilter, { Category } from './SidebarFilter';
+import { cartApi, productsApi } from '../../services/customer-api/api';
+import Toast, { ToastProps } from '../common/toast/Toast';
 
 interface Product {
   id: string;
@@ -14,12 +16,12 @@ interface Product {
   price: number;
   imageUrl: string;
   categoryId: string;
-  type: "pet" | "tool";
-  stock: number;
+  type: 'pet' | 'tool';
   birthday?: string;
   gender?: "male" | "female";
   vaccinated?: boolean;
   brand?: string;
+  stock: number;
 }
 
 export default function ProductList() {
@@ -28,6 +30,7 @@ export default function ProductList() {
   const categoryName = searchParams.get("name");
   const isFirstFilterRun = useRef(true);
 
+  const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<"pet" | "tool">("pet");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -42,13 +45,78 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: ToastProps['severity'];
+  }>({ open: false, message: '', severity: 'info' });
+  const showToast = (
+    message: string,
+    severity: ToastProps['severity'] = 'info'
+  ) => {
+    setToast({ open: true, message, severity });
+  };
+  const handleToastClose = () => {
+    setToast(t => ({ ...t, open: false }));
+  };
+
+  // xử lý khi click ADD
+  const handleAdd = async (productId: string) => {
+    // kiểm auth/role nếu cần
+    const token = localStorage.getItem("token");
+    if (!token) { /* redirect login */ return; }
+    const role = localStorage.getItem("userRole");
+    if (role !== "Customer") {
+      showToast('Chỉ Customer mới được thêm vào giỏ hàng', 'warning')
+      return;
+    }
+
+    try {
+      const userId = localStorage.getItem('userId')!;
+      await cartApi.addItem(userId, productId, 1);
+      showToast('Đã thêm vào giỏ hàng', 'success');
+      await Promise.all([fetchCart(), fetchProducts()]);
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Thêm vào giỏ hàng thất bại', 'error');
+    }
+  };
+
+
+  const fetchCart = useCallback(async () => {
+    const userId = localStorage.getItem('userId')!;
+    try {
+      const res = await cartApi.getCart(userId);
+      if (res.data.success) {
+        const ids = res.data.data.items.map((i: any) => i.product.id);
+        setCartItemIds(ids);
+      }
+    } catch (err) {
+      console.error('Error loading cart:', err);
+    }
+  }, []);
+
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await productsApi.getProducts();
+      if (res.data.success) {
+        setProducts(res.data.data.products);
+      }
+      await fetchCart();
+    } catch (err) {
+      console.error('Error loading products:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchCart]);
 
   useEffect(() => {
     let mounted = true;
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        // song song lấy categories và all products
         const [catRes, prodRes] = await Promise.all([
           api.get("/categories"),
           api.get("/products"),
@@ -66,6 +134,7 @@ export default function ProductList() {
         const maxPrice = all.reduce((mx, p) => Math.max(mx, p.price), 0);
         setOverallMaxPrice(maxPrice);
         setPriceRange({ min: 0, max: maxPrice });
+        await fetchCart();
       } catch (err) {
         console.error("Error fetching initial data:", err);
       } finally {
@@ -73,10 +142,9 @@ export default function ProductList() {
       }
     };
     fetchInitialData();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    return () => { mounted = false; };
+  }, [fetchCart]);
+
 
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
   useEffect(() => {
@@ -120,6 +188,7 @@ export default function ProductList() {
         if (res.data.success) {
           setProducts(res.data.data.products);
         }
+        await fetchCart();
       } catch (err) {
         console.error("Error fetching filtered products:", err);
       } finally {
@@ -127,7 +196,8 @@ export default function ProductList() {
       }
     };
     fetchFiltered();
-  }, [selectedCategories, priceRange, overallMaxPrice]);
+  }, [selectedCategories, priceRange, overallMaxPrice, fetchCart]);
+
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
     setExpandedSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
@@ -253,12 +323,28 @@ export default function ProductList() {
                   image={p.imageUrl}
                   title={p.name}
                   price={p.price}
+                  stock={p.type === 'pet' ? (p.stock > 0 ? 1 : 0) : p.stock}
+                  type={p.type}
+                  inCart={cartItemIds.includes(p.id)}
+                  onAdd={() => {
+                    if (p.type === 'pet' && cartItemIds.includes(p.id)) {
+                      showToast('Bạn đã thêm thú cưng này vào giỏ hàng rồi', 'info');
+                    } else {
+                      handleAdd(p.id);
+                    }
+                  }}
                 />
               ))
             )}
           </div>
         </div>
       </div>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={handleToastClose}
+      />
     </div>
   );
 }
