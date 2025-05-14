@@ -32,6 +32,7 @@ const AdminLoginPage: React.FC = () => {
       }
 
       // Lưu thông tin đăng nhập
+      localStorage.clear();
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       setUserRole(user.role);
