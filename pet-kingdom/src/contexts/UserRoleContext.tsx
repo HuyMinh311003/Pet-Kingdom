@@ -18,6 +18,7 @@ export const UserRoleProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (!token) return null;
     try {
       const userData = localStorage.getItem('user');
+      
       if (userData) {
         const user = JSON.parse(userData);
         return user.role as UserRole;
