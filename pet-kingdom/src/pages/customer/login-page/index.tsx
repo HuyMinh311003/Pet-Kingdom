@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "./styles.css";
 import loginHeader from "../../../assets/Login-Header.png";
 import { authApi } from "../../../services/customer-api/api";
 import { useNavigate } from "react-router-dom";
-import Toast from "../../../components/common/toast/Toast";            
+import Toast from "../../../components/common/toast/Toast";
 import { AlertColor } from "@mui/material/Alert";
+import { UserRoleContext } from "../../../contexts/UserRoleContext";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^\d{10}$/;
@@ -15,6 +16,7 @@ const LoginPage: React.FC = () => {
   // Login fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setUserRole } = useContext(UserRoleContext);
 
   // Register fields
   const [regName, setRegName] = useState("");
@@ -62,8 +64,8 @@ const LoginPage: React.FC = () => {
       }
       localStorage.clear();
       localStorage.setItem("token", token);
-      localStorage.setItem("userId", user._id);
-      localStorage.setItem("userRole", user.role);
+      localStorage.setItem("user", JSON.stringify(user));
+      setUserRole(user.role);
       navigate("/");
     } catch (err: any) {
       showToast(err.response?.data?.message || "Login thất bại");
