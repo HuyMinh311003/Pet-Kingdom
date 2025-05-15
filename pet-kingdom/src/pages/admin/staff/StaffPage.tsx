@@ -72,13 +72,16 @@ const StaffPage: React.FC = () => {
   };
 
   const handleDeleteStaff = async (id: string) => {
-    try {
-      await staffApi.updateStaff(id, { isDeleted: true });
-      setStaff(staff.filter((s) => s._id !== id)); // ẩn trên UI
-    } catch (error) {
-      console.error("Failed to delete staff:", error);
-    }
-  };
+  const confirmDelete = window.confirm("Are you sure you want to delete this staff member?");
+  if (!confirmDelete) return;
+
+  try {
+    await staffApi.deleteStaff(id);
+    setStaff(staff.filter((s) => s._id !== id)); // cập nhật UI
+  } catch (error) {
+    console.error("Failed to delete staff:", error);
+  }
+};
 
   return (
     <div className="staff-page">
