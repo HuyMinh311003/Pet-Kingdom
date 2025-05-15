@@ -1,50 +1,107 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "./styles.css";
 import loginHeader from "../../../assets/Login-Header.png";
 import { authApi } from "../../../services/customer-api/api";
 import { useNavigate } from "react-router-dom";
+import Toast from "../../../components/common/toast/Toast";
+import { AlertColor } from "@mui/material/Alert";
+import { UserRoleContext } from "../../../contexts/UserRoleContext";
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^\d{10}$/;
 
 const LoginPage: React.FC = () => {
   const [showRegister, setShowRegister] = useState(false);
+
+  // Login fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setUserRole } = useContext(UserRoleContext);
 
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirm, setRegConfirm] = useState('');
-  const [regPhone, setRegPhone] = useState('');
+  // Register fields
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirm, setRegConfirm] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+
+  // Toast state
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<AlertColor>("error");
+  const showToast = (msg: string, sev: AlertColor = "error") => {
+    setToastMsg(msg);
+    setToastSeverity(sev);
+    setToastOpen(true);
+  };
+
   const navigate = useNavigate();
 
+  // --- LOGIN ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // 1) Validate
+    if (!email.trim()) {
+      showToast("Email không được để trống");
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      showToast("Email không hợp lệ");
+      return;
+    }
+    if (password.length < 6) {
+      showToast("Password phải ít nhất 6 ký tự");
+      return;
+    }
+
+    // 2) Call API
     try {
       const res = await authApi.login(email, password);
       const { token, user } = res.data.data;
       if (user.role !== "Customer") {
-        alert("Tài khoản không phải Customer");
+        showToast("Tài khoản không phải Customer");
         return;
       }
-      // Lưu vào localStorage để dùng sau
+      localStorage.clear();
       localStorage.setItem("token", token);
-      localStorage.setItem("userId", user._id);
-      localStorage.setItem("userRole", user.role);
+      localStorage.setItem("user", JSON.stringify(user));
+      setUserRole(user.role);
       navigate("/");
     } catch (err: any) {
-      alert(err.response?.data?.message || "Login thất bại");
+      showToast(err.response?.data?.message || "Login thất bại");
     }
   };
 
+  // --- REGISTER ---
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName || !regEmail || !regPassword || !regConfirm) {
-      alert('Vui lòng điền đầy đủ thông tin');
+    // 1) Validate từng field
+    if (!regName.trim()) {
+      showToast("Full Name không được để trống");
+      return;
+    }
+    if (!regEmail.trim()) {
+      showToast("Email không được để trống");
+      return;
+    }
+    if (!emailRegex.test(regEmail)) {
+      showToast("Email đăng ký không hợp lệ");
+      return;
+    }
+    if (regPassword.length < 6) {
+      showToast("Password phải tối thiểu 6 ký tự");
       return;
     }
     if (regPassword !== regConfirm) {
-      alert('Password và Confirm password không khớp');
+      showToast("Password và Confirm Password không khớp");
       return;
     }
+    if (!phoneRegex.test(regPhone)) {
+      showToast("Phone phải đúng 10 chữ số");
+      return;
+    }
+
+    // 2) Call API
     try {
       const res = await authApi.register(
         regName,
@@ -53,30 +110,42 @@ const LoginPage: React.FC = () => {
         regPhone
       );
       const { token, user } = res.data.data;
-      // backend mặc định role = 'Customer'
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', user._id);
-      localStorage.setItem('userRole', user.role);
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", user._id);
+      localStorage.setItem("userRole", user.role);
       setShowRegister(false);
-      // Thông báo & redirect về trang chính
-      alert('Đăng ký thành công!');
-      navigate('/login');
+      showToast("Đăng ký thành công!", "success");
+      navigate("/login");
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Đăng ký thất bại');
+      showToast(err.response?.data?.message || "Đăng ký thất bại");
     }
   };
 
   return (
     <div className="login-container">
       <img src={loginHeader} alt="" />
+
+      {/* --- LOGIN FORM --- */}
       <div className="login-box">
         <h2 className="login-title">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <input type="email" placeholder="Enter your email" onChange={e => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              onChange={e => setEmail(e.target.value)}
+              value={email}
+              required
+            />
           </div>
           <div className="input-group">
-            <input type="password" placeholder="Enter your password" onChange={e => setPassword(e.target.value)} required />
+            <input
+              type="password"
+              placeholder="Enter your password"
+              onChange={e => setPassword(e.target.value)}
+              value={password}
+              required
+            />
           </div>
           <button className="login-button">Login</button>
         </form>
@@ -90,12 +159,14 @@ const LoginPage: React.FC = () => {
           </button>
         </div>
       </div>
-      {/* Nền mờ và card đăng ký */}
+
+      {/* --- REGISTER MODAL --- */}
       {showRegister && (
         <div className="overlay">
           <div className="register-card">
             <h2 style={{ marginBottom: 20 }}>Register</h2>
             <form onSubmit={handleRegister}>
+              {/* Full Name */}
               <div className="input-group">
                 <input
                   type="text"
@@ -105,6 +176,7 @@ const LoginPage: React.FC = () => {
                   required
                 />
               </div>
+              {/* Email */}
               <div className="input-group">
                 <input
                   type="email"
@@ -114,6 +186,7 @@ const LoginPage: React.FC = () => {
                   required
                 />
               </div>
+              {/* Password */}
               <div className="input-group">
                 <input
                   type="password"
@@ -123,6 +196,7 @@ const LoginPage: React.FC = () => {
                   required
                 />
               </div>
+              {/* Confirm */}
               <div className="input-group">
                 <input
                   type="password"
@@ -132,12 +206,14 @@ const LoginPage: React.FC = () => {
                   required
                 />
               </div>
+              {/* Phone */}
               <div className="input-group">
                 <input
                   type="text"
-                  placeholder="Phone (optional)"
+                  placeholder="Phone (10 digits)"
                   value={regPhone}
                   onChange={e => setRegPhone(e.target.value)}
+                  required
                 />
               </div>
               <button type="submit" className="signup-button">
@@ -153,6 +229,14 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* --- GLOBAL TOAST --- */}
+      <Toast
+        open={toastOpen}
+        message={toastMsg}
+        severity={toastSeverity}
+        onClose={() => setToastOpen(false)}
+      />
     </div>
   );
 };

@@ -1,12 +1,11 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserRoleContext } from "../../../contexts/UserRoleContext";
 import "./AdminLoginPage.css";
 
 const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { setUserRole } = useContext(UserRoleContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +31,7 @@ const AdminLoginPage: React.FC = () => {
       }
 
       // Lưu thông tin đăng nhập
+      localStorage.clear();
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       setUserRole(user.role);
