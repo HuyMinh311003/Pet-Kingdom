@@ -5,6 +5,31 @@
   padding: 10px;
 }
 
+/* --- Khi chưa đăng nhập --- */
+.cart-not-logged {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.cart-not-logged p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.cart-not-logged .login-btn {
+  padding: 10px 20px;
+  background-color: #ffc371;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.cart-not-logged .login-btn:hover {
+  background-color: #ffb357;
+}
+
 .cart-card {
   display: flex;
   align-items: center;

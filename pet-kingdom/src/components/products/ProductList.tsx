@@ -6,8 +6,9 @@ import { api } from '../../services/customer-api/api';
 import { useSearchParams } from 'react-router-dom';
 import PriceRangeSlider from './filters/PriceRangeSlider';
 import SidebarFilter, { Category } from './SidebarFilter';
-import { cartApi, productsApi } from '../../services/customer-api/api';
-import Toast, { ToastProps } from '../common/toast/Toast';
+import { cartApi } from '../../services/customer-api/api';
+import { useToast } from '../../contexts/ToastContext';
+
 
 interface Product {
   id: string;
@@ -45,71 +46,62 @@ export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-  
-  const [toast, setToast] = useState<{
-    open: boolean;
-    message: string;
-    severity: ToastProps['severity'];
-  }>({ open: false, message: '', severity: 'info' });
-  const showToast = (
-    message: string,
-    severity: ToastProps['severity'] = 'info'
-  ) => {
-    setToast({ open: true, message, severity });
-  };
-  const handleToastClose = () => {
-    setToast(t => ({ ...t, open: false }));
-  };
+
+  const [cartQtyById, setCartQtyById] = useState<Record<string, number>>({});
+
+  const { showToast } = useToast();
 
   // xử lý khi click ADD
   const handleAdd = async (productId: string) => {
     // kiểm auth/role nếu cần
     const token = localStorage.getItem("token");
-    if (!token) { /* redirect login */ return; }
-    const role = localStorage.getItem("userRole");
-    if (role !== "Customer") {
+    const stored = localStorage.getItem('user');
+
+    if (!token || !stored) {
+      showToast('Bạn chưa đăng nhập, xin vui lòng đăng nhập trước khi thêm giỏ hàng', 'warning');
+      return;
+    }
+    const user = JSON.parse(stored)
+    if (user.role !== "Customer") {
       showToast('Chỉ Customer mới được thêm vào giỏ hàng', 'warning')
       return;
     }
 
     try {
-      const userId = localStorage.getItem('userId')!;
-      await cartApi.addItem(userId, productId, 1);
+      await cartApi.addItem(user._id, productId, 1);
+      setCartQtyById(prev => ({
+        ...prev,
+        [productId]: (prev[productId] || 0) + 1
+      }))
+      setCartItemIds(prev => [...prev, productId]);
       showToast('Đã thêm vào giỏ hàng', 'success');
-      await Promise.all([fetchCart(), fetchProducts()]);
     } catch (err: any) {
       showToast(err.response?.data?.message || 'Thêm vào giỏ hàng thất bại', 'error');
     }
   };
 
 
+
   const fetchCart = useCallback(async () => {
-    const userId = localStorage.getItem('userId')!;
+    const stored = localStorage.getItem('user');
+    if (!stored) return;
+    const user = JSON.parse(stored);
     try {
-      const res = await cartApi.getCart(userId);
+      const res = await cartApi.getCart(user._id);
       if (res.data.success) {
-        const ids = res.data.data.items.map((i: any) => i.product.id);
-        setCartItemIds(ids);
+        const map: Record<string, number> = {};
+        res.data.data.items.forEach((item: any) => {
+          map[item.product._id] = item.quantity;
+        });
+        setCartQtyById(map);
       }
     } catch (err) {
       console.error('Error loading cart:', err);
     }
   }, []);
 
-
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await productsApi.getProducts();
-      if (res.data.success) {
-        setProducts(res.data.data.products);
-      }
-      await fetchCart();
-    } catch (err) {
-      console.error('Error loading products:', err);
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    fetchCart();
   }, [fetchCart]);
 
   useEffect(() => {
@@ -134,7 +126,6 @@ export default function ProductList() {
         const maxPrice = all.reduce((mx, p) => Math.max(mx, p.price), 0);
         setOverallMaxPrice(maxPrice);
         setPriceRange({ min: 0, max: maxPrice });
-        await fetchCart();
       } catch (err) {
         console.error("Error fetching initial data:", err);
       } finally {
@@ -143,7 +134,7 @@ export default function ProductList() {
     };
     fetchInitialData();
     return () => { mounted = false; };
-  }, [fetchCart]);
+  }, []);
 
 
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
@@ -188,7 +179,6 @@ export default function ProductList() {
         if (res.data.success) {
           setProducts(res.data.data.products);
         }
-        await fetchCart();
       } catch (err) {
         console.error("Error fetching filtered products:", err);
       } finally {
@@ -196,7 +186,7 @@ export default function ProductList() {
       }
     };
     fetchFiltered();
-  }, [selectedCategories, priceRange, overallMaxPrice, fetchCart]);
+  }, [selectedCategories, priceRange, overallMaxPrice]);
 
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
@@ -292,16 +282,14 @@ export default function ProductList() {
               >
                 PRICE RANGE
                 <ChevronDown
-                  className={`filter-icon ${
-                    expandedSections.priceRange ? "expanded" : ""
-                  }`}
+                  className={`filter-icon ${expandedSections.priceRange ? "expanded" : ""
+                    }`}
                   size={20}
                 />
               </button>
               <div
-                className={`filter-content ${
-                  expandedSections.priceRange ? "expanded" : ""
-                }`}
+                className={`filter-content ${expandedSections.priceRange ? "expanded" : ""
+                  }`}
               >
                 <PriceRangeSlider
                   min={0}
@@ -325,7 +313,7 @@ export default function ProductList() {
                   price={p.price}
                   stock={p.type === 'pet' ? (p.stock > 0 ? 1 : 0) : p.stock}
                   type={p.type}
-                  inCart={cartItemIds.includes(p.id)}
+                  inCartQty={cartQtyById[p.id] || 0}
                   onAdd={() => {
                     if (p.type === 'pet' && cartItemIds.includes(p.id)) {
                       showToast('Bạn đã thêm thú cưng này vào giỏ hàng rồi', 'info');
@@ -339,12 +327,6 @@ export default function ProductList() {
           </div>
         </div>
       </div>
-      <Toast
-        open={toast.open}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={handleToastClose}
-      />
     </div>
   );
 }

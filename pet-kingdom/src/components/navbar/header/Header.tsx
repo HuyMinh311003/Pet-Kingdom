@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { PawPrint as Paw, User, ShoppingCart, Search } from "lucide-react";
 import "./HeaderStyle.css";
 import { useNavigate } from "react-router-dom";
-
+import { useToast } from '../../../contexts/ToastContext';
 
 interface HeaderProps {
   cartItems: number;
@@ -14,6 +14,8 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
   const searchRef = useRef<HTMLDivElement>(null);
   const [searchValue, setSearchValue] = useState("");
   const navigate = useNavigate();
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,6 +47,17 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
   };
 
   const handleCartClick = () => {
+    const stored = localStorage.getItem('user');
+    if (!stored) {
+      showToast('Chỉ khách hàng đã đăng nhập mới có thể truy cập', 'warning');
+      return;
+    };
+    const userRole = JSON.parse(stored);
+    if (userRole.role === 'Admin') {
+      showToast('Chỉ Customer mới được truy cập', 'warning');
+      navigate('/');
+      return;
+    }
     navigate("/cart"); // Navigates to the Cart page
   };
 
