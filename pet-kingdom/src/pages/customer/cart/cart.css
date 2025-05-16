@@ -5,6 +5,31 @@
   padding: 10px;
 }
 
+/* Template cho cart rỗng */
+.empty-cart {
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-cart p {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.empty-cart .checkout-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background-color: #ffc371;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.empty-cart .checkout-btn:hover {
+  background-color: #ffb357;
+}
+
+
 .cart-card {
   display: flex;
   align-items: center;

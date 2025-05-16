@@ -16,15 +16,16 @@ interface ProductCardProps {
   price: number;
   stock: number;
   type: "pet" | "tool";
-  inCart: boolean;
   onAdd: () => void;
+  inCartQty: number;
 }
 
 export default function ProductCard({
-  id, image, title, price, stock, type, onAdd, inCart
+  id, image, title, price, stock, type, onAdd, inCartQty
 }: ProductCardProps) {
   const navigate = useNavigate();
   const [wish, setWish] = useState(false);
+
   const isPet = type === "pet";
   let label: string;
   let disabled: boolean;
@@ -32,12 +33,16 @@ export default function ProductCard({
   if (stock < 1) {
     label = "Sold Out";
     disabled = true;
+
   } else if (isPet) {
-    label = inCart ? "Adopted" : "Adopt";
-    disabled = inCart;
+    const adopted = inCartQty > 0;
+    label = adopted ? "Adopted" : "Adopt";
+    disabled = adopted;
+
   } else {
-    label = "Add to Cart";
-    disabled = false;
+    const maxReached = inCartQty >= stock;
+    label = maxReached ? "Out of stock" : "Add to Cart";
+    disabled = maxReached;
   }
 
   const handleAddToCart = async () => {
@@ -79,7 +84,7 @@ export default function ProductCard({
           size="small"
           startIcon={<ShoppingCart />}
           variant="outlined"
-          disabled={stock < 1}
+          disabled={disabled}
         >
           {label}
         </Button>

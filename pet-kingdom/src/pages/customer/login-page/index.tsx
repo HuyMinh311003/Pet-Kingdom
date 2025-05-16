@@ -3,9 +3,8 @@ import "./styles.css";
 import loginHeader from "../../../assets/Login-Header.png";
 import { authApi } from "../../../services/customer-api/api";
 import { useNavigate } from "react-router-dom";
-import Toast from "../../../components/common/toast/Toast";
-import { AlertColor } from "@mui/material/Alert";
 import { UserRoleContext } from "../../../contexts/UserRoleContext";
+import { useToast } from "../../../contexts/ToastContext";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^\d{10}$/;
@@ -25,15 +24,7 @@ const LoginPage: React.FC = () => {
   const [regConfirm, setRegConfirm] = useState("");
   const [regPhone, setRegPhone] = useState("");
 
-  // Toast state
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [toastSeverity, setToastSeverity] = useState<AlertColor>("error");
-  const showToast = (msg: string, sev: AlertColor = "error") => {
-    setToastMsg(msg);
-    setToastSeverity(sev);
-    setToastOpen(true);
-  };
+  const { showToast } = useToast();
 
   const navigate = useNavigate();
 
@@ -66,7 +57,8 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       setUserRole(user.role);
-      navigate("/");
+      showToast("Đăng nhập thành công!", "success");
+      navigate("/products");
     } catch (err: any) {
       showToast(err.response?.data?.message || "Login thất bại");
     }
@@ -111,6 +103,7 @@ const LoginPage: React.FC = () => {
       );
       const { token, user } = res.data.data;
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("userId", user._id);
       localStorage.setItem("userRole", user.role);
       setShowRegister(false);
@@ -229,14 +222,6 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* --- GLOBAL TOAST --- */}
-      <Toast
-        open={toastOpen}
-        message={toastMsg}
-        severity={toastSeverity}
-        onClose={() => setToastOpen(false)}
-      />
     </div>
   );
 };
