@@ -23,5 +23,9 @@ export const staffApi = {
   toggleStaffStatus: async (id: string): Promise<{ success: boolean; data: User }> => {
     const response = await api.patch(`/users/${id}/toggle-status`);
     return response.data;
+  },
+  deleteStaff: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
   }
 };  
