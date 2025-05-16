@@ -1,7 +1,7 @@
 // src/pages/profile/ProfilePage.tsx
 import { useEffect, useState } from "react";
-import { NavLink, Routes, Route } from "react-router-dom";
-import { User, ShoppingBag, Heart, Gift } from "lucide-react";
+import { NavLink, Routes, Route, useNavigate } from "react-router-dom";
+import { User, ShoppingBag, Heart, Gift, LogOut } from "lucide-react";
 
 import PersonalInfo from "./PersonalInfo";
 import OrderList from "./order/OrderList";
@@ -13,17 +13,26 @@ import "./ProfilePage.css";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<UserType | null>(null);
-useEffect(() => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userId = user._id;
+  const navigate = useNavigate();
 
-  if (!userId) return;
+  // Hàm xử lý Logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+    window.location.reload();
+  };
 
-  getProfile(userId)
-    .then(res => setUser(res.data.data))
-    .catch(err => console.error(err));
-}, []);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = user._id;
 
+    if (!userId) return;
+
+    getProfile(userId)
+      .then((res) => setUser(res.data.data))
+      .catch((err) => console.error(err));
+  }, []);
 
   return (
     <div className="profile-page">
@@ -48,23 +57,29 @@ useEffect(() => {
       </div>
 
       <div className="profile-content container">
-        <div className="tabs-navigation">
-          <NavLink to="/profile" end className="tab-button">
-            <User size={20} />
-            <span>Personal Information</span>
-          </NavLink>
-          <NavLink to="/profile/orders" className="tab-button">
-            <ShoppingBag size={20} />
-            <span>My Orders</span>
-          </NavLink>
-          <NavLink to="/profile/wishlist" className="tab-button">
-            <Heart size={20} />
-            <span>Wishlist</span>
-          </NavLink>
-          <NavLink to="/profile/promo-codes" className="tab-button">
-            <Gift size={20} />
-            <span>My Promo-codes</span>
-          </NavLink>
+        <div className="sidebar-container">
+          <div className="tabs-navigation">
+            <NavLink to="/profile" end className="tab-button">
+              <User size={20} />
+              <span>Personal Information</span>
+            </NavLink>
+            <NavLink to="/profile/orders" className="tab-button">
+              <ShoppingBag size={20} />
+              <span>My Orders</span>
+            </NavLink>
+            <NavLink to="/profile/wishlist" className="tab-button">
+              <Heart size={20} />
+              <span>Wishlist</span>
+            </NavLink>
+            <NavLink to="/profile/promo-codes" className="tab-button">
+              <Gift size={20} />
+              <span>My Promo-codes</span>
+            </NavLink>
+          </div>
+          <button className="logout-button" onClick={handleLogout}>
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
         </div>
 
         <div className="tab-container">

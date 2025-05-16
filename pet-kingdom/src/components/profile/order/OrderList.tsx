@@ -134,8 +134,8 @@ const OrderList = ({ role, viewMode }: Props) => {
             </select>
           )}
 
-          <button onClick={() => handleSortOrderChange("asc")}>↑ Date</button>
-          <button onClick={() => handleSortOrderChange("desc")}>↓ Date</button>
+          <button onClick={() => handleSortOrderChange("asc")}>↑ Ngày</button>
+          <button onClick={() => handleSortOrderChange("desc")}>↓ Ngày</button>
         </div>
       </div>
 
