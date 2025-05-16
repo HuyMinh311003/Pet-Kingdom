@@ -5,30 +5,30 @@
   padding: 10px;
 }
 
-/* --- Khi chưa đăng nhập --- */
-.cart-not-logged {
-  padding: 60px 20px;
+/* Template cho cart rỗng */
+.empty-cart {
+  padding: 80px 20px;
   text-align: center;
 }
 
-.cart-not-logged p {
+.empty-cart p {
   font-size: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.cart-not-logged .login-btn {
-  padding: 10px 20px;
+.empty-cart .checkout-btn {
+  display: inline-block;
+  padding: 10px 24px;
   background-color: #ffc371;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
 }
 
-.cart-not-logged .login-btn:hover {
+.empty-cart .checkout-btn:hover {
   background-color: #ffb357;
 }
+
 
 .cart-card {
   display: flex;

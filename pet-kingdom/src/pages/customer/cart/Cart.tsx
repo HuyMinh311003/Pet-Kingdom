@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./cart.css";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cartApi } from '../../../services/customer-api/api';
 import { productApi } from "../../../services/admin-api/productApi";
 import { useToast } from "../../../contexts/ToastContext";
@@ -112,6 +112,16 @@ const Cart: React.FC = () => {
     }
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <div className="empty-cart">
+        <p>Giỏ hàng của bạn đang trống.</p>
+        <Link to="/products" className="checkout-btn">
+          Mua ngay
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="cart-container">
