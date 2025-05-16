@@ -178,7 +178,7 @@ exports.getOrderById = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
     try {
         const { status, page = 1, limit = 10, sort = 'desc' } = req.query;
-        const query = { user: req.params.userId };
+        const query = { user: req.user._id };
 
         if (status) query.status = status;
 
