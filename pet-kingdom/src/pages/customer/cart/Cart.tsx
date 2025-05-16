@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./cart.css";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cartApi } from '../../../services/customer-api/api';
+import { productApi } from "../../../services/admin-api/productApi";
+import { useToast } from "../../../contexts/ToastContext";
 
 
 interface CartItem {
@@ -12,6 +14,7 @@ interface CartItem {
   quantity: number;
   price: number;
   stock: number;
+  overStock: boolean;
   expiresAt: string;
 }
 
@@ -22,34 +25,52 @@ const Cart: React.FC = () => {
     navigate("/cart/checkout");
   };
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const userId = localStorage.getItem("userId") || "";
+  const { showToast } = useToast();
 
+  const stored = localStorage.getItem('user');
+  if (!stored) return;
+  const userId = JSON.parse(stored)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const res = await cartApi.getCart(userId);
-        // Giả sử API trả về res.data.data.items: [{ product, quantity }]
-        const items = res.data.data.items.map((item: any) => ({
-          productId: item.product._id,
-          name: item.product.name,
-          image: item.product.imageUrl,
-          quantity: item.quantity,
-          price: item.product.price,
-          stock: item.product.stock,
-          expiresAt: item.expiresAt
-        }));
+        // 1) Lấy cart items
+        const resCart = await cartApi.getCart(userId._id);
+        // 2) Với mỗi item, fetch stock mới nhất
+        const items: CartItem[] = await Promise.all(
+          resCart.data.data.items.map(async (it: any) => {
+            // giả sử bạn đã có productApi.getById
+            const prodRes = await productApi.getProductById(it.product._id);
+            console.log(prodRes);
+            const stock = prodRes.data.stock;
+            return {
+              productId: it.product._id,
+              name: it.product.name,
+              image: it.product.imageUrl,
+              quantity: it.quantity,
+              price: it.product.price,
+              stock,
+              overStock: it.quantity > stock,
+            };
+          })
+        );
         setCartItems(items);
+        // 3) Nếu có overStock nào, show toast cảnh báo
+        if (items.some(i => i.overStock)) {
+          showToast('Một số sản phẩm trong giỏ đã vượt quá tồn kho, vui lòng điều chỉnh.', 'warning');
+        }
       } catch (err) {
         console.error("Load cart failed:", err);
       }
     };
     fetchCart();
-  }, [userId]);
+  }, []);
+
 
   const handleIncrement = async (item: CartItem) => {
     if (item.quantity >= item.stock) return;
     try {
-      await cartApi.updateQuantity(userId, item.productId, item.quantity + 1);
+      await cartApi.updateQuantity(userId._id, item.productId, item.quantity + 1);
       setCartItems((prev) =>
         prev.map((ci) =>
           ci.productId === item.productId
@@ -58,14 +79,14 @@ const Cart: React.FC = () => {
         )
       );
     } catch (err: any) {
-      alert(err.response?.data?.message || "Cập nhật số lượng thất bại");
+      showToast(err.response?.data?.message || "Cập nhật số lượng thất bại", "error");
     }
   };
 
   const handleDecrement = async (item: CartItem) => {
     if (item.quantity <= 1) return;
     try {
-      await cartApi.updateQuantity(userId, item.productId, item.quantity - 1);
+      await cartApi.updateQuantity(userId._id, item.productId, item.quantity - 1);
       setCartItems((prev) =>
         prev.map((ci) =>
           ci.productId === item.productId
@@ -74,7 +95,7 @@ const Cart: React.FC = () => {
         )
       );
     } catch (err: any) {
-      alert(err.response?.data?.message || "Cập nhật số lượng thất bại");
+      showToast(err.response?.data?.message || "Cập nhật số lượng thất bại", "error");
     }
   };
 
@@ -84,13 +105,23 @@ const Cart: React.FC = () => {
 
   const handleRemove = async (productId: string) => {
     try {
-      await cartApi.removeItem(userId, productId);
+      await cartApi.removeItem(userId._id, productId);
       setCartItems((prev) => prev.filter((ci) => ci.productId !== productId));
     } catch (err: any) {
-      alert(err.response?.data?.message || "Xóa sản phẩm thất bại");
+      showToast(err.response?.data?.message || "Xóa sản phẩm thất bại", "error");
     }
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <div className="empty-cart">
+        <p>Giỏ hàng của bạn đang trống.</p>
+        <Link to="/products" className="checkout-btn">
+          Mua ngay
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="cart-container">
@@ -116,7 +147,7 @@ const Cart: React.FC = () => {
                     ${item.price.toFixed(2)}
                   </p>
                 </div>
-               
+
                 <div className="quantity-control">
                   <button
                     onClick={() => handleDecrement(item)}
@@ -134,6 +165,11 @@ const Cart: React.FC = () => {
                     +
                   </button>
                 </div>
+                {item.overStock && (
+                  <p style={{ color: 'red', margin: '4px 0' }}>
+                    Chỉ còn {item.stock} sản phẩm trong kho.
+                  </p>
+                )}
                 <div className="final-price">
                   <DeleteForeverIcon
                     className="delete-icon"
@@ -150,11 +186,14 @@ const Cart: React.FC = () => {
       <div className="order-summary">
         <h3>Order Price</h3>
         <p style={{ color: "red" }}>Total: ${totalPrice}</p>
-        <button className="checkout-btn" onClick={handleCheckout}>
+        <button className="checkout-btn" onClick={handleCheckout} disabled={cartItems.some(i => i.overStock)}>
           Proceed To Checkout
         </button>
       </div>
+
+
     </div>
+
   );
 };
 
