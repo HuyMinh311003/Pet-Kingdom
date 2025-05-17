@@ -8,6 +8,12 @@ import PriceRangeSlider from "./filters/PriceRangeSlider";
 import SidebarFilter, { Category } from "./SidebarFilter";
 import { cartApi } from "../../services/customer-api/api";
 import { useToast } from "../../contexts/ToastContext";
+import {
+  KeyboardDoubleArrowLeft,
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
+  KeyboardDoubleArrowRight
+} from '@mui/icons-material';
 
 interface Product {
   id: string;
@@ -25,17 +31,19 @@ interface Product {
 }
 
 export default function ProductList() {
-  const [searchParams] = useSearchParams();
-  const initialCategoryId = searchParams.get("category");
-  const categoryName = searchParams.get("name");
-  const isFirstFilterRun = useRef(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category") || ""; // categoryParam có thể là "id1,id2" nếu multi-select
+  const categoryName = searchParams.get("name") || "";
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    categoryParam
+      ? categoryParam.split(",")
+      : []
+  );
+  const isInitialLoad = useRef(true);
 
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<"pet" | "tool">("pet");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialCategoryId ? [initialCategoryId] : []
-  );
 
   const [overallMaxPrice, setOverallMaxPrice] = useState(0);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
@@ -47,6 +55,18 @@ export default function ProductList() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const [cartQtyById, setCartQtyById] = useState<Record<string, number>>({});
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const itemsPerPage = 10;
+
+  // helper: lấy tất cả descendant leaf IDs
+  const getDescendantLeafIds = (cat: Category): string[] => {
+    if (!cat.children || !cat.children.length) {
+      return [cat._id];
+    }
+    return cat.children.flatMap((c) => getDescendantLeafIds(c));
+  };
 
   const { showToast } = useToast();
 
@@ -175,14 +195,16 @@ export default function ProductList() {
     };
   }, []);
 
+
+
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
   useEffect(() => {
-    if (!categories.length || !initialCategoryId) return;
+    if (!categories.length || !categoryParam || !isInitialLoad.current) return;
 
     // tìm node bất kỳ trong cây
     const findNode = (nodes: Category[]): Category | null => {
       for (const n of nodes) {
-        if (n._id === initialCategoryId) return n;
+        if (n._id === categoryParam) return n;
         if (n.children) {
           const hit = findNode(n.children);
           if (hit) return hit;
@@ -194,20 +216,27 @@ export default function ProductList() {
     const cat = findNode(categories);
     if (cat) {
       setActiveTab(cat.type);
-      setSelectedCategories([initialCategoryId]);
+
+      const urlIds = categoryParam.split(",");
+      const isOnlyParent =
+        urlIds.length === 1 && cat._id === urlIds[0] && cat.children?.length;
+      const toSelect = isOnlyParent
+        ? getDescendantLeafIds(cat)
+        : urlIds;
+
+      setSelectedCategories(toSelect);
+      isInitialLoad.current = false;
     }
-  }, [categories, initialCategoryId]);
+  }, [categories, categoryParam]);
 
   useEffect(() => {
-    if (isFirstFilterRun.current) {
-      isFirstFilterRun.current = false;
-      return;
-    }
-
     const fetchFiltered = async () => {
       setLoading(true);
       try {
-        const params: any = {};
+        const params: any = {
+          page: currentPage,
+          limit: itemsPerPage,
+        };
         if (selectedCategories.length)
           params.category = selectedCategories.join(",");
         if (priceRange.min > 0) params.minPrice = priceRange.min;
@@ -216,6 +245,7 @@ export default function ProductList() {
         const res = await api.get("/products", { params });
         if (res.data.success) {
           setProducts(res.data.data.products);
+          setTotalPages(res.data.data.pagination.pages);
         }
       } catch (err) {
         console.error("Error fetching filtered products:", err);
@@ -223,55 +253,62 @@ export default function ProductList() {
         setLoading(false);
       }
     };
+
     fetchFiltered();
-  }, [selectedCategories, priceRange, overallMaxPrice]);
+  }, [selectedCategories, priceRange, overallMaxPrice, currentPage]);
+
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
     setExpandedSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
 
-  // helper: lấy tất cả descendant leaf IDs
-  const getDescendantLeafIds = (cat: Category): string[] => {
-    if (!cat.children || !cat.children.length) {
-      return [cat._id];
-    }
-    return cat.children.flatMap((c) => getDescendantLeafIds(c));
-  };
 
-  // select/unselect logic
+
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategories((prev) => {
-      // tìm node
-      const findNode = (nodes: Category[]): Category | null => {
-        for (const n of nodes) {
-          if (n._id === categoryId) return n;
-          if (n.children) {
-            const hit = findNode(n.children);
-            if (hit) return hit;
-          }
+    // 1) tìm node tương ứng
+    const findNode = (nodes: Category[]): Category | null => {
+      for (const n of nodes) {
+        if (n._id === categoryId) return n;
+        if (n.children) {
+          const hit = findNode(n.children);
+          if (hit) return hit;
         }
-        return null;
-      };
-      const node = findNode(categories);
-      if (!node) return prev;
-
-      const leafIds = getDescendantLeafIds(node);
-
-      if (node.children && node.children.length) {
-        // parent toggle => select/unselect tất cả leaf
-        const anySel = leafIds.some((id) => prev.includes(id));
-        return anySel
-          ? prev.filter((id) => !leafIds.includes(id))
-          : Array.from(new Set([...prev, ...leafIds]));
-      } else {
-        // leaf toggle đơn lẻ
-        return prev.includes(categoryId)
-          ? prev.filter((id) => id !== categoryId)
-          : [...prev, categoryId];
       }
-    });
+      return null;
+    };
+    const node = findNode(categories);
+    if (!node) return;
+
+    // 2) lấy tất cả leaf của node
+    const leafIds = getDescendantLeafIds(node);
+
+    // 3) tính newSelected dựa trên prevSelected
+    let newSelected: string[];
+    if (node.children && node.children.length) {
+      // toggle parent: chọn/deselect tất cả leaf
+      const anySel = leafIds.some((id) => selectedCategories.includes(id));
+      newSelected = anySel
+        ? selectedCategories.filter((id) => !leafIds.includes(id))
+        : Array.from(new Set([...selectedCategories, ...leafIds]));
+    } else {
+      // toggle leaf đơn lẻ
+      newSelected = selectedCategories.includes(categoryId)
+        ? selectedCategories.filter((id) => id !== categoryId)
+        : [...selectedCategories, categoryId];
+    }
+    setCurrentPage(1);
+    // 4) cập nhật state và URL
+    setSelectedCategories(newSelected);
+    const qp = new URLSearchParams(searchParams);
+    qp.set("category", newSelected.join(","));
+    // nếu chỉ chọn 1 mục thì update luôn name để header hiển thị đúng
+    if (newSelected.length === 1) {
+      qp.set("name", node.name);
+    }
+    setSearchParams(qp, { replace: true });
   };
 
   const handlePriceRangeChange = useCallback((min: number, max: number) => {
+    setCurrentPage(1);
     setPriceRange({ min, max });
   }, []);
 
@@ -280,6 +317,7 @@ export default function ProductList() {
       <div className="container">
         <div className="header">
           <h1 className="title">{categoryName || "PET PRODUCTS"}</h1>
+
           <div className="header-right">
             <p className="results-count">{products.length} RESULTS</p>
             <button
@@ -305,10 +343,13 @@ export default function ProductList() {
               </button>
             </div>
 
+
+
             <SidebarFilter
               categories={categories}
               selected={selectedCategories}
               onSelect={handleCategoryChange}
+              activeTab={activeTab}
             />
 
             <div className="filter-section">
@@ -319,16 +360,14 @@ export default function ProductList() {
               >
                 PRICE RANGE
                 <ChevronDown
-                  className={`filter-icon ${
-                    expandedSections.priceRange ? "expanded" : ""
-                  }`}
+                  className={`filter-icon ${expandedSections.priceRange ? "expanded" : ""
+                    }`}
                   size={20}
                 />
               </button>
               <div
-                className={`filter-content ${
-                  expandedSections.priceRange ? "expanded" : ""
-                }`}
+                className={`filter-content ${expandedSections.priceRange ? "expanded" : ""
+                  }`}
               >
                 <PriceRangeSlider
                   min={0}
@@ -339,34 +378,67 @@ export default function ProductList() {
             </div>
           </div>
 
-          <div className="product-grid">
-            {loading ? (
-              <div className="loading">Loading...</div>
-            ) : (
-              products.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  id={p.id}
-                  image={p.imageUrl}
-                  title={p.name}
-                  price={p.price}
-                  stock={p.type === "pet" ? (p.stock > 0 ? 1 : 0) : p.stock}
-                  type={p.type}
-                  inCartQty={cartQtyById[p.id] || 0}
-                  onAdd={() => {
-                    if (p.type === "pet" && cartItemIds.includes(p.id)) {
-                      showToast(
-                        "Bạn đã thêm thú cưng này vào giỏ hàng rồi",
-                        "info"
-                      );
-                    } else {
-                      handleAdd(p.id);
-                    }
-                  }}
-                  onToggleWishlist={handleToggleWishlist}
-                />
-              ))
-            )}
+          <div className="product-list-content">
+            <div className="pagination" style={{ textAlign: "center", margin: "16px 0" }}>
+              <button
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 5))}
+              >
+                <KeyboardDoubleArrowLeft fontSize="small" />
+              </button>
+              <button
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                <KeyboardArrowLeft />
+              </button>
+              <span style={{ margin: "0 12px" }}>
+                Trang <strong>{currentPage} / {totalPages}</strong>
+              </span>
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                <KeyboardArrowRight />
+              </button>
+              <button
+                disabled={currentPage + 5 > totalPages}
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 5))}
+              >
+                <KeyboardDoubleArrowRight fontSize="small" />
+              </button>
+            </div>
+
+            <div className="product-grid">
+
+              {loading ? (
+                <div className="loading">Loading...</div>
+              ) : (
+                products.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    id={p.id}
+                    image={p.imageUrl}
+                    title={p.name}
+                    price={p.price}
+                    stock={p.type === "pet" ? (p.stock > 0 ? 1 : 0) : p.stock}
+                    type={p.type}
+                    inCartQty={cartQtyById[p.id] || 0}
+                    onAdd={() => {
+                      if (p.type === "pet" && cartItemIds.includes(p.id)) {
+                        showToast(
+                          "Bạn đã thêm thú cưng này vào giỏ hàng rồi",
+                          "info"
+                        );
+                      } else {
+                        handleAdd(p.id);
+                      }
+                    }}
+                    onToggleWishlist={handleToggleWishlist}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>

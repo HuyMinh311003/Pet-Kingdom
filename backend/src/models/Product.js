@@ -103,8 +103,9 @@ productSchema.virtual('age').get(function() {
     return age;
 });
 
+
 // Index for search functionality
-productSchema.index({ name: 'text', description: 'text', tags: 'text' });
+productSchema.index({ name: 'text', description: 'text', tags: 'text', isActive: 1 });
 
 const Product = mongoose.model('Product', productSchema);
 

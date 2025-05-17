@@ -1,5 +1,5 @@
 // SidebarFilter.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import './SidebarFilter.css';
 
@@ -14,15 +14,23 @@ interface Props {
   categories: Category[];   // nested tree from API
   selected: string[];       // chỉ chứa các id bạn muốn filter
   onSelect: (id: string) => void;
+  activeTab?: "pet" | "tool";
 }
 
 const SidebarFilter: React.FC<Props> = ({
   categories,
   selected,
+  activeTab: propActiveTab = "pet",
   onSelect
-}) => {
-  const [activeTab, setActiveTab] = useState<'pet' | 'tool'>('pet');
+}: Props) => {
+  const [activeTab, setActiveTab] = useState<'pet' | 'tool'>(propActiveTab);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const hasSelectedDescendant = (node: Category): boolean => {
+    if (!node.children) return false;
+    return node.children.some(child =>
+      selected.includes(child._id) || hasSelectedDescendant(child)
+    );
+  };
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -36,10 +44,13 @@ const SidebarFilter: React.FC<Props> = ({
     });
   };
 
+  useEffect(() => {
+    setActiveTab(propActiveTab);
+  }, [propActiveTab]);
 
   const renderNode = (cat: Category, level = 0) => {
     const hasKids = !!(cat.children && cat.children.length);
-    const isOpen = expanded.has(cat._id);
+    const isOpen = expanded.has(cat._id) || hasSelectedDescendant(cat);
 
     return (
       <li key={cat._id} className={`filter-item ${selected.includes(cat._id) ? 'selected' : ''}`}>
