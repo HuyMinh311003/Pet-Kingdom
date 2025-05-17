@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronDown, Filter } from 'lucide-react';
-import './ProductStyle.css';
-import ProductCard from './ProductCard';
-import { api } from '../../services/customer-api/api';
-import { useSearchParams } from 'react-router-dom';
-import PriceRangeSlider from './filters/PriceRangeSlider';
-import SidebarFilter, { Category } from './SidebarFilter';
-import { cartApi } from '../../services/customer-api/api';
-import { useToast } from '../../contexts/ToastContext';
-
+import { useState, useEffect, useCallback, useRef } from "react";
+import { ChevronDown, Filter } from "lucide-react";
+import "./ProductStyle.css";
+import ProductCard from "./ProductCard";
+import { api } from "../../services/customer-api/api";
+import { useSearchParams } from "react-router-dom";
+import PriceRangeSlider from "./filters/PriceRangeSlider";
+import SidebarFilter, { Category } from "./SidebarFilter";
+import { cartApi } from "../../services/customer-api/api";
+import { useToast } from "../../contexts/ToastContext";
 
 interface Product {
   id: string;
@@ -17,7 +16,7 @@ interface Product {
   price: number;
   imageUrl: string;
   categoryId: string;
-  type: 'pet' | 'tool';
+  type: "pet" | "tool";
   birthday?: string;
   gender?: "male" | "female";
   vaccinated?: boolean;
@@ -55,13 +54,16 @@ export default function ProductList() {
   const handleAdd = async (productId: string) => {
     // kiểm auth/role nếu cần
     const token = localStorage.getItem("token");
-    const stored = localStorage.getItem('user');
+    const stored = localStorage.getItem("user");
 
     if (!token || !stored) {
-      showToast('Bạn chưa đăng nhập, xin vui lòng đăng nhập trước khi thêm giỏ hàng', 'warning');
+      showToast(
+        "Bạn chưa đăng nhập, xin vui lòng đăng nhập trước khi thêm giỏ hàng",
+        "warning"
+      );
       return;
     }
-    const user = JSON.parse(stored)
+    const user = JSON.parse(stored);
     if (user.role !== "Customer") {
       showToast('Chỉ Customer mới được sử dụng chức năng này', 'warning')
       return;
@@ -69,21 +71,56 @@ export default function ProductList() {
 
     try {
       await cartApi.addItem(user._id, productId, 1);
-      setCartQtyById(prev => ({
+      setCartQtyById((prev) => ({
         ...prev,
-        [productId]: (prev[productId] || 0) + 1
-      }))
-      setCartItemIds(prev => [...prev, productId]);
-      showToast('Đã thêm vào giỏ hàng', 'success');
+        [productId]: (prev[productId] || 0) + 1,
+      }));
+      setCartItemIds((prev) => [...prev, productId]);
+      showToast("Đã thêm vào giỏ hàng", "success");
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Thêm vào giỏ hàng thất bại', 'error');
+      showToast(
+        err.response?.data?.message || "Thêm vào giỏ hàng thất bại",
+        "error"
+      );
     }
   };
 
+  // Xử lý khi click nút Wishlist
+  const handleToggleWishlist = (
+    productId: string,
+    isAdding: boolean,
+    callback: () => void
+  ) => {
+    const token = localStorage.getItem("token");
+    const stored = localStorage.getItem("user");
 
+    if (!token || !stored) {
+      showToast(
+        "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích",
+        "warning"
+      );
+      return;
+    }
+
+    const user = JSON.parse(stored);
+    if (user.role !== "Customer") {
+      showToast("Chỉ Customer mới được sử dụng tính năng này", "warning");
+      return;
+    }
+
+    // Thực hiện API call thông qua callback
+    callback();
+
+    // Hiển thị thông báo phù hợp
+    if (isAdding) {
+      showToast("Đã thêm vào danh sách yêu thích", "success");
+    } else {
+      showToast("Đã xóa khỏi danh sách yêu thích", "success");
+    }
+  };
 
   const fetchCart = useCallback(async () => {
-    const stored = localStorage.getItem('user');
+    const stored = localStorage.getItem("user");
     if (!stored) return;
     const user = JSON.parse(stored);
     try {
@@ -96,7 +133,7 @@ export default function ProductList() {
         setCartQtyById(map);
       }
     } catch (err) {
-      console.error('Error loading cart:', err);
+      console.error("Error loading cart:", err);
     }
   }, []);
 
@@ -133,9 +170,10 @@ export default function ProductList() {
       }
     };
     fetchInitialData();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
-
 
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
   useEffect(() => {
@@ -187,7 +225,6 @@ export default function ProductList() {
     };
     fetchFiltered();
   }, [selectedCategories, priceRange, overallMaxPrice]);
-
 
   const toggleSection = (sec: keyof typeof expandedSections) =>
     setExpandedSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
@@ -282,14 +319,16 @@ export default function ProductList() {
               >
                 PRICE RANGE
                 <ChevronDown
-                  className={`filter-icon ${expandedSections.priceRange ? "expanded" : ""
-                    }`}
+                  className={`filter-icon ${
+                    expandedSections.priceRange ? "expanded" : ""
+                  }`}
                   size={20}
                 />
               </button>
               <div
-                className={`filter-content ${expandedSections.priceRange ? "expanded" : ""
-                  }`}
+                className={`filter-content ${
+                  expandedSections.priceRange ? "expanded" : ""
+                }`}
               >
                 <PriceRangeSlider
                   min={0}
@@ -311,16 +350,20 @@ export default function ProductList() {
                   image={p.imageUrl}
                   title={p.name}
                   price={p.price}
-                  stock={p.type === 'pet' ? (p.stock > 0 ? 1 : 0) : p.stock}
+                  stock={p.type === "pet" ? (p.stock > 0 ? 1 : 0) : p.stock}
                   type={p.type}
                   inCartQty={cartQtyById[p.id] || 0}
                   onAdd={() => {
-                    if (p.type === 'pet' && cartItemIds.includes(p.id)) {
-                      showToast('Bạn đã thêm thú cưng này vào giỏ hàng rồi', 'info');
+                    if (p.type === "pet" && cartItemIds.includes(p.id)) {
+                      showToast(
+                        "Bạn đã thêm thú cưng này vào giỏ hàng rồi",
+                        "info"
+                      );
                     } else {
                       handleAdd(p.id);
                     }
                   }}
+                  onToggleWishlist={handleToggleWishlist}
                 />
               ))
             )}

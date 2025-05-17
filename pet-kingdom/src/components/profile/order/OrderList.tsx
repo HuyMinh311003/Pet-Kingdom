@@ -19,17 +19,10 @@ const OrderList = ({ role, viewMode }: Props) => {
   const [error, setError] = useState<string>("");
   const [totalPages, setTotalPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [ordersPerPage, setOrdersPerPage] = useState<number>(10);
   const [statusFilter, setStatusFilter] = useState<string | undefined>("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  useEffect(() => {
-    if (role === "Customer") {
-      setOrdersPerPage(5);
-    } else {
-      setOrdersPerPage(10);
-    }
-  }, [role]);
+  const ordersPerPage = role === "Customer" ? 5 : 10;
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -141,8 +134,8 @@ const OrderList = ({ role, viewMode }: Props) => {
             </select>
           )}
 
-          <button onClick={() => handleSortOrderChange("asc")}>↑ Date</button>
-          <button onClick={() => handleSortOrderChange("desc")}>↓ Date</button>
+          <button onClick={() => handleSortOrderChange("asc")}>↑ Ngày</button>
+          <button onClick={() => handleSortOrderChange("desc")}>↓ Ngày</button>
         </div>
       </div>
 

@@ -15,6 +15,7 @@ const orderRoutes = require('./src/routes/orderRoutes');
 const cartRoutes = require('./src/routes/cartRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 const promotionRoutes = require('./src/routes/promotionRoutes');
+const wishlistRoutes = require('./src/routes/wishlistRoutes');
 const app = express();
 // Connect to MongoDB
 connectDB();
@@ -38,6 +39,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/promotions', promotionRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

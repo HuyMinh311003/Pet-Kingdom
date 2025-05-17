@@ -55,6 +55,13 @@
   align-items: start;
 }
 
+/* Sidebar Container */
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
 /* Tabs Navigation */
 .tabs-navigation {
   background: white;
@@ -91,6 +98,28 @@
 
 .tab-button:hover:not(.active) {
   background-color: #f3f4f6;
+}
+
+/* Logout button */
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  width: 100%;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button:hover {
+  background-color: #e04343;
 }
 
 /* Tab Content */
@@ -440,9 +469,10 @@
 @media (max-width: 768px) {
   .profile-content {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
-  .tabs-navigation {
+  .sidebar-container {
     position: sticky;
     top: 0;
     z-index: 10;
