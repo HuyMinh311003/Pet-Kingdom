@@ -115,6 +115,23 @@ const ProductsPage: React.FC = () => {
       .catch(err => console.error("Fetch products error:", err));
   }, [selectedCategory]);
 
+  const handleToggleStatus = async (id: string) => {
+    try {
+      const res = await productApi.toggleStatus(id);
+      if (res.success) {
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, isActive: !p.isActive } : p
+          )
+        );
+      } else {
+        alert("Cập nhật trạng thái thất bại: " + res.message);
+      }
+    } catch (err) {
+      console.error("Error toggling product status:", err);
+      alert("Đã có lỗi khi cập nhật trạng thái sản phẩm.");
+    }
+  };
 
   // 4) Handler khi user chọn category khác từ dropdown
   const handleCategoryChange = (catId: string) => {
@@ -233,45 +250,45 @@ const ProductsPage: React.FC = () => {
 
   // UPDATE PRODUCT (chỉ mock state)
   const handleUpdateProduct = async (id: string, updates: Partial<Product>) => {
-  try {
-    const product = products.find((p) => p.id === id);
-    if (!product) return alert("Product not found");
+    try {
+      const product = products.find((p) => p.id === id);
+      if (!product) return alert("Product not found");
 
-    const type = updates.type || product.type;
+      const type = updates.type || product.type;
 
-    // Validate theo type
-    if (type === "pet") {
-      if (
-        updates.birthday === undefined ||
-        updates.gender === undefined ||
-        updates.vaccinated === undefined
-      ) {
-        alert("Pet update missing fields: birthday, gender, vaccinated");
-        return;
+      // Validate theo type
+      if (type === "pet") {
+        if (
+          updates.birthday === undefined ||
+          updates.gender === undefined ||
+          updates.vaccinated === undefined
+        ) {
+          alert("Pet update missing fields: birthday, gender, vaccinated");
+          return;
+        }
+      } else if (type === "tool") {
+        if (
+          updates.brand === undefined ||
+          updates.stock === undefined
+        ) {
+          alert("Tool update missing fields: brand, stock");
+          return;
+        }
       }
-    } else if (type === "tool") {
-      if (
-        updates.brand === undefined ||
-        updates.stock === undefined
-      ) {
-        alert("Tool update missing fields: brand, stock");
-        return;
-      }
-    }
 
-    const res = await productApi.updateProduct(id, updates);
-    if (res.success) {
-      setProducts((prev) =>
+      const res = await productApi.updateProduct(id, updates);
+      if (res.success) {
+        setProducts((prev) =>
           prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-      );
-    } else {
-      alert("Update failed: " + res.message);
+        );
+      } else {
+        alert("Update failed: " + res.message);
+      }
+    } catch (err) {
+      console.error("Error updating product:", err);
+      alert("Có lỗi xảy ra khi cập nhật sản phẩm.");
     }
-  } catch (err) {
-    console.error("Error updating product:", err);
-    alert("Có lỗi xảy ra khi cập nhật sản phẩm.");
-  }
-};
+  };
 
 
   // DELETE PRODUCT
@@ -293,7 +310,7 @@ const ProductsPage: React.FC = () => {
 
   // EDIT MODAL
   const handleEditClick = (product: Product) => {
-      console.log("Clicked Edit Product:", product); // 👉 ADD THIS LINE
+    console.log("Clicked Edit Product:", product); // 👉 ADD THIS LINE
     setSelectedProduct(product);
     setIsEditModalOpen(true);
   };
@@ -547,13 +564,8 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${product.isActive ? "active" : "inactive"
-                    }`}
-                  onClick={() =>
-                    handleUpdateProduct(product.id, {
-                      isActive: !product.isActive,
-                    })
-                  }
+                  className={`status-btn ${product.isActive ? "active" : "inactive"}`}
+                  onClick={() => handleToggleStatus(product.id)}
                 >
                   {product.isActive ? "Active" : "Inactive"}
                 </button>

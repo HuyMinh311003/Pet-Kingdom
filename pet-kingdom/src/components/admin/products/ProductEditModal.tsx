@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import "./ProductEditModal.css";
-import { Product } from "../../../types/admin";
+import React, { useEffect, useState } from 'react';
+import './ProductEditModal.css';
+import { Product } from '../../../types/admin';
 
 interface Category {
   _id: string;
@@ -40,28 +40,35 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
   onSave,
 }) => {
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<
-    Category | undefined
-  >();
-  const [productType, setProductType] = useState<"pet" | "tool">("tool");
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
+  const [productType, setProductType] = useState<'pet' | 'tool'>('tool');
   const [options, setOptions] = useState<Option[]>([]);
 
+
+
   useEffect(() => {
+    console.log("Product:", product);
+    console.log("Categories:", categories);
+
+    if (!product || categories.length === 0) return;
+
+    const category = findNode(categories, product.categoryId._id);
+    console.log("Resolved category from categoryId:", category);
+
     setEditedProduct(product);
-    if (product) {
-      const category = findNode(categories, product.categoryId);
-      console.log("Resolved category:", category);
-      console.log("Product categoryId:", product?.categoryId);
-      console.log("categories:", categories);
-      setSelectedCategory(category);
-      setProductType(category?.type || "tool");
+    setSelectedCategory(category);
+
+    if (category?.type === 'pet' || category?.type === 'tool') {
+      setProductType(category.type);
+    } else {
+      setProductType('tool');
     }
   }, [product, categories]);
 
   useEffect(() => {
     const opts: Option[] = [];
     const traverse = (nodes: Category[], parentPath: string) => {
-      nodes.forEach((n) => {
+      nodes.forEach(n => {
         const curr = parentPath ? `${parentPath}/${n.name}` : n.name;
         if (n.children && n.children.length) {
           traverse(n.children, curr);
@@ -70,7 +77,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
         }
       });
     };
-    traverse(categories, "");
+    traverse(categories, '');
     setOptions(opts);
   }, [categories]);
 
@@ -79,7 +86,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
   const handleCategoryChange = (categoryId: string) => {
     const category = findNode(categories, categoryId);
     setSelectedCategory(category);
-    const type = category?.type || "tool";
+    const type = category?.type || 'tool';
     setProductType(type);
 
     setEditedProduct({
@@ -91,7 +98,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
       vaccinated: undefined,
       brand: undefined,
       // Set appropriate stock
-      stock: type === "pet" ? 1 : 0,
+      stock: type === 'pet' ? 1 : 0,
     });
   };
 
@@ -99,26 +106,16 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
     e.preventDefault();
     if (editedProduct) {
       // Validate based on product type
-      if (productType === "pet") {
-        if (
-          !editedProduct.birthday ||
-          !editedProduct.gender ||
-          editedProduct.vaccinated === undefined
-        ) {
-          alert(
-            "Please fill in all required fields for pets (Birthday, Gender, Vaccination Status)"
-          );
+      if (productType === 'pet') {
+        if (!editedProduct.birthday || !editedProduct.gender || editedProduct.vaccinated === undefined) {
+          alert('Please fill in all required fields for pets (Birthday, Gender, Vaccination Status)');
           return;
         }
         // Force stock to be 1 for pets
         editedProduct.stock = 1;
       } else {
-        if (
-          !editedProduct.brand ||
-          !editedProduct.stock ||
-          editedProduct.stock < 0
-        ) {
-          alert("Please fill in all required fields for tools (Brand, Stock)");
+        if (!editedProduct.brand || !editedProduct.stock || editedProduct.stock < 0) {
+          alert('Please fill in all required fields for tools (Brand, Stock)');
           return;
         }
       }
@@ -136,9 +133,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
       <div className="modal-content">
         <div className="modal-header">
           <h2>Edit Product</h2>
-          <button className="close-btn" onClick={onClose}>
-            &times;
-          </button>
+          <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="edit-product-form">
@@ -148,9 +143,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
               id="editName"
               type="text"
               value={editedProduct.name}
-              onChange={(e) =>
-                setEditedProduct({ ...editedProduct, name: e.target.value })
-              }
+              onChange={e => setEditedProduct({ ...editedProduct, name: e.target.value })}
               required
             />
           </div>
@@ -160,13 +153,13 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
             <select
               id="editCategory"
               value={editedProduct.categoryId}
-              onChange={(e) => handleCategoryChange(e.target.value)}
+              onChange={e => handleCategoryChange(e.target.value)}
               required
             >
-              {categories.map((parent) =>
+              {categories.map(parent => (
                 parent.children && parent.children.length ? (
                   <optgroup key={parent._id} label={parent.name}>
-                    {parent.children.map((child) => (
+                    {parent.children.map(child => (
                       <option key={child._id} value={child._id}>
                         {child.name}
                       </option>
@@ -177,7 +170,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
                     {parent.name}
                   </option>
                 )
-              )}
+              ))}
             </select>
           </div>
 
@@ -186,31 +179,21 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
             <textarea
               id="editDescription"
               value={editedProduct.description}
-              onChange={(e) =>
-                setEditedProduct({
-                  ...editedProduct,
-                  description: e.target.value,
-                })
-              }
+              onChange={e => setEditedProduct({ ...editedProduct, description: e.target.value })}
               required
             />
           </div>
 
           {/* Pet-specific fields */}
-          {productType === "pet" && (
+          {productType === 'pet' && (
             <>
               <div className="form-group">
                 <label htmlFor="editBirthday">Birthday</label>
                 <input
                   id="editBirthday"
                   type="date"
-                  value={editedProduct.birthday || ""}
-                  onChange={(e) =>
-                    setEditedProduct({
-                      ...editedProduct,
-                      birthday: e.target.value,
-                    })
-                  }
+                  value={editedProduct.birthday || ''}
+                  onChange={e => setEditedProduct({ ...editedProduct, birthday: e.target.value })}
                   required
                 />
               </div>
@@ -219,13 +202,8 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
                 <label htmlFor="editGender">Gender</label>
                 <select
                   id="editGender"
-                  value={editedProduct.gender || ""}
-                  onChange={(e) =>
-                    setEditedProduct({
-                      ...editedProduct,
-                      gender: e.target.value as "male" | "female",
-                    })
-                  }
+                  value={editedProduct.gender || ''}
+                  onChange={e => setEditedProduct({ ...editedProduct, gender: e.target.value as 'male' | 'female' })}
                   required
                 >
                   <option value="">Select Gender</option>
@@ -239,12 +217,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
                 <select
                   id="editVaccinated"
                   value={String(editedProduct.vaccinated)}
-                  onChange={(e) =>
-                    setEditedProduct({
-                      ...editedProduct,
-                      vaccinated: e.target.value === "true",
-                    })
-                  }
+                  onChange={e => setEditedProduct({ ...editedProduct, vaccinated: e.target.value === 'true' })}
                   required
                 >
                   <option value="true">Vaccinated</option>
@@ -265,26 +238,15 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
           )}
 
           {/* Tool-specific fields */}
-          {productType === "tool" && (
+          {productType === 'tool' && (
             <>
               <div className="form-group">
                 <label htmlFor="editBrand">Brand</label>
                 <input
                   id="editBrand"
                   type="text"
-                  value={
-                    typeof editedProduct.brand === "string"
-                      ? editedProduct.brand
-                      : typeof editedProduct.brand === "number"
-                      ? String(editedProduct.brand)
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setEditedProduct({
-                      ...editedProduct,
-                      brand: e.target.value,
-                    })
-                  }
+                  value={typeof editedProduct.brand === "string" ? editedProduct.brand : (typeof editedProduct.brand === "number" ? String(editedProduct.brand) : "")}
+                  onChange={e => setEditedProduct({ ...editedProduct, brand: e.target.value })}
                   required
                 />
               </div>
@@ -295,19 +257,8 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
                   id="editStock"
                   type="number"
                   min="0"
-                  value={
-                    typeof editedProduct.stock === "number"
-                      ? editedProduct.stock
-                      : typeof editedProduct.stock === "string"
-                      ? editedProduct.stock
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setEditedProduct({
-                      ...editedProduct,
-                      stock: Number(e.target.value),
-                    })
-                  }
+                  value={typeof editedProduct.stock === "number" ? editedProduct.stock : (typeof editedProduct.stock === "string" ? editedProduct.stock : "")}
+                  onChange={e => setEditedProduct({ ...editedProduct, stock: Number(e.target.value) })}
                   required
                 />
               </div>
@@ -322,12 +273,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
               min="0"
               step="1000"
               value={editedProduct.price}
-              onChange={(e) =>
-                setEditedProduct({
-                  ...editedProduct,
-                  price: Number(e.target.value),
-                })
-              }
+              onChange={e => setEditedProduct({ ...editedProduct, price: Number(e.target.value) })}
               required
             />
           </div>
@@ -338,7 +284,7 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
               id="editImage"
               type="file"
               accept="image/*"
-              onChange={(e) => {
+              onChange={e => {
                 if (e.target.files?.[0]) {
                   // TODO: Implement image upload and get URL
                   setEditedProduct({

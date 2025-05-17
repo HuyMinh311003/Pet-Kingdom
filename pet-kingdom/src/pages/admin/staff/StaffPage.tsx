@@ -170,11 +170,10 @@ const StaffPage: React.FC = () => {
                   onChange={(e) =>
                     setNewStaff({
                       ...newStaff,
-                      role: e.target.value as "Admin" | "Shipper",
+                      role: e.target.value as "Shipper",
                     })
                   }
                 >
-                  <option value="admin">Admin</option>
                   <option value="shipper">Shipper</option>
                 </select>
               </div>
