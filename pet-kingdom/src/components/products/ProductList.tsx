@@ -63,7 +63,7 @@ export default function ProductList() {
     }
     const user = JSON.parse(stored)
     if (user.role !== "Customer") {
-      showToast('Chỉ Customer mới được thêm vào giỏ hàng', 'warning')
+      showToast('Chỉ Customer mới được sử dụng chức năng này', 'warning')
       return;
     }
 

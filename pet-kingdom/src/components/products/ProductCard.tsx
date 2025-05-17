@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "../../contexts/ToastContext";
 
 
 interface ProductCardProps {
@@ -25,7 +26,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const navigate = useNavigate();
   const [wish, setWish] = useState(false);
-
+  const { showToast } = useToast();
   const isPet = type === "pet";
   let label: string;
   let disabled: boolean;
@@ -49,7 +50,7 @@ export default function ProductCard({
     try {
       onAdd();
     } catch (err: any) {
-      alert(err || "Thêm vào giỏ hàng thất bại");
+      showToast(err || "Thêm vào giỏ hàng thất bại", "error");
     }
   };
 
