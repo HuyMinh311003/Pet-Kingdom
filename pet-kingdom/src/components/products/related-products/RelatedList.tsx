@@ -89,6 +89,40 @@ export default function RelatedList() {
     }
   };
 
+  // Xử lý khi click nút Wishlist
+  const handleToggleWishlist = (
+    productId: string,
+    isAdding: boolean,
+    callback: () => void
+  ) => {
+    const token = localStorage.getItem("token");
+    const stored = localStorage.getItem("user");
+
+    if (!token || !stored) {
+      showToast(
+        "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích",
+        "warning"
+      );
+      return;
+    }
+
+    const user = JSON.parse(stored);
+    if (user.role !== "Customer") {
+      showToast("Chỉ Customer mới được sử dụng tính năng này", "warning");
+      return;
+    }
+
+    // Thực hiện API call thông qua callback
+    callback();
+
+    // Hiển thị thông báo phù hợp
+    if (isAdding) {
+      showToast("Đã thêm vào danh sách yêu thích", "success");
+    } else {
+      showToast("Đã xóa khỏi danh sách yêu thích", "success");
+    }
+  };
+
   return (
     <div className="related-container">
       <p className="title">Sản phẩm liên quan</p>
@@ -119,6 +153,7 @@ export default function RelatedList() {
                 handleAdd(product.id);
               }
             }}
+            onToggleWishlist={handleToggleWishlist}
           />
         ))}
       </div>

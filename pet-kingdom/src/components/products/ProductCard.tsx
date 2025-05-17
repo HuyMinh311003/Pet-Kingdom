@@ -6,8 +6,8 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { wishlistApi } from "../../services/customer-api/wishlistApi";
 
 interface ProductCardProps {
   id: string;
@@ -18,13 +18,29 @@ interface ProductCardProps {
   type: "pet" | "tool";
   onAdd: () => void;
   inCartQty: number;
+  onToggleWishlist?: (
+    productId: string,
+    isAdding: boolean,
+    callback: () => void
+  ) => void;
+  refreshWishlist?: () => void;
 }
 
 export default function ProductCard({
-  id, image, title, price, stock, type, onAdd, inCartQty
+  id,
+  image,
+  title,
+  price,
+  stock,
+  type,
+  onAdd,
+  inCartQty,
+  onToggleWishlist,
+  refreshWishlist,
 }: ProductCardProps) {
   const navigate = useNavigate();
-  const [wish, setWish] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isPet = type === "pet";
   let label: string;
@@ -33,30 +49,84 @@ export default function ProductCard({
   if (stock < 1) {
     label = "Sold Out";
     disabled = true;
-
   } else if (isPet) {
     const adopted = inCartQty > 0;
     label = adopted ? "Adopted" : "Adopt";
     disabled = adopted;
-
   } else {
     const maxReached = inCartQty >= stock;
     label = maxReached ? "Out of stock" : "Add to Cart";
     disabled = maxReached;
   }
 
-  const handleAddToCart = async () => {
-    try {
-      onAdd();
-    } catch (err: any) {
-      alert(err || "Thêm vào giỏ hàng thất bại");
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      const stored = localStorage.getItem("user");
+      if (!stored) return;
+
+      try {
+        const user = JSON.parse(stored);
+        const result = await wishlistApi.checkWishlistItem(user._id, id);
+        setIsInWishlist(result.data.isInWishlist);
+      } catch (err) {
+        console.error("Error checking wishlist status", err);
+      }
+    };
+
+    checkWishlistStatus();
+  }, [id]);
+
+  const handleAddToCart = () => {
+    onAdd();
+  };
+
+  const handleWishlistClick = async () => {
+    const stored = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (!stored || !token) {
+      if (onToggleWishlist) {
+        onToggleWishlist(id, !isInWishlist, () => {});
+      }
+      return;
+    }
+
+    const user = JSON.parse(stored);
+    if (user.role !== "Customer") {
+      if (onToggleWishlist) {
+        onToggleWishlist(id, !isInWishlist, () => {});
+      }
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Gọi callback từ component cha để xử lý wishlist và toast
+    if (onToggleWishlist) {
+      onToggleWishlist(id, !isInWishlist, async () => {
+        try {
+          if (!isInWishlist) {
+            await wishlistApi.addToWishlist(user._id, id);
+          } else {
+            await wishlistApi.removeFromWishlist(user._id, id);
+          }
+
+          setIsInWishlist(!isInWishlist);
+
+          // Bấm gỡ wishlist xong reload trang wishlist để nó mất
+          if (refreshWishlist) {
+            refreshWishlist();
+          }
+        } catch (err) {
+          console.error("Error updating wishlist", err);
+        } finally {
+          setIsLoading(false);
+        }
+      });
     }
   };
 
-  const handleWishlistClick = () => {
-    setWish(prev => !prev);
-  };
-  const wishlistLabel = wish ? "Wishlisted" : "Add to Wishlist";
+  const wishlistLabel = isInWishlist ? "Wishlisted" : "Add to Wishlist";
 
   return (
     <Card sx={{ maxWidth: 345 }}>
@@ -70,7 +140,18 @@ export default function ProductCard({
         onClick={() => navigate(`/products/${id}`)}
       />
       <CardContent>
-        <Typography gutterBottom variant="h6" component="div">
+        <Typography
+          gutterBottom
+          variant="h6"
+          component="div"
+          sx={{
+            display: "-webkit-box",
+            overflow: "hidden",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 2,
+            textOverflow: "ellipsis",
+          }}
+        >
           <strong>{title}</strong>
         </Typography>
         <Typography variant="subtitle1" color="text.primary" sx={{ mt: 1 }}>
@@ -92,12 +173,11 @@ export default function ProductCard({
           onClick={handleWishlistClick}
           size="small"
           startIcon={
-            wish
-              ? <Heart fill="red" stroke="red" />
-              : <Heart />
+            isInWishlist ? <Heart fill="red" stroke="red" /> : <Heart />
           }
           variant="outlined"
           color="error"
+          disabled={isLoading}
         >
           {wishlistLabel}
         </Button>

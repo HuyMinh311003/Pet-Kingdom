@@ -6,6 +6,7 @@ import { User, ShoppingBag, Heart, Gift, LogOut } from "lucide-react";
 import PersonalInfo from "./PersonalInfo";
 import OrderList from "./order/OrderList";
 import OrderDetailPage from "./order/order-detail/OrderDetailPage";
+import Wishlist from "./Wishlist";
 import { getProfile } from "../../services/customer-api/profileApi";
 import { User as UserType } from "../../types/user";
 
@@ -90,6 +91,7 @@ export default function ProfilePage() {
               path="orders/:id"
               element={<OrderDetailPage role="Customer" />}
             />
+            <Route path="wishlist" element={<Wishlist />} />
           </Routes>
         </div>
       </div>
