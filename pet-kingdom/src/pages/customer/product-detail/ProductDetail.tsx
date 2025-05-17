@@ -1,9 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
+import { Heart, CheckCircle, XCircle } from "lucide-react";
 
 import { Product } from "../../../types/admin";
 import { productApi } from "../../../services/admin-api/productApi";
 import { cartApi } from "../../../services/customer-api/api";
+import { wishlistApi } from "../../../services/customer-api/wishlistApi";
 import { useToast } from "../../../contexts/ToastContext";
 
 import RelatedList from "../../../components/products/related-products/RelatedList";
@@ -15,6 +17,8 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [inCartQty, setInCartQty] = useState(0);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const { showToast } = useToast();
 
   // Load giỏ hàng khi component mount
@@ -37,9 +41,28 @@ export default function ProductDetail() {
     }
   }, [id]);
 
+  // Kiểm tra nếu sản phẩm đã có trong danh sách yêu thích
+  const checkWishlistStatus = useCallback(async () => {
+    if (!id) return;
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    try {
+      const user = JSON.parse(stored);
+      const result = await wishlistApi.checkWishlistItem(user._id, id);
+      setIsInWishlist(result.data.isInWishlist);
+    } catch (err) {
+      console.error("Error checking wishlist status", err);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
+
+  useEffect(() => {
+    checkWishlistStatus();
+  }, [checkWishlistStatus]);
 
   useEffect(() => {
     if (!id) return;
@@ -86,10 +109,22 @@ export default function ProductDetail() {
       return;
     }
 
+    // Kiểm tra nếu sản phẩm không phải pet đã đạt tối đa số lượng trong kho
+    if (product.type !== "pet" && inCartQty >= product.stock) {
+      return;
+    }
+
     try {
-      await cartApi.addItem(user._id, id, 1);
+      // Đối với sản phẩm không phải pet, nếu đã có trong giỏ hàng thì tăng số lượng
+      if (product.type !== "pet" && inCartQty > 0) {
+        await cartApi.updateQuantity(user._id, id, inCartQty + 1);
+        showToast("Đã tăng số lượng trong giỏ hàng", "success");
+      } else {
+        // Đối với sản phẩm mới, thêm vào giỏ hàng
+        await cartApi.addItem(user._id, id, 1);
+        showToast("Đã thêm vào giỏ hàng", "success");
+      }
       setInCartQty((prev) => prev + 1);
-      showToast("Đã thêm vào giỏ hàng", "success");
     } catch (err: any) {
       showToast(
         err.response?.data?.message || "Thêm vào giỏ hàng thất bại",
@@ -115,6 +150,51 @@ export default function ProductDetail() {
     }
 
     navigate("/cart");
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!id) return;
+
+    const token = localStorage.getItem("token");
+    const stored = localStorage.getItem("user");
+
+    if (!token || !stored) {
+      showToast(
+        "Bạn chưa đăng nhập, xin vui lòng đăng nhập trước khi thêm vào danh sách yêu thích",
+        "warning"
+      );
+      return;
+    }
+
+    const user = JSON.parse(stored);
+    if (user.role !== "Customer") {
+      showToast(
+        "Chỉ Customer mới được thêm vào danh sách yêu thích",
+        "warning"
+      );
+      return;
+    }
+
+    setIsWishlistLoading(true);
+
+    try {
+      if (!isInWishlist) {
+        await wishlistApi.addToWishlist(user._id, id);
+        showToast("Đã thêm vào danh sách yêu thích", "success");
+      } else {
+        await wishlistApi.removeFromWishlist(user._id, id);
+        showToast("Đã xóa khỏi danh sách yêu thích", "success");
+      }
+      setIsInWishlist(!isInWishlist);
+    } catch (err: any) {
+      showToast(
+        err.response?.data?.message ||
+          "Thao tác với danh sách yêu thích thất bại",
+        "error"
+      );
+    } finally {
+      setIsWishlistLoading(false);
+    }
   };
 
   if (!product) {
@@ -154,7 +234,25 @@ export default function ProductDetail() {
                   new Date(product.birthday).toLocaleDateString("vi-VN")}
               </p>
               <p>Giới tính: {product.gender === "male" ? "Đực" : "Cái"}</p>
-              <p>Tiêm chủng: {product.vaccinated ? "Đã tiêm" : "Chưa tiêm"}</p>
+              <p>
+                <span
+                  className={`vaccination-badge ${
+                    product.vaccinated ? "vaccinated" : "not-vaccinated"
+                  }`}
+                >
+                  {product.vaccinated ? (
+                    <>
+                      <CheckCircle size={16} strokeWidth={3} />
+                      Đã tiêm chủng
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={16} strokeWidth={3} />
+                      Chưa tiêm chủng
+                    </>
+                  )}
+                </span>
+              </p>
             </div>
           )}
 
@@ -170,20 +268,60 @@ export default function ProductDetail() {
           </div>
           <div className="button-list">
             <button
-              className="pdetail-add-to-cart"
+              className={`pdetail-add-to-cart ${
+                product.stock <= 0
+                  ? "out-of-stock"
+                  : product.type === "pet" && inCartQty > 0
+                  ? "pet-disabled"
+                  : product.type !== "pet" && inCartQty >= product.stock
+                  ? "tool-disabled"
+                  : inCartQty > 0
+                  ? "in-cart"
+                  : ""
+              }`}
               onClick={handleAddToCart}
               disabled={
-                product.stock <= 0 || (product.type === "pet" && inCartQty > 0)
+                product.stock <= 0 ||
+                (product.type === "pet" && inCartQty > 0) ||
+                (product.type !== "pet" && inCartQty >= product.stock)
               }
             >
               {product.stock <= 0
                 ? "Hết hàng"
                 : product.type === "pet" && inCartQty > 0
                 ? "Đã thêm vào giỏ hàng"
+                : product.type !== "pet" && inCartQty >= product.stock
+                ? "Đã đạt số lượng tối đa"
+                : inCartQty > 0
+                ? "Đã thêm vào giỏ hàng"
                 : "Thêm vào giỏ hàng"}
             </button>
             <button className="pdetail-go-to-cart" onClick={handleGoToCart}>
               Đi đến giỏ hàng
+            </button>
+            <button
+              className={`pdetail-wishlist-btn ${
+                isInWishlist ? "in-wishlist" : ""
+              }`}
+              onClick={handleToggleWishlist}
+              disabled={isWishlistLoading}
+            >
+              {isInWishlist ? (
+                <>
+                  <Heart
+                    fill="#e74c3c"
+                    stroke="#e74c3c"
+                    style={{ marginRight: "8px" }}
+                    size={16}
+                  />
+                  Đã thêm vào yêu thích
+                </>
+              ) : (
+                <>
+                  <Heart style={{ marginRight: "8px" }} size={16} />
+                  Thêm vào yêu thích
+                </>
+              )}
             </button>
           </div>
         </div>

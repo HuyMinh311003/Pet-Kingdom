@@ -62,24 +62,24 @@ export default function ProfilePage() {
           <div className="tabs-navigation">
             <NavLink to="/profile" end className="tab-button">
               <User size={20} />
-              <span>Personal Information</span>
+              <span>Thông tin cá nhân</span>
             </NavLink>
             <NavLink to="/profile/orders" className="tab-button">
               <ShoppingBag size={20} />
-              <span>My Orders</span>
+              <span>Đơn hàng</span>
             </NavLink>
             <NavLink to="/profile/wishlist" className="tab-button">
               <Heart size={20} />
-              <span>Wishlist</span>
+              <span>Danh sách yêu thích</span>
             </NavLink>
             <NavLink to="/profile/promo-codes" className="tab-button">
               <Gift size={20} />
-              <span>My Promo-codes</span>
+              <span>Mã khuyến mãi</span>
             </NavLink>
           </div>
           <button className="logout-button" onClick={handleLogout}>
             <LogOut size={20} />
-            <span>Logout</span>
+            <span>Đăng xuất</span>
           </button>
         </div>
 

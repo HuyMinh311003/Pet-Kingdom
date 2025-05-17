@@ -81,7 +81,7 @@
 
 /* Image sizing */
 .wishlist-grid .MuiCardMedia-root {
-  height: 110px !important;
+  height: 150px !important;
 }
 
 /* Content styling */
@@ -140,4 +140,32 @@
   text-align: center;
   padding: 1rem 0;
   color: #6b7280;
+}
+
+.wishlist-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.wishlist-pagination button {
+  margin: 0 5px;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.wishlist-pagination .active {
+  background-color: #ffc371;
+  color: white;
+  font-weight: bold;
+  border: none;
+}
+
+.wishlist-pagination button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
