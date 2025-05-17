@@ -56,47 +56,139 @@
     justify-content: space-between;
     font-size: 1.2rem;
     margin-top: 10px;
+    padding-right: 40px;
+  }
+
+  .second-info p {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+  }
+
+  .vaccination-badge {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 4px 10px;
+    margin-left: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-weight: bolder;
+  }
+
+  .vaccination-badge.vaccinated {
+    background-color: rgba(52, 168, 83, 0.1);
+    color: #34a853;
+    border: 1px solid rgba(52, 168, 83, 0.3);
+  }
+
+  .vaccination-badge.not-vaccinated {
+    background-color: rgba(234, 67, 53, 0.1);
+    color: #ea4335;
+    border: 1px solid rgba(234, 67, 53, 0.3);
+  }
+
+  .vaccination-badge svg {
+    margin-right: 6px;
   }
 
   .main-description {
     overflow-y: auto;
     margin-top: 20px;
-    max-height: 200px;
     padding-right: 10px;
     font-size: 1.2rem;
-    flex-grow: 1;
+    /* flex-grow: 1;
+    max-height: 200px; */
+    height: auto; /* xóa nếu muốn back về style cũ */
+    max-height: 300px;
   }
 
   .button-list {
-    margin-top: auto;
+    /* margin-top: auto; */
+    margin-top: 20px;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: flex-start;
 
     .pdetail-add-to-cart,
     .pdetail-go-to-cart {
       background-color: #ffc371;
       color: #ffffff;
-      padding: 0.75rem 2rem;
+      padding: 0.5rem 1.5rem;
       border: none;
-      border-radius: 9999px;
+      border-radius: 5px;
       font-weight: 500;
-      font-size: 1rem;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: background-color 0.3s;
-      margin-right: 20px;
+      margin-right: 15px;
     }
 
     .pdetail-add-to-cart:hover {
       opacity: 0.8;
     }
 
+    .pdetail-add-to-cart:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.85;
+      color: white;
+    }
+
+    /* Pet & Tool specific disabled styles */
+    .pdetail-add-to-cart.pet-disabled,
+    .pdetail-add-to-cart.tool-disabled {
+      background-color: #5a6268;
+      color: white;
+      opacity: 0.9;
+    }
+
+    .pdetail-add-to-cart.in-cart {
+      background-color: #ff9f43;
+    }
+
+    .pdetail-add-to-cart.out-of-stock {
+      background-color: #e74c3c;
+    }
+
     .pdetail-go-to-cart {
-      background-color: gray;
+      background-color: #ff7f50;
     }
 
     .pdetail-go-to-cart:hover {
-      background-color: rgb(175, 175, 175);
+      background-color: #ff6347;
+    }
+
+    .pdetail-wishlist-btn {
+      background-color: white;
+      color: #e74c3c;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid #e74c3c;
+      border-radius: 5px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pdetail-wishlist-btn:hover {
+      background-color: #fff5f5;
+    }
+
+    .pdetail-wishlist-btn.in-wishlist {
+      background-color: #fff5f5;
+      color: #e74c3c;
+    }
+
+    .pdetail-wishlist-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
   }
 }

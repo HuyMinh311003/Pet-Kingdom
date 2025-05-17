@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import './ProductEditModal.css';
 import { Product } from '../../../types/admin';
 
-
-
 interface Category {
   _id: string;
   name: string;
@@ -27,14 +25,13 @@ interface Option {
 const findNode = (nodes: Category[], id: string): Category | undefined => {
   for (const n of nodes) {
     if (n._id === id) return n;
-    if (n.children?.length) {
+    if (n.children) {
       const hit = findNode(n.children, id);
       if (hit) return hit;
     }
   }
   return undefined;
 };
-
 const ProductEditModal: React.FC<ProductEditModalProps> = ({
   product,
   categories,

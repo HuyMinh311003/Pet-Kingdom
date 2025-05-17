@@ -14,6 +14,10 @@ export default function Wishlist() {
   const { showToast } = useToast();
   const [cartQtyById, setCartQtyById] = useState<Record<string, number>>({});
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user._id) {
@@ -140,6 +144,12 @@ export default function Wishlist() {
     }
   };
 
+  // Get current page items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = wishlistItems.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(wishlistItems.length / itemsPerPage);
+
   if (loading) {
     return (
       <div className="loading-indicator">Đang tải danh sách yêu thích...</div>
@@ -166,28 +176,79 @@ export default function Wishlist() {
           </a>
         </div>
       ) : (
-        <div className="wishlist-grid">
-          {wishlistItems.map((item) => (
-            <ProductCard
-              key={item.id || (item as any)._id}
-              id={item.id || (item as any)._id}
-              image={item.imageUrl}
-              title={item.name}
-              price={item.price}
-              stock={item.stock}
-              type={item.type as "pet" | "tool"}
-              inCartQty={cartQtyById[item.id || (item as any)._id] || 0}
-              onAdd={() => {
-                const productId = item.id || (item as any)._id;
-                if (productId) {
-                  handleAddToCart(productId, item.type as string);
-                }
-              }}
-              onToggleWishlist={handleToggleWishlist}
-              refreshWishlist={fetchWishlist}
-            />
-          ))}
-        </div>
+        <>
+          <div className="wishlist-grid">
+            {currentItems.map((item) => (
+              <ProductCard
+                key={item.id || (item as any)._id}
+                id={item.id || (item as any)._id}
+                image={item.imageUrl}
+                title={item.name}
+                price={item.price}
+                stock={item.stock}
+                type={item.type as "pet" | "tool"}
+                inCartQty={cartQtyById[item.id || (item as any)._id] || 0}
+                onAdd={() => {
+                  const productId = item.id || (item as any)._id;
+                  if (productId) {
+                    handleAddToCart(productId, item.type as string);
+                  }
+                }}
+                onToggleWishlist={handleToggleWishlist}
+                refreshWishlist={fetchWishlist}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          <div className="wishlist-pagination">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            >
+              {"<<"}
+            </button>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              {"<"}
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((page) => {
+                if (totalPages <= 5) return true;
+                if (currentPage <= 3) return page <= 5;
+                if (currentPage >= totalPages - 2)
+                  return page >= totalPages - 4;
+                return Math.abs(page - currentPage) <= 2;
+              })
+              .map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={currentPage === page ? "active" : ""}
+                >
+                  {page}
+                </button>
+              ))}
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              {">"}
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              {">>"}
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

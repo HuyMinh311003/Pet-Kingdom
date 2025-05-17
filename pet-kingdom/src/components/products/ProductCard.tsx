@@ -148,7 +148,7 @@ export default function ProductCard({
             display: "-webkit-box",
             overflow: "hidden",
             WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 2,
+            WebkitLineClamp: 1,
             textOverflow: "ellipsis",
           }}
         >
