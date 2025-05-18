@@ -6,8 +6,6 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { wishlistApi } from "../../services/customer-api/wishlistApi";
 import IconButton from "@mui/material/IconButton";
 import "./ProductStyle.css";
 
@@ -20,12 +18,9 @@ interface ProductCardProps {
   type: "pet" | "tool";
   onAdd: () => void;
   inCartQty: number;
-  onToggleWishlist?: (
-    productId: string,
-    isAdding: boolean,
-    callback: () => void
-  ) => void;
-  refreshWishlist?: () => void;
+  isInWishlist: boolean;
+  onToggleWishlist: (productId: string) => void;
+  isWishlistLoading?: boolean;
 }
 
 export default function ProductCard({
@@ -37,12 +32,11 @@ export default function ProductCard({
   type,
   onAdd,
   inCartQty,
+  isInWishlist,
   onToggleWishlist,
-  refreshWishlist,
+  isWishlistLoading = false,
 }: ProductCardProps) {
   const navigate = useNavigate();
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const isPet = type === "pet";
   let label: string;
@@ -61,72 +55,14 @@ export default function ProductCard({
     disabled = maxReached;
   }
 
-  useEffect(() => {
-    const checkWishlistStatus = async () => {
-      const stored = localStorage.getItem("user");
-      if (!stored) return;
-
-      try {
-        const user = JSON.parse(stored);
-        const result = await wishlistApi.checkWishlistItem(user._id, id);
-        setIsInWishlist(result.data.isInWishlist);
-      } catch (err) {
-        console.error("Error checking wishlist status", err);
-      }
-    };
-
-    checkWishlistStatus();
-  }, [id]); // MÀY GIỠN??
-
   const handleAddToCart = () => {
     onAdd();
   };
 
-  const handleWishlistClick = async () => {
-    const stored = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-
-    if (!stored || !token) {
-      if (onToggleWishlist) {
-        onToggleWishlist(id, !isInWishlist, () => {});
-      }
-      return;
-    }
-
-    const user = JSON.parse(stored);
-    if (user.role !== "Customer") {
-      if (onToggleWishlist) {
-        onToggleWishlist(id, !isInWishlist, () => { });
-      }
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Gọi callback từ component cha để xử lý wishlist và toast
-    if (onToggleWishlist) {
-      onToggleWishlist(id, !isInWishlist, async () => {
-        try {
-          if (!isInWishlist) {
-            await wishlistApi.addToWishlist(user._id, id);
-          } else {
-            await wishlistApi.removeFromWishlist(user._id, id);
-          }
-
-          setIsInWishlist(!isInWishlist);
-
-          // Bấm gỡ wishlist xong reload trang wishlist để nó mất
-          if (refreshWishlist) {
-            refreshWishlist();
-          }
-        } catch (err) {
-          console.error("Error updating wishlist", err);
-        } finally {
-          setIsLoading(false);
-        }
-      });
-    }
+  const handleWishlistClick = () => {
+    onToggleWishlist(id);
   };
+
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardMedia
@@ -145,26 +81,20 @@ export default function ProductCard({
           component="div"
           sx={{
             display: "flex",
-            overflow: "hidden",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 1,
-            textOverflow: "ellipsis",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
           }}
         >
           <strong className="card-title">{title}</strong>
-          {onToggleWishlist && (
-            <IconButton
-              onClick={handleWishlistClick}
-              disabled={isLoading}
-              className="icon-btn"
-              size="small"
-            >
-              {isInWishlist
-                ? <Heart fill="red" stroke="red" />
-                : <Heart />
-              }
-            </IconButton>
-          )}
+          <IconButton
+            onClick={handleWishlistClick}
+            disabled={isWishlistLoading}
+            className="icon-btn"
+            size="small"
+          >
+            {isInWishlist ? <Heart fill="red" stroke="red" /> : <Heart />}
+          </IconButton>
         </Typography>
         <Typography variant="subtitle1" color="text.primary" sx={{ mt: 1 }}>
           {price.toLocaleString()}₫

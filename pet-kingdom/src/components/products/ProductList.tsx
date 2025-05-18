@@ -7,13 +7,14 @@ import { useSearchParams } from "react-router-dom";
 import PriceRangeSlider from "./filters/PriceRangeSlider";
 import SidebarFilter, { Category } from "./SidebarFilter";
 import { cartApi } from "../../services/customer-api/api";
+import { wishlistApi } from "../../services/customer-api/wishlistApi";
 import { useToast } from "../../contexts/ToastContext";
 import {
   KeyboardDoubleArrowLeft,
   KeyboardArrowLeft,
   KeyboardArrowRight,
-  KeyboardDoubleArrowRight
-} from '@mui/icons-material';
+  KeyboardDoubleArrowRight,
+} from "@mui/icons-material";
 
 interface Product {
   id: string;
@@ -35,9 +36,7 @@ export default function ProductList() {
   const categoryParam = searchParams.get("category") || ""; // categoryParam có thể là "id1,id2" nếu multi-select
   const categoryName = searchParams.get("name") || "";
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    categoryParam
-      ? categoryParam.split(",")
-      : []
+    categoryParam ? categoryParam.split(",") : []
   );
   const isInitialLoad = useRef(true);
 
@@ -55,10 +54,16 @@ export default function ProductList() {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const [cartQtyById, setCartQtyById] = useState<Record<string, number>>({});
+  const [wishlistItemIds, setWishlistItemIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [wishlistLoadingIds, setWishlistLoadingIds] = useState<Set<string>>(
+    new Set()
+  );
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 9;
 
   // helper: lấy tất cả descendant leaf IDs
   const getDescendantLeafIds = (cat: Category): string[] => {
@@ -85,7 +90,7 @@ export default function ProductList() {
     }
     const user = JSON.parse(stored);
     if (user.role !== "Customer") {
-      showToast('Chỉ Customer mới được sử dụng chức năng này', 'warning')
+      showToast("Chỉ Customer mới được sử dụng chức năng này", "warning");
       return;
     }
 
@@ -105,12 +110,31 @@ export default function ProductList() {
     }
   };
 
-  // Xử lý khi click nút Wishlist
-  const handleToggleWishlist = (
-    productId: string,
-    isAdding: boolean,
-    callback: () => void
-  ) => {
+  // Fetch user wishlist items
+  const fetchWishlistItems = useCallback(async () => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    const user = JSON.parse(stored);
+    if (user.role !== "Customer") return;
+
+    try {
+      const response = await wishlistApi.getWishlist(user._id);
+      if (response.success && response.data.products) {
+        const wishlistIds = new Set(
+          response.data.products.map(
+            (product: any) => product._id || product.id
+          )
+        );
+        setWishlistItemIds(wishlistIds);
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist items:", err);
+    }
+  }, []);
+
+  // Handle toggle wishlist item
+  const handleToggleWishlist = async (productId: string) => {
     const token = localStorage.getItem("token");
     const stored = localStorage.getItem("user");
 
@@ -128,14 +152,32 @@ export default function ProductList() {
       return;
     }
 
-    // Thực hiện API call thông qua callback
-    callback();
+    setWishlistLoadingIds((prev) => new Set(prev).add(productId));
+    const isInWishlist = wishlistItemIds.has(productId);
 
-    // Hiển thị thông báo phù hợp
-    if (isAdding) {
-      showToast("Đã thêm vào danh sách yêu thích", "success");
-    } else {
-      showToast("Đã xóa khỏi danh sách yêu thích", "success");
+    try {
+      if (!isInWishlist) {
+        await wishlistApi.addToWishlist(user._id, productId);
+        setWishlistItemIds((prev) => new Set([...prev, productId]));
+        showToast("Đã thêm vào danh sách yêu thích", "success");
+      } else {
+        await wishlistApi.removeFromWishlist(user._id, productId);
+        setWishlistItemIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+        showToast("Đã xóa khỏi danh sách yêu thích", "success");
+      }
+    } catch (err) {
+      console.error("Error updating wishlist", err);
+      showToast("Không thể cập nhật danh sách yêu thích", "error");
+    } finally {
+      setWishlistLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
     }
   };
 
@@ -159,7 +201,8 @@ export default function ProductList() {
 
   useEffect(() => {
     fetchCart();
-  }, [fetchCart]);
+    fetchWishlistItems();
+  }, [fetchCart, fetchWishlistItems]);
 
   useEffect(() => {
     let mounted = true;
@@ -195,8 +238,6 @@ export default function ProductList() {
     };
   }, []);
 
-
-
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
   useEffect(() => {
     if (!categories.length || !categoryParam || !isInitialLoad.current) return;
@@ -220,9 +261,7 @@ export default function ProductList() {
       const urlIds = categoryParam.split(",");
       const isOnlyParent =
         urlIds.length === 1 && cat._id === urlIds[0] && cat.children?.length;
-      const toSelect = isOnlyParent
-        ? getDescendantLeafIds(cat)
-        : urlIds;
+      const toSelect = isOnlyParent ? getDescendantLeafIds(cat) : urlIds;
 
       setSelectedCategories(toSelect);
       isInitialLoad.current = false;
@@ -257,11 +296,8 @@ export default function ProductList() {
     fetchFiltered();
   }, [selectedCategories, priceRange, overallMaxPrice, currentPage]);
 
-
   const toggleSection = (sec: keyof typeof expandedSections) =>
     setExpandedSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
-
-
 
   const handleCategoryChange = (categoryId: string) => {
     // 1) tìm node tương ứng
@@ -343,8 +379,6 @@ export default function ProductList() {
               </button>
             </div>
 
-
-
             <SidebarFilter
               categories={categories}
               selected={selectedCategories}
@@ -360,14 +394,16 @@ export default function ProductList() {
               >
                 PRICE RANGE
                 <ChevronDown
-                  className={`filter-icon ${expandedSections.priceRange ? "expanded" : ""
-                    }`}
+                  className={`filter-icon ${
+                    expandedSections.priceRange ? "expanded" : ""
+                  }`}
                   size={20}
                 />
               </button>
               <div
-                className={`filter-content ${expandedSections.priceRange ? "expanded" : ""
-                  }`}
+                className={`filter-content ${
+                  expandedSections.priceRange ? "expanded" : ""
+                }`}
               >
                 <PriceRangeSlider
                   min={0}
@@ -379,7 +415,10 @@ export default function ProductList() {
           </div>
 
           <div className="product-list-content">
-            <div className="pagination" style={{ textAlign: "center", margin: "16px 0" }}>
+            <div
+              className="pagination"
+              style={{ textAlign: "center", margin: "16px 0" }}
+            >
               <button
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 5))}
@@ -393,7 +432,10 @@ export default function ProductList() {
                 <KeyboardArrowLeft />
               </button>
               <span style={{ margin: "0 12px" }}>
-                Trang <strong>{currentPage} / {totalPages}</strong>
+                Trang{" "}
+                <strong>
+                  {currentPage} / {totalPages}
+                </strong>
               </span>
               <button
                 disabled={currentPage >= totalPages}
@@ -403,14 +445,15 @@ export default function ProductList() {
               </button>
               <button
                 disabled={currentPage + 5 > totalPages}
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 5))}
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 5))
+                }
               >
                 <KeyboardDoubleArrowRight fontSize="small" />
               </button>
             </div>
 
             <div className="product-grid">
-
               {loading ? (
                 <div className="loading">Loading...</div>
               ) : (
@@ -434,7 +477,9 @@ export default function ProductList() {
                         handleAdd(p.id);
                       }
                     }}
+                    isInWishlist={wishlistItemIds.has(p.id)}
                     onToggleWishlist={handleToggleWishlist}
+                    isWishlistLoading={wishlistLoadingIds.has(p.id)}
                   />
                 ))
               )}

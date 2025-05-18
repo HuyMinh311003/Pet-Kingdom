@@ -146,12 +146,18 @@
 .product-info h3 {
   margin: 0 0 0.5rem 0;
   color: #2a292a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-info p {
   color: #6b7280;
   font-size: 0.875rem;
   margin: 0 0 1rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-details {

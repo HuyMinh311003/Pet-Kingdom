@@ -3,6 +3,7 @@ import ProductCard from "../ProductCard";
 import { useEffect, useState, useCallback } from "react";
 import { productApi } from "../../../services/admin-api/productApi";
 import { cartApi } from "../../../services/customer-api/api";
+import { wishlistApi } from "../../../services/customer-api/wishlistApi";
 import { Product } from "../../../types/admin";
 import { useParams } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
@@ -11,6 +12,12 @@ export default function RelatedList() {
   const { id } = useParams(); // Lấy productId từ URL
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [cartQtyById, setCartQtyById] = useState<Record<string, number>>({});
+  const [wishlistItemIds, setWishlistItemIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [wishlistLoadingIds, setWishlistLoadingIds] = useState<Set<string>>(
+    new Set()
+  );
   const { showToast } = useToast();
 
   // Load giỏ hàng khi component mount
@@ -32,9 +39,33 @@ export default function RelatedList() {
     }
   }, []);
 
+  // Fetch user wishlist items
+  const fetchWishlistItems = useCallback(async () => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    const user = JSON.parse(stored);
+    if (user.role !== "Customer") return;
+
+    try {
+      const response = await wishlistApi.getWishlist(user._id);
+      if (response.success && response.data.products) {
+        const wishlistIds = new Set(
+          response.data.products.map(
+            (product: any) => product._id || product.id
+          )
+        );
+        setWishlistItemIds(wishlistIds);
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist items:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCart();
-  }, [fetchCart]);
+    fetchWishlistItems();
+  }, [fetchCart, fetchWishlistItems]);
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
@@ -90,11 +121,7 @@ export default function RelatedList() {
   };
 
   // Xử lý khi click nút Wishlist
-  const handleToggleWishlist = (
-    productId: string,
-    isAdding: boolean,
-    callback: () => void
-  ) => {
+  const handleToggleWishlist = async (productId: string) => {
     const token = localStorage.getItem("token");
     const stored = localStorage.getItem("user");
 
@@ -112,14 +139,32 @@ export default function RelatedList() {
       return;
     }
 
-    // Thực hiện API call thông qua callback
-    callback();
+    setWishlistLoadingIds((prev) => new Set(prev).add(productId));
+    const isInWishlist = wishlistItemIds.has(productId);
 
-    // Hiển thị thông báo phù hợp
-    if (isAdding) {
-      showToast("Đã thêm vào danh sách yêu thích", "success");
-    } else {
-      showToast("Đã xóa khỏi danh sách yêu thích", "success");
+    try {
+      if (!isInWishlist) {
+        await wishlistApi.addToWishlist(user._id, productId);
+        setWishlistItemIds((prev) => new Set([...prev, productId]));
+        showToast("Đã thêm vào danh sách yêu thích", "success");
+      } else {
+        await wishlistApi.removeFromWishlist(user._id, productId);
+        setWishlistItemIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+        showToast("Đã xóa khỏi danh sách yêu thích", "success");
+      }
+    } catch (err) {
+      console.error("Error updating wishlist", err);
+      showToast("Không thể cập nhật danh sách yêu thích", "error");
+    } finally {
+      setWishlistLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
     }
   };
 
@@ -153,7 +198,9 @@ export default function RelatedList() {
                 handleAdd(product.id);
               }
             }}
+            isInWishlist={wishlistItemIds.has(product.id)}
             onToggleWishlist={handleToggleWishlist}
+            isWishlistLoading={wishlistLoadingIds.has(product.id)}
           />
         ))}
       </div>

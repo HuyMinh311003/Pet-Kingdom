@@ -6,7 +6,6 @@ import { categoryApi } from "../../../services/admin-api/categoryApi";
 import { productApi } from "../../../services/admin-api/productApi";
 import "./ProductsPage.css";
 
-
 interface Category {
   _id: string;
   name: string;
@@ -95,24 +94,23 @@ const ProductsPage: React.FC = () => {
         // reset thêm các field khác tùy type:
         ...(newType === "pet"
           ? { birthday: "", gender: undefined, vaccinated: undefined }
-          : { brand: "", /* tool-specific */ }
-        )
+          : { brand: "" /* tool-specific */ }),
       });
     } else {
       // Cùng type thì chỉ update categoryId, giữ nguyên các giá trị khác
-      setNewProduct(prev => ({
+      setNewProduct((prev) => ({
         ...prev,
-        categoryId: selectedCategory._id
+        categoryId: selectedCategory._id,
       }));
     }
     // Cập nhật lại prevType
     prevTypeRef.current = newType;
     productApi
       .getProductsByCategory(selectedCategory._id)
-      .then(res => {
+      .then((res) => {
         if (res.success) setProducts(res.data.products);
       })
-      .catch(err => console.error("Fetch products error:", err));
+      .catch((err) => console.error("Fetch products error:", err));
   }, [selectedCategory]);
 
   const handleToggleStatus = async (id: string) => {
@@ -120,9 +118,7 @@ const ProductsPage: React.FC = () => {
       const res = await productApi.toggleStatus(id);
       if (res.success) {
         setProducts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, isActive: !p.isActive } : p
-          )
+          prev.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p))
         );
       } else {
         alert("Cập nhật trạng thái thất bại: " + res.message);
@@ -227,7 +223,7 @@ const ProductsPage: React.FC = () => {
           brand: "",
           birthday: "",
           gender: undefined,
-          vaccinated: undefined
+          vaccinated: undefined,
         });
         setSelectedImage(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -267,10 +263,7 @@ const ProductsPage: React.FC = () => {
           return;
         }
       } else if (type === "tool") {
-        if (
-          updates.brand === undefined ||
-          updates.stock === undefined
-        ) {
+        if (updates.brand === undefined || updates.stock === undefined) {
           alert("Tool update missing fields: brand, stock");
           return;
         }
@@ -289,7 +282,6 @@ const ProductsPage: React.FC = () => {
       alert("Có lỗi xảy ra khi cập nhật sản phẩm.");
     }
   };
-
 
   // DELETE PRODUCT
   const handleDeleteProduct = async (id: string) => {
@@ -553,8 +545,8 @@ const ProductsPage: React.FC = () => {
                 <img src={product.imageUrl} alt={product.name} />
               </div>
               <div className="product-info">
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
+                <h3 title={product.name}>{product.name}</h3>
+                <p title={product.description}>{product.description}</p>
                 <div className="product-details">
                   <span className="price">
                     {product.price.toLocaleString()} VND
@@ -564,7 +556,9 @@ const ProductsPage: React.FC = () => {
               </div>
               <div className="product-actions">
                 <button
-                  className={`status-btn ${product.isActive ? "active" : "inactive"}`}
+                  className={`status-btn ${
+                    product.isActive ? "active" : "inactive"
+                  }`}
                   onClick={() => handleToggleStatus(product.id)}
                 >
                   {product.isActive ? "Active" : "Inactive"}

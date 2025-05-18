@@ -13,10 +13,12 @@ export default function Wishlist() {
   const [userId, setUserId] = useState("");
   const { showToast } = useToast();
   const [cartQtyById, setCartQtyById] = useState<Record<string, number>>({});
+  const [wishlistLoadingIds, setWishlistLoadingIds] = useState<Set<string>>(
+    new Set()
+  );
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -43,27 +45,36 @@ export default function Wishlist() {
     }
   }, [userId]);
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async () => {
     if (!userId) return;
 
     setLoading(true);
     try {
       const response = await wishlistApi.getWishlist(userId);
-      setWishlistItems(response.data.products);
+      if (response.success) {
+        // Ensure each product has an id property mapped from _id if needed
+        const processedProducts = response.data.products.map(
+          (product: any) => ({
+            ...product,
+            id: product.id || product._id,
+          })
+        );
+        setWishlistItems(processedProducts);
+      }
     } catch (error) {
       console.error("Error fetching wishlist:", error);
       showToast("Không thể tải danh sách yêu thích", "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, showToast]);
 
   useEffect(() => {
     if (userId) {
       fetchWishlist();
       fetchCart();
     }
-  }, [userId, fetchCart]);
+  }, [userId, fetchWishlist, fetchCart]);
 
   const handleClearWishlist = async () => {
     if (!userId || wishlistItems.length === 0) return;
@@ -78,11 +89,7 @@ export default function Wishlist() {
     }
   };
 
-  const handleToggleWishlist = (
-    productId: string,
-    isAdding: boolean,
-    callback: () => void
-  ) => {
+  const handleToggleWishlist = async (productId: string) => {
     if (!userId) {
       showToast("Vui lòng đăng nhập để sử dụng tính năng này", "warning");
       return;
@@ -94,13 +101,28 @@ export default function Wishlist() {
       return;
     }
 
-    // Gọi callback (thực hiện API call) và hiển thị toast
-    callback();
+    // Set loading state for this product
+    setWishlistLoadingIds((prev) => new Set(prev).add(productId));
 
-    if (isAdding) {
-      showToast("Đã thêm vào danh sách yêu thích", "success");
-    } else {
+    try {
+      // Since we're in the wishlist already, we know we're removing
+      await wishlistApi.removeFromWishlist(userId, productId);
+
+      // Update local state by removing the product
+      setWishlistItems((prevItems) =>
+        prevItems.filter((item) => (item.id || (item as any)._id) !== productId)
+      );
+
       showToast("Đã xóa khỏi danh sách yêu thích", "success");
+    } catch (err) {
+      console.error("Error removing from wishlist", err);
+      showToast("Không thể xóa khỏi danh sách yêu thích", "error");
+    } finally {
+      setWishlistLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
     }
   };
 
@@ -194,8 +216,11 @@ export default function Wishlist() {
                     handleAddToCart(productId, item.type as string);
                   }
                 }}
+                isInWishlist={true}
                 onToggleWishlist={handleToggleWishlist}
-                refreshWishlist={fetchWishlist}
+                isWishlistLoading={wishlistLoadingIds.has(
+                  item.id || (item as any)._id
+                )}
               />
             ))}
           </div>
