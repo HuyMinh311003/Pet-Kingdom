@@ -8,6 +8,8 @@ import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { wishlistApi } from "../../services/customer-api/wishlistApi";
+import IconButton from "@mui/material/IconButton";
+import "./ProductStyle.css";
 
 interface ProductCardProps {
   id: string;
@@ -74,7 +76,7 @@ export default function ProductCard({
     };
 
     checkWishlistStatus();
-  }, [id]);
+  }, [id]); // MÀY GIỠN??
 
   const handleAddToCart = () => {
     onAdd();
@@ -94,7 +96,7 @@ export default function ProductCard({
     const user = JSON.parse(stored);
     if (user.role !== "Customer") {
       if (onToggleWishlist) {
-        onToggleWishlist(id, !isInWishlist, () => {});
+        onToggleWishlist(id, !isInWishlist, () => { });
       }
       return;
     }
@@ -125,9 +127,6 @@ export default function ProductCard({
       });
     }
   };
-
-  const wishlistLabel = isInWishlist ? "Wishlisted" : "Add to Wishlist";
-
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardMedia
@@ -145,14 +144,27 @@ export default function ProductCard({
           variant="h6"
           component="div"
           sx={{
-            display: "-webkit-box",
+            display: "flex",
             overflow: "hidden",
             WebkitBoxOrient: "vertical",
             WebkitLineClamp: 1,
             textOverflow: "ellipsis",
           }}
         >
-          <strong>{title}</strong>
+          <strong className="card-title">{title}</strong>
+          {onToggleWishlist && (
+            <IconButton
+              onClick={handleWishlistClick}
+              disabled={isLoading}
+              className="icon-btn"
+              size="small"
+            >
+              {isInWishlist
+                ? <Heart fill="red" stroke="red" />
+                : <Heart />
+              }
+            </IconButton>
+          )}
         </Typography>
         <Typography variant="subtitle1" color="text.primary" sx={{ mt: 1 }}>
           {price.toLocaleString()}₫
@@ -161,25 +173,16 @@ export default function ProductCard({
       <CardActions className="button-bar">
         <Button
           onClick={handleAddToCart}
-          className="btn"
           size="small"
           startIcon={<ShoppingCart />}
           variant="outlined"
           disabled={disabled}
+          sx={{
+            fontSize: "15px",
+            fontWeight: "600",
+          }}
         >
           {label}
-        </Button>
-        <Button
-          onClick={handleWishlistClick}
-          size="small"
-          startIcon={
-            isInWishlist ? <Heart fill="red" stroke="red" /> : <Heart />
-          }
-          variant="outlined"
-          color="error"
-          disabled={isLoading}
-        >
-          {wishlistLabel}
         </Button>
       </CardActions>
     </Card>

@@ -23,7 +23,7 @@ const Toast: React.FC<ToastProps> = ({
     onClose={onClose}
     anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
   >
-    <Alert onClose={onClose} severity={severity} sx={{ width: '100%' }}>
+    <Alert onClose={onClose} severity={severity} sx={{ width: '100%', fontWeight: "600" }}>
       {message}
     </Alert>
   </Snackbar>

@@ -22,7 +22,14 @@ exports.getCart = async (req, res) => {
             });
         }
 
-        const total = cart.items.reduce((sum, item) => {
+        const validItems = cart.items.filter(i => i.product != null);
+
+        if (validItems.length !== cart.items.length) {
+            cart.items = validItems;
+            await cart.save();
+        }
+
+        const total = validItems.reduce((sum, item) => {
             return sum + (item.product.price * item.quantity);
         }, 0);
 
@@ -30,7 +37,7 @@ exports.getCart = async (req, res) => {
         res.json({
             success: true,
             data: {
-                items: cart.items.map(i => ({
+                items: validItems.map(i => ({
                     product: i.product,
                     quantity: i.quantity
                 })),
