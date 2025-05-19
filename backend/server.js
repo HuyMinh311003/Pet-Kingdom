@@ -8,6 +8,7 @@ const { initializeAdmin } = require('./src/config/init');
 const config = require('./src/config/config');
 const path = require('path');
 // Import routes
+const checkoutRoutes = require('./src/routes/checkoutRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const categoryRoutes = require('./src/routes/categoryRoutes');
 const productRoutes = require('./src/routes/productRoutes');
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, config.upload.path)));
 
 // Initialize routes
+app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);

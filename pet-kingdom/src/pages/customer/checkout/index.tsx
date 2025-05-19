@@ -1,66 +1,72 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.css";
 import BackButton from "../../../components/common/back-button/BackButton";
+import { getCheckoutInfo, placeOrder } from "../../../services/customer-api/checkoutApi"; // nhớ sửa path nếu khác
 
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
+interface CartItem {
+  product: {
+    _id: string;
+    name: string;
+    image: string;
+    price: number;
+  };
   quantity: number;
 }
 
 const Checkout: React.FC = () => {
-  const [CheckOutItems, setCheckOutItems] = useState<Product[]>([
-    {
-      id: 1,
-      name: "Dog",
-      image:
-        "https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/bernese-mountain-dog.jpg?crop=1.00xw:0.667xh;0,0.213xh&resize=980:*",
-      price: 550000,
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: "Cat",
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/640px-Cat03.jpg",
-      price: 550000,
-      quantity: 1,
-    },
-    {
-      id: 3,
-      name: "Rabbit A",
-      image:
-        "https://cdn.shopify.com/s/files/1/0040/8997/0777/files/Cute_Bunny_7d_1024x1024.jpg?v=1698453869",
-      price: 550000,
-      quantity: 1,
-    },
-    {
-      id: 4,
-      name: "Rabbit B",
-      image:
-        "https://cdn.shopify.com/s/files/1/0040/8997/0777/files/Cute_Bunny_7d_1024x1024.jpg?v=1698453869",
-      price: 550000,
-      quantity: 1,
-    },
-    {
-      id: 5,
-      name: "Rabbit C",
-      image:
-        "https://cdn.shopify.com/s/files/1/0040/8997/0777/files/Cute_Bunny_7d_1024x1024.jpg?v=1698453869",
-      price: 550000,
-      quantity: 1,
-    },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [subtotal, setSubtotal] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "Bank Transfer">("COD");
+  const [promoCode, setPromoCode] = useState("");
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    const fetchCheckout = async () => {
+      try {
+        const res = await getCheckoutInfo();
+        setCartItems(res.data.cartItems);
+        setSubtotal(res.data.subtotal);
+        setShipping(res.data.shipping);
+        setDiscount(res.data.discount);
+        setTotal(res.data.total);
+        setFullName(res.data.user.fullName);
+        setPhone(res.data.user.phone);
+        setAddress(res.data.user.address);
+      } catch (error) {
+        console.error("Error loading checkout info:", error);
+      }
+    };
+
+    fetchCheckout();
+  }, []);
+
+  const handleCheckout = async () => {
+    try {
+      const res = await placeOrder({
+        shippingAddress: address,
+        phone,
+        paymentMethod,
+        promoCode,
+        notes,
+      });
+      alert("Order placed successfully!");
+      // Chuyển trang hoặc làm gì đó tiếp theo
+    } catch (error: any) {
+      alert(error?.response?.data?.message || "Failed to place order");
+    }
+  };
 
   return (
     <div className="checkout-container" style={{ position: "relative" }}>
       <BackButton style={{ top: 12, left: 100 }} fallbackPath="/home/cart" />
-      <p
-        className="checkout-title"
-        style={{ fontSize: "40px", fontWeight: "bold" }}
-      >
+      <p className="checkout-title" style={{ fontSize: "40px", fontWeight: "bold" }}>
         Checkout
       </p>
       <div className="main-container">
@@ -69,40 +75,67 @@ const Checkout: React.FC = () => {
             <p style={{ fontSize: "20px" }}>Contact details</p>
           </div>
           <div className="firstname">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>First Name</p>
-            <input type="text" placeholder="Your first name" />
-          </div>
-
-          <div className="lastname">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>Last name</p>
-            <input type="text" placeholder="Your last name" />
+            <p style={{ fontSize: "15px", fontWeight: 500 }}>Your Name</p>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Your first name"
+            />
           </div>
 
           <div className="phonenumber">
             <p style={{ fontSize: "15px", fontWeight: 500 }}>Phone number</p>
-            <input type="text" placeholder="Your phone number" />
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Your phone number"
+            />
           </div>
 
           <div className="email">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>Email</p>
-            <input type="email" placeholder="Your email address" />
+            <p style={{ fontSize: "15px", fontWeight: 500 }}>Note</p>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any notes (optional)"
+            />
           </div>
+
           <div className="delivery-title">
             <p style={{ fontSize: "20px" }}>Delivery</p>
           </div>
           <div className="address">
             <p style={{ fontSize: "15px", fontWeight: 500 }}>Your Address</p>
-            <input type="address" placeholder="Your address" />
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Your address"
+            />
           </div>
+
           <div className="payment">
             <p style={{ fontSize: "20px" }}>Payment</p>
             <label>
-              <input type="radio" name="paymenttype" defaultChecked />
+              <input
+                type="radio"
+                name="paymenttype"
+                checked={paymentMethod === "COD"}
+                onChange={() => setPaymentMethod("COD")}
+              />
               Cash on delivery
             </label>
             <label>
-              <input type="radio" name="paymenttype" />
-              Online payment
+              <input
+                type="radio"
+                name="paymenttype"
+                checked={paymentMethod === "Bank Transfer"}
+                onChange={() => setPaymentMethod("Bank Transfer")}
+              />
+              Bank Transfer
             </label>
           </div>
         </div>
@@ -111,19 +144,17 @@ const Checkout: React.FC = () => {
           <div className="yourorder-title">
             <p style={{ fontSize: "20px", fontWeight: 600 }}>Your Order</p>
             <div className="checkout-item">
-              {CheckOutItems.map((item) => (
-                <div className="checkout-card">
-                  <img src={item.image} alt={item.name} />
+              {cartItems.map((item, index) => (
+                <div className="checkout-card" key={index}>
+                  <img src={item.product.image} alt={item.product.name} />
                   <div className="yourorder-info">
-                    <p style={{ fontSize: "18px" }}>{item.name}</p>
+                    <p style={{ fontSize: "18px" }}>{item.product.name}</p>
                     <div className="price-quantity">
-                      <p>{item.price}</p>
+                      <p>{item.product.price.toLocaleString()}đ</p>
                       <p>Số lượng: {item.quantity}</p>
                       <p>
                         Tổng:{" "}
-                        {`${(
-                          Number(item.price) * item.quantity
-                        ).toLocaleString()}đ`}
+                        {(item.product.price * item.quantity).toLocaleString()}đ
                       </p>
                     </div>
                   </div>
@@ -138,13 +169,27 @@ const Checkout: React.FC = () => {
               type="text"
               placeholder="Enter promo-code"
               className="promo-input"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
             />
             <button className="apply-button">Apply</button>
           </div>
           <div className="checkout-summary">
-            <p style={{ fontSize: "18px" }}>Subtotal: 500000</p>
-            <p style={{ fontSize: "18px" }}>Total: 500000</p>
-            <button className="checkout-button">Checkout</button>
+            <p style={{ fontSize: "18px" }}>
+              Subtotal: {subtotal.toLocaleString()}đ
+            </p>
+            <p style={{ fontSize: "18px" }}>
+              Shipping: {shipping.toLocaleString()}đ
+            </p>
+            <p style={{ fontSize: "18px" }}>
+              Discount: {discount.toLocaleString()}đ
+            </p>
+            <p style={{ fontSize: "20px", fontWeight: "bold" }}>
+              Total: {total.toLocaleString()}đ
+            </p>
+            <button className="checkout-button" onClick={handleCheckout}>
+              Checkout
+            </button>
           </div>
         </div>
       </div>

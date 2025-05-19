@@ -72,23 +72,5 @@ export const orderApi = {
     return response.data;
   },
 
-  // Đặt hàng (customer)
-  createOrder: async (data: {
-    items: Array<{
-      productId: string;
-      quantity: number;
-    }>;
-    shippingAddress: {
-      street: string;
-      ward: string;
-      district: string;
-      city: string;
-    };
-    phone: string;
-    paymentMethod: "COD" | "Bank Transfer";
-    promoCode?: string;
-  }) => {
-    const response = await api.post("/orders", data);
-    return response.data;
-  },
+  
 };
