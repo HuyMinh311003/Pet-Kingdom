@@ -169,9 +169,6 @@
   font-weight: 500;
 }
 
-.checkout-summary p:nth-child(2) {
-  color: red;
-}
 
 .checkout-summary p:last-child {
   font-size: 16px;

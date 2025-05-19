@@ -44,23 +44,10 @@ const orderSchema = new mongoose.Schema({
         min: [0, 'Total cannot be negative']
     },
     shippingAddress: {
-        street: {
-            type: String,
-            required: true
-        },
-        ward: {
-            type: String,
-            required: true
-        },
-        district: {
-            type: String,
-            required: true
-        },
-        city: {
-            type: String,
-            required: true
-        }
-    },
+    type: String,
+    required: true
+},
+
     phone: {
         type: String,
         required: true,
