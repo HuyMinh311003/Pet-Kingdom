@@ -6,13 +6,13 @@
 .order-subtitle {
   font-size: 18px;
   font-weight: bold;
-  margin: 10px 0px;
+  margin: 5px 0px;
 }
 
 /* OrderInfo Component */
 .order-detail-info-container {
   width: 45%;
-  padding: 20px 10px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -23,7 +23,7 @@
 .order-payment-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .order-info-row {
@@ -35,7 +35,7 @@
 /* OrderProductList Component */
 .order-product-container {
   width: 55%;
-  padding: 20px 10px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
 }

@@ -20,7 +20,7 @@ const OrderList = ({ role, viewMode }: Props) => {
   const [totalPages, setTotalPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [statusFilter, setStatusFilter] = useState<string | undefined>("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const ordersPerPage = role === "Customer" ? 5 : 10;
 
@@ -134,8 +134,10 @@ const OrderList = ({ role, viewMode }: Props) => {
             </select>
           )}
 
-          <button onClick={() => handleSortOrderChange("asc")}>↑ Ngày</button>
-          <button onClick={() => handleSortOrderChange("desc")}>↓ Ngày</button>
+          <button onClick={() => handleSortOrderChange("asc")}>Cũ nhất</button>
+          <button onClick={() => handleSortOrderChange("desc")}>
+            Mới nhất
+          </button>
         </div>
       </div>
 

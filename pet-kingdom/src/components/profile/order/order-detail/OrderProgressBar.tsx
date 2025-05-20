@@ -6,16 +6,54 @@ import CloseIcon from "@mui/icons-material/Close";
 
 const steps = ["Chờ xác nhận", "Đã xác nhận", "Đang giao", "Đã giao"];
 
+type StatusHistoryItem = {
+  status: string;
+  date: string;
+  note?: string;
+  updatedBy?: string;
+};
+
 const OrderProgressBar = ({
   status,
   previousStatus,
+  statusHistory = [],
 }: {
   status: string;
   previousStatus?: string;
+  statusHistory?: StatusHistoryItem[];
 }) => {
+  // Determine the effective status for positioning in the progress bar
+  let effectiveStatus = status;
+  let effectivePreviousStatus = previousStatus;
+
+  if (status === "Đã hủy" && statusHistory.length > 0) {
+    // Sort status history by date (newest first)
+    const sortedHistory = [...statusHistory].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    // Find the last non-cancelled status
+    const lastNonCancelledStatus = sortedHistory.find(
+      (item) => item.status !== "Đã hủy"
+    );
+
+    if (lastNonCancelledStatus) {
+      effectiveStatus = lastNonCancelledStatus.status;
+
+      // Find the status before the last non-cancelled status
+      const statusIndex = sortedHistory.findIndex(
+        (item) => item.status === lastNonCancelledStatus.status
+      );
+
+      if (statusIndex < sortedHistory.length - 1) {
+        effectivePreviousStatus = sortedHistory[statusIndex + 1].status;
+      }
+    }
+  }
+
   const activeStep =
     status === "Đã hủy"
-      ? steps.indexOf(previousStatus || "Chờ xác nhận")
+      ? steps.indexOf(effectiveStatus)
       : steps.indexOf(status);
 
   const CustomConnector = styled(StepConnector)(() => ({

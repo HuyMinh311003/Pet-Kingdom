@@ -1,44 +1,66 @@
 import "./OrderDetailPage.css";
+import { Order } from "../../../../types/order";
 
-export default function OrderInfo() {
+type Props = {
+  order: Order;
+};
+
+export default function OrderInfo({ order }: Props) {
+  // Format date to dd/mm/yyyy
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, "0")}/${(
+      date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}/${date.getFullYear()}`;
+  };
+
   return (
     <div className="order-detail-info-container">
       <div className="order-detail-info">
         <p className="order-subtitle">Thông tin đơn hàng</p>
         <div className="order-info-row">
-          <span>Mã đơn hàng:</span> <span>00001</span>
+          <span>Mã đơn hàng:</span> <span>{order._id}</span>
         </div>
         <div className="order-info-row">
-          <span>Ngày đặt hàng:</span> <span>10/4/2025</span>
+          <span>Ngày đặt hàng:</span> <span>{formatDate(order.createdAt)}</span>
         </div>
         <div className="order-info-row">
-          <span>Tên người nhận hàng:</span> <span>Nguyễn Văn A</span>
+          <span>Tên người nhận hàng:</span>{" "}
+          <span>Thiếu field trong database</span>
         </div>
         <div className="order-info-row">
-          <span>Số điện thoại:</span> <span>0123456789</span>
+          <span>Số điện thoại:</span> <span>{order.phone}</span>
         </div>
         <div className="order-info-row">
-          <span>Địa chỉ giao hàng:</span>{" "}
-          <span>Số xx/xx, đường ABC, phường x, quận y, TPHCM</span>
+          <span>Địa chỉ giao hàng:</span> <span>{order.shippingAddress}</span>
+        </div>
+        <div className="order-info-row">
+          <span>Ghi chú:</span> <span>{order.notes || "Không có"}</span>
         </div>
       </div>
 
       <div className="order-payment-info">
         <p className="order-subtitle">Thông tin thanh toán</p>
         <div className="order-info-row">
-          <span>Phương thức thanh toán:</span> <span>COD</span>
+          <span>PT thanh toán:</span> <span>{order.paymentMethod}</span>
         </div>
         <div className="order-info-row">
-          <span>Tổng tiền sản phẩm:</span> <span>500,000đ</span>
+          <span>Tổng tiền sản phẩm:</span>{" "}
+          <span>{order.subtotal.toLocaleString()}đ</span>
         </div>
         <div className="order-info-row">
-          <span>Phí vận chuyển:</span> <span>20,000đ</span>
+          <span>Phí vận chuyển:</span>{" "}
+          <span>{order.shippingFee.toLocaleString()}đ</span>
         </div>
         <div className="order-info-row">
-          <span>Giảm giá:</span> <span>-50,000đ</span>
+          <span>Giảm giá:</span>{" "}
+          <span>-{order.discount.toLocaleString()}đ</span>
         </div>
         <div className="order-info-row">
-          <span>Tổng thanh toán:</span> <span>470,000đ</span>
+          <span>Tổng thanh toán:</span>{" "}
+          <span>{order.total.toLocaleString()}đ</span>
         </div>
       </div>
     </div>

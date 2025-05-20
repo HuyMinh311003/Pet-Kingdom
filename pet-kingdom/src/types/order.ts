@@ -2,8 +2,14 @@
 
 import { User } from "./user";
 
+export interface Product {
+  _id: string;
+  name: string;
+  imageUrl: string;
+}
+
 export interface OrderItem {
-  product: string; // product ID
+  product: string | Product; // Can be either product ID or populated product object
   quantity: number;
   price: number;
 }
@@ -15,12 +21,12 @@ export interface OrderStatusHistory {
   updatedBy?: string; // user ID
 }
 
-export interface ShippingAddress {
-  street: string;
-  ward: string;
-  district: string;
-  city: string;
-}
+// export interface ShippingAddress {
+//   street: string;
+//   ward: string;
+//   district: string;
+//   city: string;
+// }
 
 export interface Order {
   _id: string;
@@ -30,12 +36,13 @@ export interface Order {
   shippingFee: number;
   discount: number;
   total: number;
-  shippingAddress: ShippingAddress;
+  // shippingAddress: ShippingAddress;
+   shippingAddress: string;
   phone: string;
   paymentMethod: "COD" | "Bank Transfer";
   status: "Chờ xác nhận" | "Đã xác nhận" | "Đang giao" | "Đã giao" | "Đã hủy";
   statusHistory: OrderStatusHistory[];
-  assignedTo?: User | null;
+  assignedTo?: string | User | null; // Can be shipper ID or populated shipper object
   promoCode?: string | null;
   notes?: string | null;
   createdAt: string;

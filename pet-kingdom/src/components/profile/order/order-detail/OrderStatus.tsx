@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserRole } from "../../../../types/role";
 import {
   Dialog,
@@ -24,12 +24,20 @@ const getNextStatuses = (current: string) => {
   }
 };
 
+type StatusHistoryItem = {
+  status: string;
+  date: string;
+  note?: string;
+  updatedBy?: string;
+};
+
 type Props = {
   role: UserRole;
   initialStatus: string;
   viewMode: "assigned-orders" | "shipper-orders" | "default";
   onStatusChange: (newStatus: string) => void;
   orderId: string;
+  statusHistory?: StatusHistoryItem[];
 };
 
 const OrderStatus = ({
@@ -38,22 +46,50 @@ const OrderStatus = ({
   viewMode,
   onStatusChange,
   orderId,
+  statusHistory = [],
 }: Props) => {
   const [previousStatus, setPreviousStatus] = useState<string | undefined>();
   const [currentStatus, setCurrentStatus] = useState(initialStatus);
   const [selectedStatus, setSelectedStatus] = useState(initialStatus);
+  const [effectiveStatus, setEffectiveStatus] = useState(initialStatus);
 
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
 
   const navigate = useNavigate();
 
+  // Determine the effective status based on status history
+  useEffect(() => {
+    if (statusHistory.length > 0) {
+      // Sort status history by date (newest first)
+      const sortedHistory = [...statusHistory].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      // If the current status is "Đã hủy", find the status before cancellation
+      if (currentStatus === "Đã hủy") {
+        // Find the last non-cancelled status
+        const lastNonCancelledStatus = sortedHistory.find(
+          (item) => item.status !== "Đã hủy"
+        );
+
+        if (lastNonCancelledStatus) {
+          setEffectiveStatus(lastNonCancelledStatus.status);
+        }
+      } else {
+        setEffectiveStatus(currentStatus);
+      }
+    } else {
+      setEffectiveStatus(currentStatus);
+    }
+  }, [currentStatus, statusHistory]);
+
   //Shipper select order
   const handleSelectOrder = async () => {
     try {
       await orderApi.assignOrderToShipper(orderId);
       setOpenConfirmDialog(false);
-      navigate("/shipper-orders");
+      navigate("/admin/shipper-orders");
     } catch (error) {
       console.error("Error assigning order", error);
     }
@@ -163,7 +199,7 @@ const OrderStatus = ({
 
   // Shipper (after select order) and Admin can change status
   if (role === "Admin" || viewMode === "shipper-orders") {
-    const nextOptions = getNextStatuses(currentStatus);
+    const nextOptions = getNextStatuses(effectiveStatus);
 
     return (
       <div className="order-status">
@@ -254,7 +290,7 @@ const OrderStatus = ({
         <DialogTitle
           sx={{ fontWeight: "bold", fontSize: "20px", marginTop: "10px" }}
         >
-          Xác nhận hủy đơn
+          Xác nhận hủy đơn hàng
         </DialogTitle>
         <DialogContentText
           sx={{ fontSize: "16px", color: "#444", pb: 2 }}

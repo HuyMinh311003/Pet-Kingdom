@@ -33,6 +33,10 @@ const OrderDetailPage = ({ role }: Props) => {
         const data = await orderApi.getOrderById(id!);
         console.log(data);
         setOrder(data);
+        // Update status from the fetched order
+        if (data.status) {
+          setStatus(data.status);
+        }
       } catch (error) {
         console.error("Error:", error);
       }
@@ -44,19 +48,25 @@ const OrderDetailPage = ({ role }: Props) => {
     return <div>Loading...</div>;
   }
 
+  const getShipperInfo = () => {
+    if (!order.assignedTo) return "Chưa có shipper";
+    if (typeof order.assignedTo === "string")
+      return `Shipper ID: ${order.assignedTo}`;
+    return `${order.assignedTo.name} - ${order.assignedTo._id}`;
+  };
+
   return (
     <div>
-      <h2 style={{ marginBottom: "10px" }}>Đơn hàng: {order?._id}</h2>
-      <h3 style={{ marginBottom: "30px" }}>
-        Shipper:{" "}
-        {order.assignedTo
-          ? `${order.assignedTo.name} - ${order.assignedTo._id}`
-          : "Chưa có shipper"}
-      </h3>
-      <OrderProgressBar status={status} previousStatus={previousStatus} />
+      <h2 style={{ marginBottom: "10px" }}>Đơn hàng: {order._id}</h2>
+      <h3 style={{ marginBottom: "30px" }}>Shipper: {getShipperInfo()}</h3>
+      <OrderProgressBar
+        status={status}
+        previousStatus={previousStatus}
+        statusHistory={order.statusHistory}
+      />
       <div className="order-detail-container">
-        <OrderInfo />
-        <OrderProductList />
+        <OrderInfo order={order} />
+        <OrderProductList order={order} />
       </div>
       <OrderStatus
         role={role}
@@ -67,6 +77,7 @@ const OrderDetailPage = ({ role }: Props) => {
           setStatus(newStatus);
         }}
         orderId={id || ""}
+        statusHistory={order.statusHistory}
       />
     </div>
   );

@@ -43,7 +43,6 @@ const getCheckoutInfo = async (req, res) => {
 };
 
 // POST /api/checkout - Tạo đơn hàng từ giỏ hàng
-// POST /api/checkout - Tạo đơn hàng từ giỏ hàng
 const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id;

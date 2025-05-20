@@ -71,6 +71,4 @@ export const orderApi = {
     const response = await api.get("/orders/analytics", { params });
     return response.data;
   },
-
-  
 };
