@@ -4,7 +4,6 @@ import BackButton from "../../../components/common/back-button/BackButton";
 import { getCheckoutInfo, placeOrder } from "../../../services/customer-api/checkoutApi"; // nhớ sửa path nếu khác
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
-const { showToast } = useToast();
 
 interface CartItem {
   product: {
@@ -17,6 +16,7 @@ interface CartItem {
 }
 
 const Checkout: React.FC = () => {
+  const { showToast } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [subtotal, setSubtotal] = useState(0);
   const [shipping, setShipping] = useState(0);
@@ -66,22 +66,22 @@ const Checkout: React.FC = () => {
 
       showToast(
         "Đặt hàng không thành công",
-        "warning"
+        "error"
       );
       if (status === 400) {
         showToast(
           "Một số sản phẩm trong giỏ hàng không còn đủ số lượng. Vui lòng kiểm tra lại giỏ hàng và thử lại.",
-          "warning"
+          "error"
         );
       } else if (status === 401) {
         showToast(
           "Bạn cần đăng nhập để thực hiện đặt hàng.",
-          "warning"
+          "error"
         );
       } else if (status === 500) {
         showToast(
           "Lỗi máy chủ. Vui lòng thử lại sau.",
-          "warning"
+          "error"
         );
       }
     }
