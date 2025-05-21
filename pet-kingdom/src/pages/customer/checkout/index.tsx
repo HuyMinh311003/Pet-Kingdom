@@ -7,7 +7,7 @@ interface CartItem {
   product: {
     _id: string;
     name: string;
-    image: string;
+    imageUrl: string;
     price: number;
   };
   quantity: number;
@@ -146,7 +146,7 @@ const Checkout: React.FC = () => {
             <div className="checkout-item">
               {cartItems.map((item, index) => (
                 <div className="checkout-card" key={index}>
-                  <img src={item.product.image} alt={item.product.name} />
+                  <img src={item.product.imageUrl} alt={item.product.name} />
                   <div className="yourorder-info">
                     <p style={{ fontSize: "18px" }}>{item.product.name}</p>
                     <div className="price-quantity">
