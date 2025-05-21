@@ -34,10 +34,10 @@ const StaffPage: React.FC = () => {
     try {
       if (isEditing && editingId) {
         const updated = await staffApi.updateStaff(editingId, newStaff);
-      setStaff(staff.map((s) => (s._id === editingId ? updated.data : s)));
+        setStaff(staff.map((s) => (s._id === editingId ? updated.data : s)));
       } else {
         const created = await staffApi.createStaff(newStaff);
-      setStaff([...staff, created.data]);
+        setStaff([...staff, created.data]);
       }
       resetForm();
     } catch (error) {
@@ -56,9 +56,11 @@ const StaffPage: React.FC = () => {
     try {
       const updated = await staffApi.toggleStaffStatus(id);
       console.log("Updated staff from API:", updated); // 👉 Kiểm tra response từ API
-      setStaff(staff.map((s) =>
-        s._id === id ? { ...s, isActive: updated.data.isActive } : s
-      ));
+      setStaff(
+        staff.map((s) =>
+          s._id === id ? { ...s, isActive: updated.data.isActive } : s
+        )
+      );
     } catch (error) {
       console.error("Failed to toggle status:", error);
     }
@@ -72,9 +74,14 @@ const StaffPage: React.FC = () => {
   };
 
   const handleDeleteStaff = async (id: string) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this staff member?"
+    );
+    if (!confirmDelete) return;
+
     try {
-      await staffApi.updateStaff(id, { isDeleted: true });
-      setStaff(staff.filter((s) => s._id !== id)); // ẩn trên UI
+      await staffApi.deleteStaff(id);
+      setStaff(staff.filter((s) => s._id !== id)); // cập nhật UI
     } catch (error) {
       console.error("Failed to delete staff:", error);
     }
@@ -167,11 +174,10 @@ const StaffPage: React.FC = () => {
                   onChange={(e) =>
                     setNewStaff({
                       ...newStaff,
-                      role: e.target.value as "Admin" | "Shipper",
+                      role: e.target.value as "Shipper",
                     })
                   }
                 >
-                  <option value="admin">Admin</option>
                   <option value="shipper">Shipper</option>
                 </select>
               </div>
@@ -222,8 +228,9 @@ const StaffPage: React.FC = () => {
                   <td>{new Date(member.createdAt).toLocaleDateString()}</td>
                   <td>
                     <span
-                      className={`status-badge ${member.isActive ? "active" : "inactive"
-                        }`}
+                      className={`status-badge ${
+                        member.isActive ? "active" : "inactive"
+                      }`}
                     >
                       {member.isActive ? "Active" : "Inactive"}
                     </span>
@@ -231,11 +238,10 @@ const StaffPage: React.FC = () => {
                   <td>
                     <div className="action-buttons">
                       <button
-                        className={`status-toggle-btn ${member.isActive ? "deactivate" : "activate"
-                          }`}
-                        onClick={() =>
-                          handleUpdateStaffStatus(member._id)
-                        }
+                        className={`status-toggle-btn ${
+                          member.isActive ? "deactivate" : "activate"
+                        }`}
+                        onClick={() => handleUpdateStaffStatus(member._id)}
                       >
                         {member.isActive ? "Deactivate" : "Activate"}
                       </button>
