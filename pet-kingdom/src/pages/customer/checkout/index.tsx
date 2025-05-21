@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import "./styles.css";
 import BackButton from "../../../components/common/back-button/BackButton";
 import { getCheckoutInfo, placeOrder } from "../../../services/customer-api/checkoutApi"; // nhớ sửa path nếu khác
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../../../contexts/ToastContext";
+const { showToast } = useToast();
 
 interface CartItem {
   product: {
@@ -19,7 +22,7 @@ const Checkout: React.FC = () => {
   const [shipping, setShipping] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
-
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -56,10 +59,31 @@ const Checkout: React.FC = () => {
         promoCode,
         notes,
       });
-      alert("Order placed successfully!");
-      // Chuyển trang hoặc làm gì đó tiếp theo
+      showToast("Đặt hàng thành công!", "success");
+      navigate("/profile/orders");
     } catch (error: any) {
-      alert(error?.response?.data?.message || "Failed to place order");
+      const status = error?.response?.status;
+
+      showToast(
+        "Đặt hàng không thành công",
+        "warning"
+      );
+      if (status === 400) {
+        showToast(
+          "Một số sản phẩm trong giỏ hàng không còn đủ số lượng. Vui lòng kiểm tra lại giỏ hàng và thử lại.",
+          "warning"
+        );
+      } else if (status === 401) {
+        showToast(
+          "Bạn cần đăng nhập để thực hiện đặt hàng.",
+          "warning"
+        );
+      } else if (status === 500) {
+        showToast(
+          "Lỗi máy chủ. Vui lòng thử lại sau.",
+          "warning"
+        );
+      }
     }
   };
 
