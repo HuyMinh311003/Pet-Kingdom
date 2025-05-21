@@ -2,24 +2,27 @@ import React, { useEffect, useState } from "react";
 import "./styles.css";
 import BackButton from "../../../components/common/back-button/BackButton";
 import { getCheckoutInfo, placeOrder } from "../../../services/customer-api/checkoutApi"; // nhớ sửa path nếu khác
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../../../contexts/ToastContext";
 
 interface CartItem {
   product: {
     _id: string;
     name: string;
-    image: string;
+    imageUrl: string;
     price: number;
   };
   quantity: number;
 }
 
 const Checkout: React.FC = () => {
+  const { showToast } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [subtotal, setSubtotal] = useState(0);
   const [shipping, setShipping] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
-
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -56,10 +59,31 @@ const Checkout: React.FC = () => {
         promoCode,
         notes,
       });
-      alert("Order placed successfully!");
-      // Chuyển trang hoặc làm gì đó tiếp theo
+      showToast("Đặt hàng thành công!", "success");
+      navigate("/profile/orders");
     } catch (error: any) {
-      alert(error?.response?.data?.message || "Failed to place order");
+      const status = error?.response?.status;
+
+      showToast(
+        "Đặt hàng không thành công",
+        "error"
+      );
+      if (status === 400) {
+        showToast(
+          "Một số sản phẩm trong giỏ hàng không còn đủ số lượng. Vui lòng kiểm tra lại giỏ hàng và thử lại.",
+          "error"
+        );
+      } else if (status === 401) {
+        showToast(
+          "Bạn cần đăng nhập để thực hiện đặt hàng.",
+          "error"
+        );
+      } else if (status === 500) {
+        showToast(
+          "Lỗi máy chủ. Vui lòng thử lại sau.",
+          "error"
+        );
+      }
     }
   };
 
@@ -146,7 +170,7 @@ const Checkout: React.FC = () => {
             <div className="checkout-item">
               {cartItems.map((item, index) => (
                 <div className="checkout-card" key={index}>
-                  <img src={item.product.image} alt={item.product.name} />
+                  <img src={item.product.imageUrl} alt={item.product.name} />
                   <div className="yourorder-info">
                     <p style={{ fontSize: "18px" }}>{item.product.name}</p>
                     <div className="price-quantity">

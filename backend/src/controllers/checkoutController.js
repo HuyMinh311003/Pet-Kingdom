@@ -102,12 +102,11 @@ const placeOrder = async (req, res) => {
     // Cập nhật tồn kho
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id);
-      if (!product || product.quantity < item.quantity) {
-        return res.status(400).json({
-          message: `Not enough stock for ${product?.name || 'a product'}`
-        });
+      if (!product || product.stock < item.quantity) {
+        return res.status(400);
       }
-      product.quantity -= item.quantity;
+      product.stock -= item.quantity;
+
       await product.save();
     }
 

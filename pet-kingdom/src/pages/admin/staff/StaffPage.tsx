@@ -72,16 +72,13 @@ const StaffPage: React.FC = () => {
   };
 
   const handleDeleteStaff = async (id: string) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this staff member?");
-  if (!confirmDelete) return;
-
-  try {
-    await staffApi.deleteStaff(id);
-    setStaff(staff.filter((s) => s._id !== id)); // cập nhật UI
-  } catch (error) {
-    console.error("Failed to delete staff:", error);
-  }
-};
+    try {
+      await staffApi.updateStaff(id, { isDeleted: true });
+      setStaff(staff.filter((s) => s._id !== id)); // ẩn trên UI
+    } catch (error) {
+      console.error("Failed to delete staff:", error);
+    }
+  };
 
   return (
     <div className="staff-page">
@@ -170,10 +167,11 @@ const StaffPage: React.FC = () => {
                   onChange={(e) =>
                     setNewStaff({
                       ...newStaff,
-                      role: e.target.value as "Shipper",
+                      role: e.target.value as "Admin" | "Shipper",
                     })
                   }
                 >
+                  <option value="admin">Admin</option>
                   <option value="shipper">Shipper</option>
                 </select>
               </div>
@@ -233,10 +231,11 @@ const StaffPage: React.FC = () => {
                   <td>
                     <div className="action-buttons">
                       <button
-                        className={`status-toggle-btn ${
-                          member.isActive ? "deactivate" : "activate"
-                        }`}
-                        onClick={() => handleUpdateStaffStatus(member._id)}
+                        className={`status-toggle-btn ${member.isActive ? "deactivate" : "activate"
+                          }`}
+                        onClick={() =>
+                          handleUpdateStaffStatus(member._id)
+                        }
                       >
                         {member.isActive ? "Deactivate" : "Activate"}
                       </button>
