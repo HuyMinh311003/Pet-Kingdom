@@ -1,23 +1,50 @@
-const Cart = require('../models/Cart');
-const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Cart = require("../models/Cart");
+const Order = require("../models/Order");
+const Product = require("../models/Product");
+const ShippingConfig = require("../models/ShippingConfig");
+const DiscountConfig = require("../models/DiscountConfig");
 
 // GET /api/checkout - Lấy thông tin giỏ hàng + tính toán giá trị
 const getCheckoutInfo = async (req, res) => {
   try {
     const userId = req.user._id;
-    const cart = await Cart.findOne({ user: userId }).populate('items.product');
+    const cart = await Cart.findOne({ user: userId }).populate("items.product");
 
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: 'Your cart is empty' });
+      return res.status(400).json({ message: "Your cart is empty" });
     }
 
     const subtotal = cart.items.reduce((sum, item) => {
       return sum + item.product.price * item.quantity;
     }, 0);
 
-    const discount = 0; // Có thể xử lý promoCode sau
-    const shipping = 20000; // Tùy quy định
+    // Get shipping fee from config
+    const shippingConfig = await ShippingConfig.findOne().sort({
+      updatedAt: -1,
+    });
+    const shipping = shippingConfig ? shippingConfig.shippingFee : 20000;
+
+    // Calculate discount based on subtotal only
+    const discountConfig = await DiscountConfig.findOne().sort({
+      updatedAt: -1,
+    });
+    let discount = 0;
+
+    if (
+      discountConfig &&
+      discountConfig.isActive &&
+      discountConfig.tiers.length > 0
+    ) {
+      // Find applicable tier based on subtotal only
+      const applicableTier = discountConfig.tiers
+        .sort((a, b) => b.minSubtotal - a.minSubtotal) // Sort descending
+        .find((tier) => subtotal >= tier.minSubtotal);
+
+      if (applicableTier) {
+        discount = (subtotal * applicableTier.discountPercentage) / 100;
+      }
+    }
+
     const total = subtotal - discount + shipping;
 
     res.json({
@@ -30,14 +57,14 @@ const getCheckoutInfo = async (req, res) => {
       user: {
         fullName: req.user.fullName,
         phone: req.user.phone,
-        address: req.user.address
-      }
+        address: req.user.address,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error preparing checkout',
-      error: error.message
+      message: "Error preparing checkout",
+      error: error.message,
     });
   }
 };
@@ -46,45 +73,65 @@ const getCheckoutInfo = async (req, res) => {
 const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id;
-    const cart = await Cart.findOne({ user: userId }).populate('items.product');
+    const cart = await Cart.findOne({ user: userId }).populate("items.product");
 
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: 'Your cart is empty' });
+      return res.status(400).json({ message: "Your cart is empty" });
     }
 
     const subtotal = cart.items.reduce((sum, item) => {
       return sum + item.product.price * item.quantity;
     }, 0);
 
-    const discount = 0;
-    const shippingFee = 20000;
-    const total = subtotal - discount + shippingFee;
+    // Get shipping fee from config
+    const shippingConfig = await ShippingConfig.findOne().sort({
+      updatedAt: -1,
+    });
+    const shipping = shippingConfig ? shippingConfig.shippingFee : 20000;
+
+    // Calculate discount based on subtotal only
+    const discountConfig = await DiscountConfig.findOne().sort({
+      updatedAt: -1,
+    });
+    let discount = 0;
+
+    if (
+      discountConfig &&
+      discountConfig.isActive &&
+      discountConfig.tiers.length > 0
+    ) {
+      // Find applicable tier based on subtotal only
+      const applicableTier = discountConfig.tiers
+        .sort((a, b) => b.minSubtotal - a.minSubtotal) // Sort descending
+        .find((tier) => subtotal >= tier.minSubtotal);
+
+      if (applicableTier) {
+        discount = (subtotal * applicableTier.discountPercentage) / 100;
+      }
+    }
+
+    const total = subtotal - discount + shipping;
 
     // Kiểm tra dữ liệu từ req.body
-    const {
-      shippingAddress,
-      phone,
-      paymentMethod,
-      notes,
-      promoCode
-    } = req.body;
+    const { shippingAddress, phone, paymentMethod, notes, promoCode } =
+      req.body;
 
     if (!shippingAddress || !phone || !paymentMethod) {
-      return res.status(400).json({ message: 'Missing required order info' });
+      return res.status(400).json({ message: "Missing required order info" });
     }
 
     // Tạo danh sách items cho đơn hàng
-    const items = cart.items.map(item => ({
+    const items = cart.items.map((item) => ({
       product: item.product._id,
       quantity: item.quantity,
-      price: item.product.price
+      price: item.product.price,
     }));
 
     const order = await Order.create({
       user: userId,
       items,
       subtotal,
-      shippingFee,
+      shippingFee: shipping,
       discount,
       total,
       shippingAddress,
@@ -92,11 +139,13 @@ const placeOrder = async (req, res) => {
       paymentMethod,
       notes: notes || null,
       promoCode: promoCode || null,
-      statusHistory: [{
-        status: 'Chờ xác nhận',
-        date: new Date(),
-        updatedBy: userId
-      }]
+      statusHistory: [
+        {
+          status: "Chờ xác nhận",
+          date: new Date(),
+          updatedBy: userId,
+        },
+      ],
     });
 
     // Cập nhật tồn kho
@@ -115,19 +164,19 @@ const placeOrder = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Order placed successfully',
-      order
+      message: "Order placed successfully",
+      order,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error placing order',
-      error: error.message
+      message: "Error placing order",
+      error: error.message,
     });
   }
 };
 
 module.exports = {
   getCheckoutInfo,
-  placeOrder
+  placeOrder,
 };

@@ -10,6 +10,7 @@ import {
   PackageCheck,
   Truck,
   LogOut,
+  SettingsIcon,
 } from "lucide-react";
 import "./AdminSidebar.css";
 import { UserRole } from "../../../types/role";
@@ -58,6 +59,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
             <NavLink to="/admin/staff" className="nav-item">
               <Users size={20} />
               <span>Staff Management</span>
+            </NavLink>
+
+            <NavLink to="/admin/config" className="nav-item">
+              <SettingsIcon size={20} />
+              <span>Configuration</span>
             </NavLink>
           </>
         )}

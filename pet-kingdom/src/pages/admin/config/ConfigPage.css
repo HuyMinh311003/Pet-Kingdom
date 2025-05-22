@@ -1,0 +1,145 @@
+.config-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.config-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.config-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.config-shipping {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-shipping input {
+  width: 150px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.config-currency {
+  color: #666;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.config-percentage {
+  color: #666;
+  font-size: 0.9rem;
+  min-width: 50px;
+}
+
+.config-discount {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.config-discount-header {
+  margin-bottom: 10px;
+}
+
+.config-discount-header label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.config-discount-tier {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.config-tier-number {
+  font-weight: 600;
+  color: #495057;
+  min-width: 60px;
+}
+
+.config-tier-inputs {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.config-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-input-group input {
+  width: 150px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.config-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.config-button:hover {
+  background-color: #0056b3;
+}
+
+.config-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Style for remove tier button */
+.config-discount-tier .config-button {
+  background-color: #dc3545;
+  margin-left: auto;
+}
+
+.config-discount-tier .config-button:hover {
+  background-color: #c82333;
+}
+
+/* Style for add tier and save buttons */
+.config-discount > .config-button:last-child {
+  background-color: #28a745;
+  margin-top: 10px;
+}
+
+.config-discount > .config-button:last-child:hover {
+  background-color: #218838;
+}
+
+.config-discount > .config-button:first-of-type {
+  background-color: #17a2b8;
+}
+
+.config-discount > .config-button:first-of-type:hover {
+  background-color: #138496;
+}

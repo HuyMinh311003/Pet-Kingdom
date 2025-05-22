@@ -28,6 +28,7 @@ import StaffPage from "./pages/admin/staff/StaffPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import "./App.css";
 import { ToastProvider } from "./contexts/ToastContext";
+import ConfigPage from "./pages/admin/config/ConfigPage";
 
 function App() {
   return (
@@ -43,9 +44,7 @@ function App() {
                 <Route
                   path="/profile/*"
                   element={
-                    <ProtectedRoute
-                      allowedRoles={["Customer"]}
-                    >
+                    <ProtectedRoute allowedRoles={["Customer"]}>
                       <ProfilePage />
                     </ProtectedRoute>
                   }
@@ -85,6 +84,7 @@ function App() {
                     path="orders/:id"
                     element={<OrderDetailPage role="Admin" />}
                   />
+                  <Route path="config" element={<ConfigPage />} />
 
                   {/* Shipper */}
                   <Route

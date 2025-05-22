@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import "./styles.css";
 import BackButton from "../../../components/common/back-button/BackButton";
-import { getCheckoutInfo, placeOrder } from "../../../services/customer-api/checkoutApi"; // nhớ sửa path nếu khác
+import {
+  getCheckoutInfo,
+  placeOrder,
+} from "../../../services/customer-api/checkoutApi";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
 
@@ -26,7 +29,9 @@ const Checkout: React.FC = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "Bank Transfer">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "Bank Transfer">(
+    "COD"
+  );
   const [promoCode, setPromoCode] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -64,25 +69,16 @@ const Checkout: React.FC = () => {
     } catch (error: any) {
       const status = error?.response?.status;
 
-      showToast(
-        "Đặt hàng không thành công",
-        "error"
-      );
+      showToast("Đặt hàng không thành công", "error");
       if (status === 400) {
         showToast(
           "Một số sản phẩm trong giỏ hàng không còn đủ số lượng. Vui lòng kiểm tra lại giỏ hàng và thử lại.",
           "error"
         );
       } else if (status === 401) {
-        showToast(
-          "Bạn cần đăng nhập để thực hiện đặt hàng.",
-          "error"
-        );
+        showToast("Bạn cần đăng nhập để thực hiện đặt hàng.", "error");
       } else if (status === 500) {
-        showToast(
-          "Lỗi máy chủ. Vui lòng thử lại sau.",
-          "error"
-        );
+        showToast("Lỗi máy chủ. Vui lòng thử lại sau.", "error");
       }
     }
   };
@@ -90,7 +86,10 @@ const Checkout: React.FC = () => {
   return (
     <div className="checkout-container" style={{ position: "relative" }}>
       <BackButton style={{ top: 12, left: 100 }} fallbackPath="/home/cart" />
-      <p className="checkout-title" style={{ fontSize: "40px", fontWeight: "bold" }}>
+      <p
+        className="checkout-title"
+        style={{ fontSize: "40px", fontWeight: "bold" }}
+      >
         Checkout
       </p>
       <div className="main-container">
@@ -206,7 +205,8 @@ const Checkout: React.FC = () => {
               Shipping: {shipping.toLocaleString()}đ
             </p>
             <p style={{ fontSize: "18px" }}>
-              Discount: {discount.toLocaleString()}đ
+              Discount: -{discount.toLocaleString()}đ (Giảm{" "}
+              {Math.round((discount / subtotal) * 100)}%)
             </p>
             <p style={{ fontSize: "20px", fontWeight: "bold" }}>
               Total: {total.toLocaleString()}đ
