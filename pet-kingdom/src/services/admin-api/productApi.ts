@@ -1,5 +1,6 @@
 import { Product } from "../../types/admin";
 import api from "./axiosConfig";
+
 export const productApi = {
   getProducts: async (params?: any) => {
     const response = await api.get("/products", { params });
@@ -69,6 +70,13 @@ export const productApi = {
     message?: string;
   }> => {
     const response = await api.get(`/products/${id}/related`);
+    return response.data;
+  },
+
+  searchProducts: async (query: string) => {
+    const response = await api.get('/products/search', {
+      params: { query, limit: 5 }
+    });
     return response.data;
   },
 };

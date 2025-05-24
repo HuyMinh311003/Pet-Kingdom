@@ -7,6 +7,7 @@ const upload = require('../utils/upload');
 
 // Public routes
 router.get('/', productController.getProducts);
+router.get('/search', productController.searchProducts);
 router.get('/:id', productController.getProductById);
 router.get('/:id/related', productController.getRelatedProducts);
 

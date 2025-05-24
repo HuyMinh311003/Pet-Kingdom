@@ -323,6 +323,7 @@ exports.createStaff = async (req, res) => {
         });
     }
 };
+
 exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
@@ -345,6 +346,7 @@ exports.deleteUser = async (req, res) => {
         });
     }
 };
+
 exports.toggleStatus = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);

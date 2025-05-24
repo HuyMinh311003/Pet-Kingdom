@@ -1,19 +1,24 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PawPrint as Paw, User, ShoppingCart, Search } from "lucide-react";
 import "./HeaderStyle.css";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
+import { productApi } from '../../../services/admin-api/productApi';
+import { debounce } from 'lodash';
+import { formatPrice } from '../../../utils/format';
 
 interface HeaderProps {
   cartItems: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ cartItems }) => {
+  const navigate = useNavigate();
   const [isSticky, setIsSticky] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const [searchValue, setSearchValue] = useState("");
-  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const { showToast } = useToast();
 
@@ -32,7 +37,8 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
         !searchRef.current.contains(event.target as Node)
       ) {
         setIsSearchOpen(false);
-        setSearchValue("");
+        setSearchQuery("");
+        setSearchResults([]);
       }
     };
     document.addEventListener("click", handleClickOutside);
@@ -61,6 +67,44 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
     navigate("/cart"); // Navigates to the Cart page
   };
 
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(async (query: string) => {
+      if (query.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await productApi.searchProducts(query);
+        if (response.success) {
+          setSearchResults(response.data);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 800),
+    []
+  );
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debouncedSearch(value);
+  };
+
+  // Handle search result click
+  const handleResultClick = (productId: string) => {
+    navigate(`/products/${productId}`);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
   return (
     <header className={`main-header ${isSticky ? "sticky" : ""}`}>
       <div className="header-inner">
@@ -77,10 +121,40 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
             <Search className="search-icon" />
             <input
               type="text"
-              placeholder="Search..."
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Tìm kiếm sản phẩm..."
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
+            
+            {/* Search Results Dropdown */}
+            {searchQuery.length >= 2 && (
+              <div className="search-results">
+                {isSearching ? (
+                  <div className="search-loading">Đang tìm kiếm...</div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((product: any) => (
+                    <div
+                      key={product._id}
+                      className="search-result-item"
+                      onClick={() => handleResultClick(product._id)}
+                    >
+                      <div className="search-image-container">
+                        <img className="search-result-image"
+                          src={product.imageUrl}
+                          alt={product.name}
+                        />
+                      </div>
+                      <div className="search-result-content">
+                        <div className="search-result-name">{product.name}</div>
+                        <div className="search-result-price">{formatPrice(product.price)}</div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="search-no-results">Không tìm thấy sản phẩm</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

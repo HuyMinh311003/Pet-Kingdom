@@ -327,3 +327,36 @@ exports.updateStock = async (req, res) => {
         });
     }
 };
+
+exports.searchProducts = async (req, res) => {
+    try {
+        const { query, limit = 5 } = req.query;
+
+        if (!query || query.length < 2) {
+            return res.json({
+                success: true,
+                data: []
+            });
+        }
+
+        const products = await Product.find(
+            { 
+                name: { $regex: query, $options: 'i' },
+                isActive: true
+            },
+            'name imageUrl price type'  // Chỉ lấy các trường cần thiết
+        )
+        .limit(Number(limit));
+
+        res.json({
+            success: true,
+            data: products
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error searching products',
+            error: error.message
+        });
+    }
+};

@@ -82,7 +82,7 @@
 /* Khi hover hoặc focus, không thay đổi padding để không làm thay đổi kích thước */
 .search-wrapper:hover,
 .search-wrapper:focus-within {
-    /* Chỉ thay đổi border-radius để tạo hiệu ứng “bình” */
+    /* Chỉ thay đổi border-radius để tạo hiệu ứng "bình" */
     border-top: 0;
     border-left: 0;
     border-right: 0;
@@ -92,7 +92,7 @@
 /* Kích hoạt pseudo-element mở rộng từ bottom */
 .search-wrapper:hover::after,
 .search-wrapper:focus-within::after {
-    /* Mở rộng xuống đủ để “điền” phần dưới của header (giá trị này bạn có thể điều chỉnh sao cho phù hợp) */
+    /* Mở rộng xuống đủ để "điền" phần dưới của header (giá trị này bạn có thể điều chỉnh sao cho phù hợp) */
 
     height: calc(100% + 9px);
 }
@@ -242,5 +242,90 @@
     /* Nếu muốn ẩn icon user/cart khi search overlay */
     .search-wrapper.active~.header-icons {
         visibility: hidden;
+    }
+}
+
+/* Search Results Dropdown */
+.search-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 50;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #e5e7eb;
+    height: 60px;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: #f9fafb;
+}
+
+.search-image-container {
+    display: flex;
+    height: 100%;
+}
+
+.search-result-image {
+    width: 40px;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.search-result-content {
+    margin-left: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.search-result-name {
+    font-weight: 500;
+    font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-price {
+    font-size: 20px;
+    padding-right: 20px;
+}
+
+.search-loading,
+.search-no-results {
+    padding: 12px;
+    text-align: center;
+    font-size: 20px;
+}
+
+.search-loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
     }
 }
