@@ -173,7 +173,7 @@ const ConfigPage = () => {
 
       <div className="config-section">
         <h2>Phí vận chuyển</h2>
-        <div className="shipping-config">
+        <div className="config-shipping">
           <input
             type="number"
             value={shippingFee}
@@ -186,10 +186,8 @@ const ConfigPage = () => {
             min="0"
             step="1000"
           />
-          <span className="currency-display">
-            {formatCurrency(shippingFee)}
-          </span>
-          <button onClick={handleShippingFeeChange}>
+          <span className="config-currency">{formatCurrency(shippingFee)}</span>
+          <button className="config-button" onClick={handleShippingFeeChange}>
             Cập nhật phí vận chuyển
           </button>
         </div>
@@ -197,8 +195,8 @@ const ConfigPage = () => {
 
       <div className="config-section">
         <h2>Cấp giảm giá</h2>
-        <div className="discount-config">
-          <div className="discount-header">
+        <div className="config-discount">
+          <div className="config-discount-header">
             <label>
               <input
                 type="checkbox"
@@ -210,10 +208,10 @@ const ConfigPage = () => {
           </div>
 
           {discountTiers.map((tier, index) => (
-            <div key={index} className="discount-tier">
-              <div className="tier-number">Tier {index + 1}</div>
-              <div className="tier-inputs">
-                <div className="input-group">
+            <div key={index} className="config-discount-tier">
+              <div className="config-tier-number">Tier {index + 1}</div>
+              <div className="config-tier-inputs">
+                <div className="config-input-group">
                   <input
                     type="number"
                     value={tier.minSubtotal}
@@ -228,11 +226,11 @@ const ConfigPage = () => {
                     min="0"
                     step="1000"
                   />
-                  <span className="currency-display">
+                  <span className="config-currency">
                     {formatCurrency(tier.minSubtotal)}
                   </span>
                 </div>
-                <div className="input-group">
+                <div className="config-input-group">
                   <input
                     type="number"
                     value={tier.discountPercentage}
@@ -248,19 +246,30 @@ const ConfigPage = () => {
                     max="100"
                     step="1"
                   />
-                  <span className="percentage-display">
+                  <span className="config-percentage">
                     {tier.discountPercentage}%
                   </span>
                 </div>
-                <button onClick={() => removeDiscountTier(index)}>
+                <button
+                  className="config-button remove-discount-tier"
+                  onClick={() => removeDiscountTier(index)}
+                >
                   Xóa cấp giảm giá
                 </button>
               </div>
             </div>
           ))}
 
-          <button onClick={addDiscountTier}>Thêm cấp giảm giá</button>
-          <button onClick={handleDiscountConfigSave}>
+          <button
+            className="config-button add-discount-tier"
+            onClick={addDiscountTier}
+          >
+            Thêm cấp giảm giá
+          </button>
+          <button
+            className="config-button save-discount"
+            onClick={handleDiscountConfigSave}
+          >
             Lưu cài đặt giảm giá
           </button>
         </div>

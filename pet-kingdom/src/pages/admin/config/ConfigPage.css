@@ -117,29 +117,29 @@
 }
 
 /* Style for remove tier button */
-.config-discount-tier .config-button {
+.remove-discount-tier {
   background-color: #dc3545;
   margin-left: auto;
 }
 
-.config-discount-tier .config-button:hover {
+.remove-discount-tier:hover {
   background-color: #c82333;
 }
 
 /* Style for add tier and save buttons */
-.config-discount > .config-button:last-child {
+.add-discount-tier {
+  background-color: #17a2b8;
+}
+
+.add-discount-tier:hover {
+  background-color: #138496;
+}
+
+.save-discount {
   background-color: #28a745;
   margin-top: 10px;
 }
 
-.config-discount > .config-button:last-child:hover {
+.save-discount:hover {
   background-color: #218838;
-}
-
-.config-discount > .config-button:first-of-type {
-  background-color: #17a2b8;
-}
-
-.config-discount > .config-button:first-of-type:hover {
-  background-color: #138496;
 }

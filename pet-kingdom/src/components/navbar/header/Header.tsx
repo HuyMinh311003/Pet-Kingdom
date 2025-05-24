@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
       <div className="header-inner">
         <div className="logo" onClick={() => navigate("")}>
           <Paw className="logo-icon" />
-          <span className="logo-title">Pally</span>
+          <span className="logo-title">PetKingdom</span>
         </div>
 
         <div className="search-bar" ref={searchRef}>
