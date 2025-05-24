@@ -9,6 +9,41 @@
   margin: 5px 0px;
 }
 
+/* OrderShipper Component */
+.order-shipper-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.assign-shipper-section {
+  width: 40%;
+}
+
+.order-shipper-select {
+  margin: 0px 20px;
+  padding: 8px;
+  border-radius: 0.375rem;
+  width: 50%;
+}
+
+.order-shipper-button {
+  background-color: #ffc371;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.8rem;
+  font-size: 16px;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.order-shipper-button:hover {
+  background-color: #ffb357;
+}
+
 /* OrderInfo Component */
 .order-detail-info-container {
   width: 45%;

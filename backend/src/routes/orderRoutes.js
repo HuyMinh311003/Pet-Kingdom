@@ -8,9 +8,16 @@ const shipper = require("../middleware/shipper");
 // Customer routes
 router.get("/customer-orders", auth, orderController.getUserOrders);
 
-// Admin and shipper routes
+// Admin routes
 router.get("/", [auth, admin], orderController.getOrders);
 router.get("/analytics", [auth, admin], orderController.getOrderAnalytics);
+router.put(
+  "/:id/assign-shipper",
+  [auth, admin],
+  orderController.adminAssignShipper
+);
+
+// Shipper routes
 router.get(
   "/assigned-orders",
   [auth, shipper],

@@ -1,5 +1,6 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const User = require("../models/User");
 
 exports.getOrders = async (req, res) => {
   try {
@@ -329,7 +330,7 @@ exports.assignOrderToShipper = async (req, res) => {
     if (order.assignedTo) {
       return res.status(400).json({
         success: false,
-        message: "Order is already assigned to a shipper",
+        message: "Order is already assigned",
       });
     }
 
@@ -355,3 +356,63 @@ exports.assignOrderToShipper = async (req, res) => {
     });
   }
 };
+
+// Admin chọn shipper cho đơn hàng
+exports.adminAssignShipper = async (req, res) => {
+  try {
+    const { shipperId } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.assignedTo) {
+      return res.status(400).json({
+        success: false,
+        message: "Order is already assigned",
+      });
+    }
+
+    if (order.status !== "Đã xác nhận") {
+      return res.status(400).json({
+        success: false,
+        message: "Only confirmed orders can be assigned",
+      });
+    }
+
+    // Verify shipper exists and has correct role
+    const shipper = await User.findOne({ _id: shipperId, role: "Shipper" });
+    if (!shipper) {
+      return res.status(404).json({
+        success: false,
+        message: "Shipper not found or invalid role",
+      });
+    }
+
+    order.assignedTo = shipperId;
+    await order.save();
+
+    // Populate order data before sending response
+    const populatedOrder = await Order.findById(order._id)
+      .populate("user", "name email phone")
+      .populate("items.product", "name imageUrl")
+      .populate("assignedTo", "name");
+
+    res.json({
+      success: true,
+      data: populatedOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error assigning shipper to order",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = exports;

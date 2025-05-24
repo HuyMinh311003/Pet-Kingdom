@@ -10,6 +10,7 @@ import {
 import "./OrderDetailPage.css";
 import { orderApi } from "../../../../services/admin-api/orderApi";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../../../../contexts/ToastContext";
 
 const getNextStatuses = (current: string) => {
   switch (current) {
@@ -57,6 +58,7 @@ const OrderStatus = ({
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
 
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Determine the effective status based on status history
   useEffect(() => {
@@ -87,11 +89,24 @@ const OrderStatus = ({
   //Shipper select order
   const handleSelectOrder = async () => {
     try {
-      await orderApi.assignOrderToShipper(orderId);
-      setOpenConfirmDialog(false);
-      navigate("/admin/shipper-orders");
-    } catch (error) {
+      const response = await orderApi.assignOrderToShipper(orderId);
+      if (response.success) {
+        setOpenConfirmDialog(false);
+        navigate("/admin/shipper-orders");
+      } else {
+        showToast("Đơn hàng này đã được gán cho shipper", "error");
+      }
+    } catch (error: any) {
       console.error("Error assigning order", error);
+      if (error.response?.status === 400) {
+        showToast("Đơn hàng này đã được gán cho shipper", "error");
+      } else if (error.response?.status === 404) {
+        showToast("Không tìm thấy đơn hàng", "error");
+      } else if (error.response?.status === 403) {
+        showToast("Bạn không có quyền thực hiện thao tác này", "error");
+      } else {
+        showToast("Có lỗi xảy ra, vui lòng thử lại sau", "error");
+      }
     }
   };
 

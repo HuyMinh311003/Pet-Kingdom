@@ -63,6 +63,12 @@ export const orderApi = {
     return response.data;
   },
 
+  // Admin assigns shipper to order
+  adminAssignShipper: async (orderId: string, shipperId: string) => {
+    const response = await api.put(`/orders/${orderId}/assign-shipper`, { shipperId });
+    return response.data;
+  },
+
   // Lấy thống kê đơn hàng
   getOrderAnalytics: async (params?: {
     startDate?: string;
