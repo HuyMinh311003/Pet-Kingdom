@@ -3,6 +3,7 @@ import { Category } from '../../../types/admin';
 import SidebarPreview from '../../../components/admin/categories/SidebarPreview';
 import CategoryForm from '../../../components/admin/categories/CategoryForm';
 import { categoryApi } from '../../../services/admin-api/categoryApi';
+import { useToast } from '../../../contexts/ToastContext';
 import './CategoriesPage.css';
 
 const CategoriesPage: React.FC = () => {
@@ -14,6 +15,7 @@ const CategoriesPage: React.FC = () => {
     type: 'pet',
     isActive: true,
   });
+  const { showToast } = useToast();
 
   // Fetch categories on mount
   useEffect(() => {
@@ -51,7 +53,8 @@ const CategoriesPage: React.FC = () => {
       if (res.success) {
         await fetchCategories();
         setIsAddingCategory(false);
-        setNewCategory({ type: 'pet', isActive: true});
+        setNewCategory({ type: 'pet', isActive: true });
+        showToast("Thêm danh mục thành công", "success");
       }
     } catch (error) {
       console.error('Error adding category:', error);
@@ -66,6 +69,7 @@ const CategoriesPage: React.FC = () => {
       const res = await categoryApi.updateCategory(selectedCategory._id, selectedCategory);
       if (res.success) {
         await fetchCategories();
+        showToast("Cập nhật thành công", "success");
         setSelectedCategory(null);
       }
     } catch (error) {
@@ -90,7 +94,7 @@ const CategoriesPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      alert('Could not delete category. It may have subcategories or products.');
+      showToast('Không thể xóa danh mục. Danh mục có thể có các danh mục phụ hoặc sản phẩm.', "error");
     }
   };
 
@@ -102,7 +106,7 @@ const CategoriesPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error toggling category status:', error);
-      alert('Could not toggle category status. It may have active subcategories.');
+      showToast('Không thể chuyển đổi trạng thái danh mục. Có thể có các danh mục con đang hoạt động.', "error");
     }
   };
 

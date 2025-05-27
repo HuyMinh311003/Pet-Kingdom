@@ -14,3 +14,28 @@ export const placeOrder = async (data: {
   const res = await axios.post('/checkout', data);
   return res.data;
 };
+
+export interface ZaloQrResponse {
+  orderUrl: string;
+  zpTransToken: string;
+  apptransid: string;
+}
+
+export const createZaloQrPayment = async (
+  orderId: string,
+  paymentChannel: 'APP' | 'CARD'
+): Promise<ZaloQrResponse> => {
+  const bankCode = paymentChannel === 'CARD'
+    ? 'CC' : 'zalopayapp';
+  const bankGroup = paymentChannel === 'CARD' ? 'CARD' : undefined;
+  const res = await axios.post<{
+    success: boolean;
+    data: { order_url: string; zp_trans_token: string; apptransid: string };
+  }>('/payments/zalo-qr', { orderId, bankCode, bankGroup });
+  const payload = res.data.data;
+  return {
+    orderUrl: payload.order_url,
+    zpTransToken: payload.zp_trans_token,
+    apptransid: payload.apptransid
+  };
+};
