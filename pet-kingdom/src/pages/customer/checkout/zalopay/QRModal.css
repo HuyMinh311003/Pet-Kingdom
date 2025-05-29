@@ -1,0 +1,22 @@
+.qr-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right:0; bottom:0;
+  background: rgba(0,0,0,0.5);
+  display:flex; align-items:center; justify-content:center;
+  z-index: 1000;
+}
+.qr-modal {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  text-align: center;
+}
+.qr-wrapper { margin: 16px 0; }
+.qr-close-btn {
+  padding: 8px 16px;
+  background: #ff8a00;
+  color: white;
+  border:none; border-radius:4px;
+  cursor:pointer;
+}
+.qr-close-btn:hover { background: #e67700; }

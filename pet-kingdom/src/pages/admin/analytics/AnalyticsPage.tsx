@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
+import { getSalesOverview, getCategorySales, getDeliveryCosts } from '../../../services/admin-api/analyticsApi';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +17,6 @@ import {
 } from 'chart.js';
 import './AnalyticsPage.css';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -50,35 +51,31 @@ const AnalyticsPage: React.FC = () => {
   const [deliveryCosts, setDeliveryCosts] = useState<DeliveryCost[]>([]);
 
   useEffect(() => {
-    // TODO: Fetch real data from API
-    // Mock data for now
-    const mockSalesData: SalesData[] = Array.from({ length: 7 }, (_, i) => ({
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
-      amount: Math.floor(Math.random() * 50000000) + 10000000
-    }));
+    const fetchData = async () => {
+      try {
+        const [salesRes, catRes, delRes] = await Promise.all([
+          getSalesOverview(dateRange),
+          getCategorySales(dateRange),
+          getDeliveryCosts(6)        // hoặc months tuỳ biến
+        ]);
 
-    const mockCategorySales: CategorySales[] = [
-      { category: 'Dogs', sales: 45000000 },
-      { category: 'Cats', sales: 38000000 },
-      { category: 'Pet Tools', sales: 25000000 }
-    ];
+        if (salesRes.data.success) setSalesData(salesRes.data.data);
+        if (catRes.data.success) setCategorySales(catRes.data.data);
+        if (delRes.data.success) setDeliveryCosts(delRes.data.data);
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu analytics:', error);
+      }
+    };
 
-    const mockDeliveryCosts: DeliveryCost[] = Array.from({ length: 6 }, (_, i) => ({
-      month: new Date(2025, i, 1).toLocaleString('default', { month: 'short' }),
-      cost: Math.floor(Math.random() * 5000000) + 1000000,
-      orders: Math.floor(Math.random() * 50) + 10
-    }));
-
-    setSalesData(mockSalesData);
-    setCategorySales(mockCategorySales);
-    setDeliveryCosts(mockDeliveryCosts);
+    fetchData();
   }, [dateRange]);
+
 
   const salesChartData: ChartData<'line'> = {
     labels: salesData.map(d => d.date),
     datasets: [
       {
-        label: 'Sales (VND)',
+        label: 'Doanh thu (VND)',
         data: salesData.map(d => d.amount),
         borderColor: '#ffc371',
         backgroundColor: 'rgba(255, 195, 113, 0.1)',
@@ -88,11 +85,12 @@ const AnalyticsPage: React.FC = () => {
     ]
   };
 
+  // Cấu hình data cho biểu đồ doanh thu theo danh mục
   const categoryChartData: ChartData<'bar'> = {
     labels: categorySales.map(c => c.category),
     datasets: [
       {
-        label: 'Sales by Category (VND)',
+        label: 'Doanh thu theo danh mục (VND)',
         data: categorySales.map(c => c.sales),
         backgroundColor: [
           'rgba(255, 195, 113, 0.8)',
@@ -103,11 +101,12 @@ const AnalyticsPage: React.FC = () => {
     ]
   };
 
+  // Cấu hình data cho biểu đồ chi phí giao hàng trung bình
   const deliveryChartData: ChartData<'line'> = {
     labels: deliveryCosts.map(d => d.month),
     datasets: [
       {
-        label: 'Average Delivery Cost per Order (VND)',
+        label: 'Chi phí giao trung bình / đơn (VND)',
         data: deliveryCosts.map(d => d.cost / d.orders),
         borderColor: '#818cf8',
         backgroundColor: 'rgba(129, 140, 248, 0.1)',
@@ -117,20 +116,18 @@ const AnalyticsPage: React.FC = () => {
     ]
   };
 
+  // Cấu hình chung cho chart
   const chartOptions: ChartOptions<'line' | 'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top' as const
-      }
+      legend: { position: 'top' }
     },
     scales: {
       y: {
-        type: 'linear' as const,
         beginAtZero: true,
         ticks: {
-          callback: function(value) {
+          callback: (value) => {
             if (typeof value === 'number') {
               return new Intl.NumberFormat('vi-VN', {
                 style: 'currency',
@@ -148,46 +145,49 @@ const AnalyticsPage: React.FC = () => {
   return (
     <div className="analytics-page">
       <div className="analytics-header">
-        <h1>Analytics Dashboard</h1>
+        <h1>Bảng Thống Kê</h1>
         <div className="date-range-filter">
           <button
             className={dateRange === 'week' ? 'active' : ''}
             onClick={() => setDateRange('week')}
           >
-            Week
+            Tuần
           </button>
           <button
             className={dateRange === 'month' ? 'active' : ''}
             onClick={() => setDateRange('month')}
           >
-            Month
+            Tháng
           </button>
           <button
             className={dateRange === 'year' ? 'active' : ''}
             onClick={() => setDateRange('year')}
           >
-            Year
+            Năm
           </button>
         </div>
       </div>
 
       <div className="analytics-grid">
+        {/* Doanh thu tổng quan */}
         <div className="chart-container sales-chart">
-          <h2>Sales Overview</h2>
+          <h2>Doanh thu tổng quan</h2>
           <div className="chart-wrapper">
             <Line data={salesChartData} options={chartOptions} />
           </div>
         </div>
 
+        {/* Doanh thu theo danh mục */}
         <div className="chart-container category-chart">
-          <h2>Sales by Category</h2>
+          <h2>Doanh thu theo danh mục</h2>
           <div className="chart-wrapper">
             <Bar data={categoryChartData} options={chartOptions} />
           </div>
         </div>
 
+        {/* Chi phí giao hàng trung bình */}
         <div className="chart-container delivery-chart">
-          <h2>Delivery Cost Efficiency</h2>
+          <h2>Chi phí giao hàng trung bình</h2>
           <div className="chart-wrapper">
             <Line data={deliveryChartData} options={chartOptions} />
           </div>

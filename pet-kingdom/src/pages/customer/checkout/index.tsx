@@ -4,6 +4,7 @@ import BackButton from "../../../components/common/back-button/BackButton";
 import {
   getCheckoutInfo,
   placeOrder,
+  createZaloQrPayment
 } from "../../../services/customer-api/checkoutApi";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
@@ -29,12 +30,9 @@ const Checkout: React.FC = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "Bank Transfer">(
-    "COD"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "Bank Transfer" | 'CARD'>("COD");
   const [promoCode, setPromoCode] = useState("");
   const [notes, setNotes] = useState("");
-
   useEffect(() => {
     const fetchCheckout = async () => {
       try {
@@ -56,19 +54,30 @@ const Checkout: React.FC = () => {
   }, []);
 
   const handleCheckout = async () => {
+
     try {
+      const backendMethod: 'COD' | 'Bank Transfer' = paymentMethod === 'COD' ? 'COD' : 'Bank Transfer';
       const res = await placeOrder({
         shippingAddress: address,
         phone,
-        paymentMethod,
+        paymentMethod: backendMethod,
         promoCode,
         notes,
       });
-      showToast("Đặt hàng thành công!", "success");
-      navigate("/profile/orders");
+      const orderId = res.order._id;
+      console.log(orderId);
+
+      if (paymentMethod !== 'COD') {
+        const channel = paymentMethod === 'Bank Transfer' ? 'APP' : (paymentMethod as 'CARD');
+        const { orderUrl } = await createZaloQrPayment(orderId, channel);
+        window.location.href = orderUrl;
+        return;
+      }
+      showToast('Đặt hàng thành công!', 'success');
+      navigate('/profile/orders');
     } catch (error: any) {
       const status = error?.response?.status;
-
+      console.log(status);
       showToast("Đặt hàng không thành công", "error");
       if (status === 400) {
         showToast(
@@ -158,7 +167,18 @@ const Checkout: React.FC = () => {
                 checked={paymentMethod === "Bank Transfer"}
                 onChange={() => setPaymentMethod("Bank Transfer")}
               />
-              Bank Transfer
+              ZaloPay QR
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="paymenttype"
+                value="CARD"
+                checked={paymentMethod === "CARD"}
+                onChange={() => setPaymentMethod("CARD")}
+              />
+              Credit/Debit Card
             </label>
           </div>
         </div>

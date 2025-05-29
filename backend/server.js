@@ -16,16 +16,17 @@ const orderRoutes = require("./src/routes/orderRoutes");
 const cartRoutes = require("./src/routes/cartRoutes");
 const reviewRoutes = require("./src/routes/reviewRoutes");
 const promotionRoutes = require("./src/routes/promotionRoutes");
+const analyticsRoutes = require('./src/routes/analyticsRoutes');
 const wishlistRoutes = require("./src/routes/wishlistRoutes");
 const configRoutes = require("./src/routes/configRoutes");
+const paymentRoutes = require('./src/routes/paymentRoutes');
+
 const app = express();
-// Connect to MongoDB
 connectDB();
 
-// Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000", // Frontend URL
+    origin: "http://localhost:3000",
     credentials: true,
   })
 );
@@ -44,9 +45,10 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/promotions", promotionRoutes);
+app.use('/api/admin/analytics', analyticsRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/config", configRoutes);
-
+app.use('/api/payments', paymentRoutes);
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -66,6 +68,7 @@ app.use((req, res) => {
     message: "Route not found",
   });
 });
+
 
 const PORT = config.server.port;
 
