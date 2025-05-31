@@ -39,6 +39,9 @@ async function createOrder({
     params.append('embed_data', embedStr);
     params.append('description', description);
     params.append('bank_code', bank_code);
+    if (cfg.callback_url) {
+        params.append('callback_url', cfg.callback_url);
+    }
     params.append('mac', mac);
 
     const { data } = await axios.post(
