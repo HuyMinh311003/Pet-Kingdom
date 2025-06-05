@@ -58,6 +58,7 @@ const Checkout: React.FC = () => {
     try {
       const backendMethod: 'COD' | 'Bank Transfer' = paymentMethod === 'COD' ? 'COD' : 'Bank Transfer';
       const res = await placeOrder({
+        name: fullName,
         shippingAddress: address,
         phone,
         paymentMethod: backendMethod,
@@ -75,7 +76,7 @@ const Checkout: React.FC = () => {
       }
       showToast('Đặt hàng thành công!', 'success');
       navigate('/profile/orders');
-    } catch (error: any) {
+    } catch (error: any) {  
       const status = error?.response?.status;
       console.log(status);
       showToast("Đặt hàng không thành công", "error");

@@ -10,6 +10,7 @@ export const placeOrder = async (data: {
   paymentMethod: 'COD' | 'Bank Transfer';
   notes?: string;
   promoCode?: string;
+  name: string;
 }) => {
   const res = await axios.post('/checkout', data);
   return res.data;

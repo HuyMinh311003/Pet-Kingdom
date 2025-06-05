@@ -2,6 +2,9 @@
   min-height: 100vh;
   background-color: #f5f5f5;
 }
+.change-avatar-text:hover {
+  text-decoration: underline;
+}
 
 .profile-header {
   background-color: white;

@@ -37,6 +37,7 @@ export interface Order {
   discount: number;
   total: number;
   // shippingAddress: ShippingAddress;
+  name : string;
    shippingAddress: string;
   phone: string;
   paymentMethod: "COD" | "Bank Transfer";
