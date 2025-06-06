@@ -15,8 +15,10 @@
 
     # URLs (sẽ dùng ngrok)
     # → Bạn sẽ chạy ngrok để lấy <NGROK_DOMAIN>
-    ZP_REDIRECT_URL=https://<NGROK_DOMAIN>.ngrok-free.app/products
-    COMMAND=ngrok http 3000 // lệnh chạy ngrok
+    ZP_REDIRECT_URL=http://localhost:3000/products
+    ZP_CALLBACK_URL=https://<NGROK_DOMAIN>.ngrok-free.app/api/payments/zalo-callback
+
+    ngrok http 5000 // lệnh chạy ngrok
 
 4. **Kiểm thử**
     # Tiếp tục vào https://docs.zalopay.vn/v2/start/ mục "Thông tin thẻ ngân hàng - sử dụng cho việc test tích hợp Cổng ZaloPay" để test phần Credit Card

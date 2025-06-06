@@ -23,6 +23,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
   // Hàm xử lý Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.reload();
   };
 

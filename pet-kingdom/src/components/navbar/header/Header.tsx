@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { PawPrint as Paw, User, ShoppingCart, Search } from "lucide-react";
+import { PawPrint as Paw, User, ShoppingCart, Search, LogOut } from "lucide-react";
 import "./HeaderStyle.css";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
@@ -19,8 +19,26 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const { showToast } = useToast();
+
+  // Check login status and role on mount and when localStorage changes
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setIsLoggedIn(user.role === "Customer");
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+    
+    checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);
+    return () => window.removeEventListener('storage', checkLoginStatus);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,11 +78,31 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
     }
     const userRole = JSON.parse(stored);
     if (userRole.role != "Customer") {
-      showToast("Chỉ Customer mới được truy cập", "warning");
+      showToast("Chỉ khách hàng mới được truy cập", "warning");
       navigate("/");
       return;
     }
     navigate("/cart"); // Navigates to the Cart page
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    navigate("/");
+    window.location.reload();
+  };
+
+  const handleLoginClick = () => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role === "Admin" || user.role === "Shipper") {
+        showToast("Vui lòng đăng xuất khỏi tài khoản admin hoặc shipper", "warning");
+        return;
+      }
+    }
+    navigate("/login");
   };
 
   // Debounced search function
@@ -159,11 +197,20 @@ const Header: React.FC<HeaderProps> = ({ cartItems }) => {
         </div>
 
         <div className="header-icons">
-          <User onClick={() => navigate("/profile")} className="user-icon" />
           <div className="cart-icon-container" onClick={handleCartClick}>
             <ShoppingCart className="cart-icon" />
             {cartItems > 0 && <span className="cart-count">{cartItems}</span>}
           </div>
+          {isLoggedIn ? (
+            <>
+              <User onClick={() => navigate("/profile")} className="user-icon" />
+              <LogOut onClick={handleLogout} className="logout-icon" />
+            </>
+          ) : (
+            <button className="header-login-button" onClick={handleLoginClick}>
+              Đăng nhập
+            </button>
+          )}
         </div>
       </div>
     </header>
