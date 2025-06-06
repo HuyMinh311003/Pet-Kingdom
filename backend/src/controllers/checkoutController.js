@@ -55,7 +55,7 @@ const getCheckoutInfo = async (req, res) => {
       shipping,
       total,
       user: {
-        fullName: req.user.fullName,
+        fullName: req.user.name,
         phone: req.user.phone,
         address: req.user.address,
       },
@@ -113,10 +113,10 @@ const placeOrder = async (req, res) => {
     const total = subtotal - discount + shipping;
 
     // Kiểm tra dữ liệu từ req.body
-    const { shippingAddress, phone, paymentMethod, notes, promoCode } =
+    const { shippingAddress, phone, paymentMethod, notes, promoCode,name } =
       req.body;
 
-    if (!shippingAddress || !phone || !paymentMethod) {
+    if (!shippingAddress || !phone || !paymentMethod || !name) {
       return res.status(400).json({ message: "Missing required order info" });
     }
 
@@ -136,6 +136,7 @@ const placeOrder = async (req, res) => {
       total,
       shippingAddress,
       phone,
+      name,
       paymentMethod,
       notes: notes || null,
       promoCode: promoCode || null,

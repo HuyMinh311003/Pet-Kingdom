@@ -34,6 +34,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
+
+console.log('Static upload path:', path.join(__dirname, config.upload.path));
 app.use("/uploads", express.static(path.join(__dirname, config.upload.path)));
 
 // Initialize routes

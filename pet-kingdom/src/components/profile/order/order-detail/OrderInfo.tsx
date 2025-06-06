@@ -28,7 +28,7 @@ export default function OrderInfo({ order }: Props) {
         </div>
         <div className="order-info-row">
           <span>Tên người nhận hàng:</span>{" "}
-          <span>Thiếu field trong database</span>
+          <span>{order.name}</span>
         </div>
         <div className="order-info-row">
           <span>Số điện thoại:</span> <span>{order.phone}</span>

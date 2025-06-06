@@ -1,6 +1,59 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const config = require('../config/config');
+const fs = require('fs');
+const path = require('path');
+
+exports.updateAvatar = async (req, res) => {
+    try {
+        console.log('File received:', req.file);  // kiểm tra file upload
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+
+        // Xoá avatar cũ nếu có
+        if (user.avatar) {
+            const oldPath = path.join(config.upload.path, user.avatar);
+            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        }
+
+        // === ✅ CHỈNH PHẦN NÀY ===
+
+        // Tính đường dẫn tương đối từ thư mục uploads (dùng path.relative)
+        const relativePath = path.relative(
+            path.join(__dirname, '..', config.upload.path), // gốc uploads
+            req.file.path // đường dẫn tuyệt đối đến file vừa upload
+        );
+
+        // Gán lại avatar (chuyển \ -> / cho cross-platform)
+        user.avatar = relativePath.replace(/\\/g, '/');
+
+        // === ✅ END ===
+
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Avatar updated successfully',
+            data: { avatar: `/uploads/${user.avatar}` }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error updating avatar',
+            error: error.message
+        });
+    }
+};
+
 
 exports.register = async (req, res) => {
     try {
@@ -113,7 +166,7 @@ exports.login = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
-        
+
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -145,7 +198,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const updates = req.body;
-        
+
         // Don't allow role updates through this endpoint
         delete updates.role;
         delete updates.password;
@@ -219,7 +272,7 @@ exports.changePassword = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
         user.password = hashedPassword;
-        
+
         await user.save();
 
         res.json({
@@ -350,7 +403,7 @@ exports.deleteUser = async (req, res) => {
 exports.toggleStatus = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
-        
+
         if (!user) {
             return res.status(404).json({
                 success: false,
