@@ -355,12 +355,12 @@ export default function ProductList() {
           <h1 className="title">{categoryName || "PET PRODUCTS"}</h1>
 
           <div className="header-right">
-            <p className="results-count">{products.length} RESULTS</p>
+            <p className="results-count">{products.length} KẾT QUẢ</p>
             <button
               className="filter-toggle"
               onClick={() => setIsMobileFiltersOpen((o) => !o)}
             >
-              <Filter size={20} /> <span>Filters</span>
+              <Filter size={20} /> <span>Bộ lọc</span>
             </button>
           </div>
         </div>
@@ -392,7 +392,7 @@ export default function ProductList() {
                 onClick={() => toggleSection("priceRange")}
                 aria-expanded={expandedSections.priceRange}
               >
-                PRICE RANGE
+                MỨC GIÁ
                 <ChevronDown
                   className={`filter-icon ${
                     expandedSections.priceRange ? "expanded" : ""

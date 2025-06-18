@@ -58,10 +58,10 @@ export default function PersonalInfo() {
 
   return (
     <div className="tab-content">
-      <h2>Personal Information</h2>
+      <h2>Thông tin cá nhân</h2>
       <div className="info-form">
         <div className="form-group">
-          <label>Full Name</label>
+          <label>Họ tên</label>
           <input
             type="text"
             name="name"
@@ -79,7 +79,7 @@ export default function PersonalInfo() {
           />
         </div>
         <div className="form-group">
-          <label>Phone</label>
+          <label>Số điện thoại</label>
           <input
             type="tel"
             name="phone"
@@ -91,7 +91,7 @@ export default function PersonalInfo() {
           />
         </div>
         <button className="save-button" onClick={handleSave}>
-          Save Changes
+          Lưu thay đổi
         </button>
       </div>
     </div>

@@ -90,7 +90,7 @@ const StaffPage: React.FC = () => {
   return (
     <div className="staff-page">
       <div className="staff-page-header">
-        <h1>Staff Management</h1>
+        <h1>Quản lí nhân viên</h1>
         <button
           className="add-staff-btn"
           onClick={() => {
@@ -99,7 +99,7 @@ const StaffPage: React.FC = () => {
             setIsEditing(false);
           }}
         >
-          Add New Staff
+          Thêm nhân viên mới
         </button>
       </div>
 
@@ -111,10 +111,10 @@ const StaffPage: React.FC = () => {
           >
             <form onSubmit={handleAddStaff} className="add-staff-form">
               <h2 style={{ marginBottom: 30 }}>
-                {isEditing ? "Edit Staff" : "Add New Staff"}
+                {isEditing ? "Chỉnh sửa nhân viên" : "Thêm nhân viên mới"}
               </h2>
               <div className="form-group">
-                <label htmlFor="staffName">Full Name</label>
+                <label htmlFor="staffName">Họ tên</label>
                 <input
                   id="staffName"
                   type="text"
@@ -140,7 +140,7 @@ const StaffPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="staffPassword">Password</label>
+                <label htmlFor="staffPassword">Mật khẩu</label>
                 <input
                   id="staffPassword"
                   type="text"
@@ -153,7 +153,7 @@ const StaffPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="staffPhone">Phone Number</label>
+                <label htmlFor="staffPhone">Số điện thoại</label>
                 <input
                   id="staffPhone"
                   type="tel"
@@ -166,7 +166,7 @@ const StaffPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="staffRole">Role</label>
+                <label htmlFor="staffRole">Vai trò</label>
                 <select
                   id="staffRole"
                   required
@@ -188,10 +188,10 @@ const StaffPage: React.FC = () => {
                   className="cancel-btn"
                   onClick={() => setIsAddingStaff(false)}
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button type="submit" className="submit-btn">
-                  {isEditing ? "Save Changes" : "Add Staff Member"}
+                  {isEditing ? "Lưu thay đổi" : "Thêm nhân viên mới"}
                 </button>
               </div>
             </form>
@@ -204,13 +204,13 @@ const StaffPage: React.FC = () => {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Tên</th>
                 <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Join Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Số điện thoại</th>
+                <th>Vai trò</th>
+                <th>Ngày tham gia</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -232,7 +232,7 @@ const StaffPage: React.FC = () => {
                         member.isActive ? "active" : "inactive"
                       }`}
                     >
-                      {member.isActive ? "Active" : "Inactive"}
+                      {member.isActive ? "Kích hoạt" : "Vô hiệu hóa"}
                     </span>
                   </td>
                   <td>
@@ -243,19 +243,19 @@ const StaffPage: React.FC = () => {
                         }`}
                         onClick={() => handleUpdateStaffStatus(member._id)}
                       >
-                        {member.isActive ? "Deactivate" : "Activate"}
+                        {member.isActive ? "Vô hiệu hóa" : "Kích hoạt"}
                       </button>
                       <button
                         className="edit-btn"
                         onClick={() => handleEditStaff(member)}
                       >
-                        Edit
+                        Chỉnh sửa
                       </button>
                       <button
                         className="delete-btn"
                         onClick={() => handleDeleteStaff(member._id)}
                       >
-                        Delete
+                        Xóa
                       </button>
                     </div>
                   </td>
