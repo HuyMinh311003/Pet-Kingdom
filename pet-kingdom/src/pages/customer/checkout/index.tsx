@@ -100,58 +100,58 @@ const Checkout: React.FC = () => {
         className="checkout-title"
         style={{ fontSize: "40px", fontWeight: "bold" }}
       >
-        Checkout
+        Thanh toán
       </p>
       <div className="main-container">
         <div className="checkout-info">
           <div className="contact-title">
-            <p style={{ fontSize: "20px" }}>Contact details</p>
+            <p style={{ fontSize: "20px" }}>Thông tin liên hệ</p>
           </div>
           <div className="firstname">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>Your Name</p>
+            <p style={{ fontSize: "15px", fontWeight: 500 }}>Họ tên</p>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your first name"
+              placeholder="Họ tên"
             />
           </div>
 
           <div className="phonenumber">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>Phone number</p>
+            <p style={{ fontSize: "15px", fontWeight: 500 }}>Số điện thoại</p>
             <input
               type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="Your phone number"
+              placeholder="Số điện thoại"
             />
           </div>
 
           <div className="email">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>Note</p>
+            <p style={{ fontSize: "15px", fontWeight: 500 }}>Ghi chú</p>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any notes (optional)"
+              placeholder="Ghi chú (tùy chọn)"
             />
           </div>
 
           <div className="delivery-title">
-            <p style={{ fontSize: "20px" }}>Delivery</p>
+            <p style={{ fontSize: "20px" }}>Vận chuyển</p>
           </div>
           <div className="address">
-            <p style={{ fontSize: "15px", fontWeight: 500 }}>Your Address</p>
+            <p style={{ fontSize: "15px", fontWeight: 500 }}>Địa chỉ</p>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Your address"
+              placeholder="Địa chỉ"
             />
           </div>
 
           <div className="payment">
-            <p style={{ fontSize: "20px" }}>Payment</p>
+            <p style={{ fontSize: "20px" }}>Thanh toán</p>
             <label>
               <input
                 type="radio"
@@ -159,7 +159,7 @@ const Checkout: React.FC = () => {
                 checked={paymentMethod === "COD"}
                 onChange={() => setPaymentMethod("COD")}
               />
-              Cash on delivery
+              Thanh toán khi nhận hàng (COD)
             </label>
             <label>
               <input
@@ -186,7 +186,7 @@ const Checkout: React.FC = () => {
 
         <div className="order-info">
           <div className="yourorder-title">
-            <p style={{ fontSize: "20px", fontWeight: 600 }}>Your Order</p>
+            <p style={{ fontSize: "20px", fontWeight: 600 }}>Đơn hàng của bạn</p>
             <div className="checkout-item">
               {cartItems.map((item, index) => (
                 <div className="checkout-card" key={index}>
@@ -206,34 +206,34 @@ const Checkout: React.FC = () => {
               ))}
             </div>
           </div>
-          <p style={{ fontSize: "20px", fontWeight: 600 }}>Promo-code</p>
+          <p style={{ fontSize: "20px", fontWeight: 600 }}>Mã giảm giá</p>
 
           <div className="promo-code">
             <input
               type="text"
-              placeholder="Enter promo-code"
+              placeholder="Nhập mã giảm giá"
               className="promo-input"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
             />
-            <button className="apply-button">Apply</button>
+            <button className="apply-button">Áp dụng</button>
           </div>
           <div className="checkout-summary">
             <p style={{ fontSize: "18px" }}>
-              Subtotal: {subtotal.toLocaleString()}đ
+              Tạm tính: {subtotal.toLocaleString()}đ
             </p>
             <p style={{ fontSize: "18px" }}>
-              Shipping: {shipping.toLocaleString()}đ
+              Phí ship: {shipping.toLocaleString()}đ
             </p>
             <p style={{ fontSize: "18px" }}>
-              Discount: -{discount.toLocaleString()}đ (Giảm{" "}
+              Giảm giá: -{discount.toLocaleString()}đ (Giảm{" "}
               {Math.round((discount / subtotal) * 100)}%)
             </p>
             <p style={{ fontSize: "20px", fontWeight: "bold" }}>
-              Total: {total.toLocaleString()}đ
+              Tổng đơn: {total.toLocaleString()}đ
             </p>
             <button className="checkout-button" onClick={handleCheckout}>
-              Checkout
+              Thanh toán
             </button>
           </div>
         </div>

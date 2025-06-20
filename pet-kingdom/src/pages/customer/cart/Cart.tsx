@@ -101,7 +101,7 @@ const Cart: React.FC = () => {
 
   const totalPrice = cartItems
     .reduce((sum, item) => sum + item.price * item.quantity, 0)
-    .toFixed(2);
+    .toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
   const handleRemove = async (productId: string) => {
     try {
@@ -129,7 +129,7 @@ const Cart: React.FC = () => {
         className="cart-title"
         style={{ fontSize: "40px", fontWeight: "bold", marginLeft: "30px" }}
       >
-        Cart
+        Giỏ hàng của bạn
       </p>
       <div className="cart-items">
         {cartItems.map((item) => {
@@ -144,7 +144,7 @@ const Cart: React.FC = () => {
                     </p>
                   </div>
                   <p className="pet-price" style={{ fontSize: "20px" }}>
-                    ${item.price.toFixed(2)}
+                    {(item.price).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
                   </p>
                 </div>
 
@@ -175,7 +175,7 @@ const Cart: React.FC = () => {
                     className="delete-icon"
                     onClick={() => handleRemove(item.productId)}
                   />
-                  <p style={{ fontSize: "30px" }}> ${(item.price * item.quantity).toFixed(2)}</p>
+                  <p style={{ fontSize: "30px" }}> {(item.price * item.quantity).toLocaleString("vi-VN", { style: "currency", currency: "VND" })}</p>
                 </div>
               </div>
             </div>
@@ -184,10 +184,10 @@ const Cart: React.FC = () => {
       </div>
 
       <div className="order-summary">
-        <h3>Order Price</h3>
-        <p style={{ color: "red" }}>Total: ${totalPrice}</p>
+        <h3>Giá trị đơn hàng</h3>
+        <p style={{ color: "red" }}>Tổng: {totalPrice}</p>
         <button className="checkout-btn" onClick={handleCheckout} disabled={cartItems.some(i => i.overStock)}>
-          Proceed To Checkout
+          Đến trang thanh toán
         </button>
       </div>
 
