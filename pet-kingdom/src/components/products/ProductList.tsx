@@ -5,7 +5,7 @@ import ProductCard from "./ProductCard";
 import { api } from "../../services/customer-api/api";
 import { useSearchParams } from "react-router-dom";
 import PriceRangeSlider from "./filters/PriceRangeSlider";
-import SidebarFilter, { Category } from "./SidebarFilter";
+import SidebarFilter from "./SidebarFilter";
 import { cartApi } from "../../services/customer-api/api";
 import { wishlistApi } from "../../services/customer-api/wishlistApi";
 import { useToast } from "../../contexts/ToastContext";
@@ -15,6 +15,7 @@ import {
   KeyboardArrowRight,
   KeyboardDoubleArrowRight,
 } from "@mui/icons-material";
+import { Category } from "../../types/category";
 
 interface Product {
   id: string;
@@ -34,7 +35,6 @@ interface Product {
 export default function ProductList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || ""; // categoryParam có thể là "id1,id2" nếu multi-select
-  const categoryName = searchParams.get("name") || "";
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     categoryParam ? categoryParam.split(",") : []
   );
@@ -65,7 +65,7 @@ export default function ProductList() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 9;
 
-  // helper: lấy tất cả descendant leaf IDs
+  // helper: lấy tất cả leaf IDs
   const getDescendantLeafIds = (cat: Category): string[] => {
     if (!cat.children || !cat.children.length) {
       return [cat._id];
@@ -75,9 +75,8 @@ export default function ProductList() {
 
   const { showToast } = useToast();
 
-  // xử lý khi click ADD
+  // xử lý khi click ADD TO CART
   const handleAdd = async (productId: string) => {
-    // kiểm auth/role nếu cần
     const token = localStorage.getItem("token");
     const stored = localStorage.getItem("user");
 
@@ -219,7 +218,6 @@ export default function ProductList() {
         // 1) set categories tree
         const tree = catRes.data.data as Category[];
         setCategories(tree);
-
         // 2) set all products + tính maxPrice, priceRange
         const all = prodRes.data.data.products as Product[];
         setProducts(all);
@@ -241,7 +239,6 @@ export default function ProductList() {
   // 2) Khi categories load xong, nếu có initialCategoryId thì set activeTab và selectedCategories
   useEffect(() => {
     if (!categories.length || !categoryParam || !isInitialLoad.current) return;
-
     // tìm node bất kỳ trong cây
     const findNode = (nodes: Category[]): Category | null => {
       for (const n of nodes) {
@@ -257,10 +254,8 @@ export default function ProductList() {
     const cat = findNode(categories);
     if (cat) {
       setActiveTab(cat.type);
-
       const urlIds = categoryParam.split(",");
-      const isOnlyParent =
-        urlIds.length === 1 && cat._id === urlIds[0] && cat.children?.length;
+      const isOnlyParent = urlIds.length === 1 && cat._id === urlIds[0] && cat.children?.length;
       const toSelect = isOnlyParent ? getDescendantLeafIds(cat) : urlIds;
 
       setSelectedCategories(toSelect);
@@ -311,6 +306,7 @@ export default function ProductList() {
       }
       return null;
     };
+    
     const node = findNode(categories);
     if (!node) return;
 
@@ -322,9 +318,7 @@ export default function ProductList() {
     if (node.children && node.children.length) {
       // toggle parent: chọn/deselect tất cả leaf
       const anySel = leafIds.some((id) => selectedCategories.includes(id));
-      newSelected = anySel
-        ? selectedCategories.filter((id) => !leafIds.includes(id))
-        : Array.from(new Set([...selectedCategories, ...leafIds]));
+      newSelected = anySel ? selectedCategories.filter((id) => !leafIds.includes(id)) : Array.from(new Set([...selectedCategories, ...leafIds]));
     } else {
       // toggle leaf đơn lẻ
       newSelected = selectedCategories.includes(categoryId)
@@ -336,10 +330,6 @@ export default function ProductList() {
     setSelectedCategories(newSelected);
     const qp = new URLSearchParams(searchParams);
     qp.set("category", newSelected.join(","));
-    // nếu chỉ chọn 1 mục thì update luôn name để header hiển thị đúng
-    if (newSelected.length === 1) {
-      qp.set("name", node.name);
-    }
     setSearchParams(qp, { replace: true });
   };
 
@@ -352,7 +342,7 @@ export default function ProductList() {
     <div className="product-list">
       <div className="container">
         <div className="header">
-          <h1 className="title">{categoryName || "PET PRODUCTS"}</h1>
+          <h1 className="title">PRODUCTS</h1>
 
           <div className="header-right">
             <p className="results-count">{products.length} RESULTS</p>

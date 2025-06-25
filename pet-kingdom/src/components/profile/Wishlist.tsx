@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { wishlistApi } from "../../services/customer-api/wishlistApi";
-import { Product } from "../../types/admin";
+import { Product } from "../../types/product";
 import { useToast } from "../../contexts/ToastContext";
 import ProductCard from "../products/ProductCard";
 import { Trash2 } from "lucide-react";

@@ -11,8 +11,6 @@ exports.createProduct = async (req, res) => {
             categoryId,
             stock,
             imageUrl,
-            type,
-            // Specific fields
             birthday,
             gender,
             vaccinated,
@@ -72,7 +70,6 @@ exports.getProducts = async (req, res) => {
             minPrice,
             maxPrice,
             search,
-            sort,
             page = 1,
             limit = 10
         } = req.query;
@@ -100,20 +97,12 @@ exports.getProducts = async (req, res) => {
 
         // 2) Count & fetch page
         const total = await Product.countDocuments(query);
-        let qb = Product.find(query)
+        let queryBuilder = Product.find(query)
             .skip((page - 1) * limit)
             .limit(Number(limit));
-
-        if (sort) {
-            const dir = sort.startsWith('-') ? -1 : 1;
-            const field = sort.replace(/^-/, '');
-            qb = qb.sort({ [field]: dir });
-        } else {
-            qb = qb.sort({ createdAt: -1 });
-        }
-
+        queryBuilder = queryBuilder.sort({ createdAt: -1 });
         // 3) Populate and execute
-        const products = await qb.populate('categoryId', 'name');
+        const products = await queryBuilder.populate('categoryId', 'name');
 
         const productsList = products.map(p => {
             const obj = p.toObject();

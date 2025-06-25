@@ -2,7 +2,7 @@ const Category = require('../models/Category');
 
 exports.createCategory = async (req, res) => {
     try {
-        const { name, description, type, parent, order, icon } = req.body;
+        const { name, type, parent, isActive } = req.body;
 
         // If parent category is specified, verify it exists
         if (parent) {
@@ -17,12 +17,9 @@ exports.createCategory = async (req, res) => {
 
         const category = new Category({
             name,
-            description,
             type,
             parent,
-            order,
-            icon,
-            isActive: true
+            isActive: isActive
         });
 
         await category.save();
@@ -42,7 +39,7 @@ exports.createCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
     try {
-        const { type, includeInactive = false } = req.query;
+        const { type, includeInactive } = req.query;
         const query = includeInactive ? {} : { isActive: true };
         
         if (type) {

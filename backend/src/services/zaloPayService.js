@@ -10,10 +10,8 @@ async function createOrder({
     embed_data = {},
     description,
     bank_code = 'zalopayapp' | 'CC',
-    bank_group
 }) {
     const app_time = Date.now();
-    if (bank_group) embed_data.bankgroup = bank_group;
     const itemStr = JSON.stringify(items);
     const fullEmbed = {
         ...embed_data,
@@ -49,7 +47,7 @@ async function createOrder({
         params,
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
-    console.log('🔔 ZaloPay createOrder response:', data);
+    console.log('ZaloPay createOrder response:', data);
     return data;
 }
 

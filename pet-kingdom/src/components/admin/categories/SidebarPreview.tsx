@@ -1,7 +1,8 @@
 import React from 'react';
 import { ChevronRight, Trash2, Power } from 'lucide-react';
-import { Category } from '../../../types/admin';
+import { Category } from '../../../types/category';
 import './SidebarPreview.css';
+import { STATIC_TABS } from '../../../constants/categories';
 
 interface SidebarPreviewProps {
   categories: Category[];
@@ -13,22 +14,6 @@ interface SidebarPreviewProps {
   selectedCategory: Category | null;
 }
 
-const STATIC_TABS: Category[] = [
-  {
-    _id: 'pets',
-    name: 'Thú cưng',
-    type: 'pet',
-    isActive: true,
-    children: []
-  },
-  {
-    _id: 'accessories',
-    name: 'Vật dụng',
-    type: 'tool',
-    isActive: true,
-    children: []
-  }
-];
 
 const SidebarPreview: React.FC<SidebarPreviewProps> = ({
   categories,
@@ -57,7 +42,7 @@ const SidebarPreview: React.FC<SidebarPreviewProps> = ({
   const renderMenuItems = (items: Category[], level: number = 0) => {
 
     return (
-      <ul className={`preview-menu-list ${level > 0 ? 'preview-submenu' : ''}`}>
+      <ul className='preview-menu-list'>
         {items.map((item) => {
           const hasChildren = (item.children?.length ?? 0) > 0;
 

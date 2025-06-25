@@ -1,4 +1,4 @@
-import { Category } from '../types/admin';
+import { Category } from "../types/category";
 
 export const STATIC_TABS: Category[] = [
   {
@@ -8,7 +8,7 @@ export const STATIC_TABS: Category[] = [
     isActive: true,
   },
   {
-    _id: 'tools', 
+    _id: 'accessories', 
     name: 'Vật dụng',
     type: 'tool',
     isActive: true,

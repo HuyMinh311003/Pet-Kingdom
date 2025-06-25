@@ -3,9 +3,9 @@ const cfg = require('../config/zaloPayConfig');
 const crypto = require('crypto');
 const Order = require('../models/Order');
 
-exports.createZaloQr = async (req, res) => {
+exports.createZaloOrder = async (req, res) => {
     try {
-        const { orderId, bankCode, bankGroup } = req.body;
+        const { orderId, bankCode } = req.body;
         const order = await Order.findById(orderId).populate('items.product');
         if (!order) return res.status(404).json({ success: false, message: 'Order không tồn tại' });
 
@@ -20,7 +20,7 @@ exports.createZaloQr = async (req, res) => {
             itemquantity: i.quantity
         }));
         const embed_data = { orderId: order._id.toString() };
-        const description = `Demo đơn ${app_trans_id}`;
+        const description = `Thanh toán đơn hàng có mã: ${app_trans_id}`;
 
         const result = await createOrder({
             app_trans_id,
@@ -30,7 +30,6 @@ exports.createZaloQr = async (req, res) => {
             embed_data,
             description,
             bank_code: bankCode,
-            bank_group: bankGroup
         });
 
         // Kiểm tra mã trả về

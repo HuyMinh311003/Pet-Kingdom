@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import ProductEditModal from "../../../components/admin/products/ProductEditModal";
-import { Product } from "../../../types/admin";
+import { Product } from "../../../types/product";
 import { categoryApi } from "../../../services/admin-api/categoryApi";
 import { productApi } from "../../../services/admin-api/productApi";
 import "./ProductsPage.css";

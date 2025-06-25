@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Category } from '../../../types/admin';
+import { Category } from '../../../types/product';
 import SidebarPreview from '../../../components/admin/categories/SidebarPreview';
 import CategoryForm from '../../../components/admin/categories/CategoryForm';
 import { categoryApi } from '../../../services/admin-api/categoryApi';
@@ -53,7 +53,7 @@ const CategoriesPage: React.FC = () => {
       if (res.success) {
         await fetchCategories();
         setIsAddingCategory(false);
-        setNewCategory({ type: 'pet', isActive: true });
+        setNewCategory({ type: newCategory.type, isActive: newCategory.isActive });
         showToast("Thêm danh mục thành công", "success");
       }
     } catch (error) {
@@ -110,11 +110,6 @@ const CategoriesPage: React.FC = () => {
     }
   };
 
-  // Get all categories except the current one being edited (to avoid circular references)
-  const availableParents = categories.filter(
-    cat => cat._id !== selectedCategory?._id
-  );
-
   return (
     <div className="categories-page">
       <div className="categories-header">
@@ -147,7 +142,7 @@ const CategoriesPage: React.FC = () => {
           {isAddingCategory ? (
             <CategoryForm
               category={newCategory}
-              availableParents={availableParents}
+              availableParents={categories}
               onSubmit={handleAddCategory}
               onChange={updates =>
                 setNewCategory(current => ({ ...current, ...updates }))
@@ -159,7 +154,7 @@ const CategoriesPage: React.FC = () => {
           ) : selectedCategory ? (
             <CategoryForm
               category={selectedCategory}
-              availableParents={availableParents}
+              availableParents={categories}
               onSubmit={handleUpdateCategory}
               onChange={updates =>
                 setSelectedCategory(current =>

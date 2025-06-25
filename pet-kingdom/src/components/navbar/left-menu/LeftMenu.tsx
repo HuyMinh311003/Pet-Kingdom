@@ -3,30 +3,10 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./LeftMenuStyle.css";
+import { Category } from "../../../types/category";
+import { STATIC_TABS } from "../../../constants/categories";
 
-interface Category {
-    _id: string;
-    name: string;
-    type: 'pet' | 'tool';
-    isActive: boolean;
-    children?: Category[];
-    subcategories?: Category[];
-}
 
-const STATIC_TABS: Category[] = [
-    {
-        _id: 'pets',
-        name: 'Thú cưng',
-        type: 'pet',
-        isActive: true
-    },
-    {
-        _id: 'accessories',
-        name: 'Vật dụng',
-        type: 'tool',
-        isActive: true
-    }
-];
 
 const LeftMenu: React.FC = () => {
     const navigate = useNavigate();
@@ -42,14 +22,13 @@ const LeftMenu: React.FC = () => {
             if (response.data?.success) {
                 const fetched: any[] = response.data.data;
 
-                // Hàm đệ quy chuyển `children` → `subcategories`
                 const normalize = (cats: any[]): Category[] =>
                     cats.map(cat => ({
                         _id: cat._id,
                         name: cat.name,
                         type,
                         isActive: cat.isActive,
-                        subcategories: cat.children ? normalize(cat.children) : []
+                        children: cat.children ? normalize(cat.children) : []
                     }));
 
                 const mapped = normalize(fetched);
@@ -57,7 +36,7 @@ const LeftMenu: React.FC = () => {
                 setCategories(prev => {
                     const updated = [...prev];
                     const staticTab = updated.find(c => c.type === type);
-                    if (staticTab) staticTab.subcategories = mapped;
+                    if (staticTab) staticTab.children = mapped;
                     return updated;
                 });
 
@@ -79,14 +58,12 @@ const LeftMenu: React.FC = () => {
     };
 
     const handleMenuClick = async (category: Category, isChevronClick: boolean) => {
-        // If clicking on a main category (Thú cưng/Vật dụng), fetch its subcategories
         if (category._id === 'pets' || category._id === 'accessories') {
             const type = category.type;
             await fetchCategoriesByType(type);
         }
 
         if (isChevronClick) {
-            // Only handle menu expansion
             setActiveMenus(prev => {
                 const index = prev.indexOf(category._id);
                 if (index > -1) {
@@ -95,7 +72,6 @@ const LeftMenu: React.FC = () => {
                 return [...prev, category._id];
             });
         } else {
-            // Handle navigation with categoryId
             if (category._id !== 'pets' && category._id !== 'accessories') {
                 navigate(`/products?category=${category._id}&name=${category.name}`);
                 toggleMenu(); // Close menu after navigation
@@ -107,7 +83,7 @@ const LeftMenu: React.FC = () => {
         return (
             <ul className={`pk-menu-list level-${level}`}>
                 {items.map(item => {
-                    const nested = item.subcategories || [];
+                    const nested = item.children || [];
                     const isTypeTab = level === 0 && (item._id === 'pets' || item._id === 'accessories');
                     const canExpand = nested.length > 0 || isTypeTab;
 

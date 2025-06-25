@@ -4,7 +4,7 @@ import BackButton from "../../../components/common/back-button/BackButton";
 import {
   getCheckoutInfo,
   placeOrder,
-  createZaloQrPayment
+  createZaloPayment
 } from "../../../services/customer-api/checkoutApi";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
@@ -69,7 +69,7 @@ const Checkout: React.FC = () => {
 
       if (paymentMethod !== 'COD') {
         const channel = paymentMethod === 'Bank Transfer' ? 'APP' : (paymentMethod as 'CARD');
-        const { orderUrl } = await createZaloQrPayment(orderId, channel);
+        const { orderUrl } = await createZaloPayment(orderId, channel);
         window.location.href = orderUrl;
         return;
       }

@@ -2,8 +2,6 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./HomeStyle.css";
 import { useNavigate } from "react-router-dom";
-import LeftMenu from "../navbar/left-menu/LeftMenu";
-
 export interface HeroSlide {
     image: string;
     title: string;

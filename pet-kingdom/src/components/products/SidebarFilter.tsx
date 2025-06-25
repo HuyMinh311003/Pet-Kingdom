@@ -1,18 +1,13 @@
-// SidebarFilter.tsx
 import React, { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import './SidebarFilter.css';
+import { Category } from '../../types/category';
 
-export interface Category {
-  _id: string;
-  name: string;
-  type: 'pet' | 'tool';
-  children?: Category[];
-}
+
 
 interface Props {
   categories: Category[];   // nested tree from API
-  selected: string[];       // chỉ chứa các id bạn muốn filter
+  selected: string[];       
   onSelect: (id: string) => void;
   activeTab?: "pet" | "tool";
 }
@@ -49,7 +44,7 @@ const SidebarFilter: React.FC<Props> = ({
   }, [propActiveTab]);
 
   const renderNode = (cat: Category, level = 0) => {
-    const hasKids = !!(cat.children && cat.children.length);
+    const hasKids = !!cat.children?.length;
     const isOpen = expanded.has(cat._id) || hasSelectedDescendant(cat);
 
     return (
