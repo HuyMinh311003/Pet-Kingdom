@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Category } from '../../../types/product';
 import SidebarPreview from '../../../components/admin/categories/SidebarPreview';
 import CategoryForm from '../../../components/admin/categories/CategoryForm';
 import { categoryApi } from '../../../services/admin-api/categoryApi';
 import { useToast } from '../../../contexts/ToastContext';
 import './CategoriesPage.css';
+import { Category } from '../../../types/category';
 
 const CategoriesPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);

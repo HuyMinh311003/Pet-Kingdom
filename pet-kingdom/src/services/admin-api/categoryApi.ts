@@ -1,5 +1,5 @@
+import { Category } from '../../types/category';
 import api from './axiosConfig';
-import { Category } from '../../types/product';
 
 export const categoryApi = {
   getCategories: async (includeInactive: boolean): Promise<{
