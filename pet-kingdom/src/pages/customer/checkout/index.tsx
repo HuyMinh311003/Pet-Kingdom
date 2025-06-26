@@ -65,8 +65,6 @@ const Checkout: React.FC = () => {
         notes,
       });
       const orderId = res.order._id;
-      console.log(orderId);
-
       if (paymentMethod !== 'COD') {
         const channel = paymentMethod === 'Bank Transfer' ? 'APP' : (paymentMethod as 'CARD');
         const { orderUrl } = await createZaloPayment(orderId, channel);
@@ -160,7 +158,7 @@ const Checkout: React.FC = () => {
               />
               Cash on delivery
             </label>
-            <label>
+            {/* <label>
               <input
                 type="radio"
                 name="paymenttype"
@@ -168,8 +166,7 @@ const Checkout: React.FC = () => {
                 onChange={() => setPaymentMethod("Bank Transfer")}
               />
               ZaloPay QR
-            </label>
-
+            </label> */}
             <label>
               <input
                 type="radio"
