@@ -317,17 +317,17 @@ const ProductsPage: React.FC = () => {
   return (
     <div className="products-page">
       <div className="products-header">
-        <h1>Product Management</h1>
+        <h1>Quản lí sản phẩm</h1>
       </div>
 
       <div className="products-grid">
         {/* —————————————————————— ADD FORM —————————————————————— */}
         <form onSubmit={handleAddProduct} className="add-product-form">
-          <h2>Add new product</h2>
+          <h2>Thêm sản phẩm mới</h2>
 
           {/* Category */}
           <div className="form-group">
-            <label htmlFor="productCategory">Category</label>
+            <label htmlFor="productCategory">Danh mục</label>
             <select
               id="productCategory"
               value={selectedCategory?._id || ""}
@@ -354,7 +354,7 @@ const ProductsPage: React.FC = () => {
 
           {/* Name */}
           <div className="form-group">
-            <label htmlFor="productName">Product Name</label>
+            <label htmlFor="productName">Tên sản phẩm</label>
             <input
               id="productName"
               type="text"
@@ -369,7 +369,7 @@ const ProductsPage: React.FC = () => {
 
           {/* Description */}
           <div className="form-group">
-            <label htmlFor="productDescription">Description</label>
+            <label htmlFor="productDescription">Mô tả chi tiết</label>
             <textarea
               id="productDescription"
               placeholder="Description"
@@ -388,7 +388,7 @@ const ProductsPage: React.FC = () => {
           {productType === "pet" && (
             <>
               <div className="form-group">
-                <label htmlFor="productBirthday">Birthday</label>
+                <label htmlFor="productBirthday">Ngày sinh</label>
                 <input
                   id="productBirthday"
                   type="date"
@@ -404,7 +404,7 @@ const ProductsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="productGender">Gender</label>
+                <label htmlFor="productGender">Giới tính</label>
                 <select
                   id="productGender"
                   value={newProduct.gender || ""}
@@ -416,14 +416,14 @@ const ProductsPage: React.FC = () => {
                   }
                   required
                 >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="">Chọn giới tính</option>
+                  <option value="male">Đực</option>
+                  <option value="female">Cái</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label htmlFor="productVaccinated">Vaccination Status</label>
+                <label htmlFor="productVaccinated">Tình trạng tiêm chủng</label>
                 <select
                   id="productVaccinated"
                   value={
@@ -439,14 +439,14 @@ const ProductsPage: React.FC = () => {
                   }
                   required
                 >
-                  <option value="">Select Vaccination Status</option>
-                  <option value="true">Vaccinated</option>
-                  <option value="false">Not Vaccinated</option>
+                  <option value="">Chọn tình trạng tiêm chủng</option>
+                  <option value="true">Đã tiêm</option>
+                  <option value="false">Chưa tiêm</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Stock</label>
+                <label>Số lượng</label>
                 <input
                   type="number"
                   value="1"
@@ -461,7 +461,7 @@ const ProductsPage: React.FC = () => {
           {productType === "tool" && (
             <>
               <div className="form-group">
-                <label htmlFor="productBrand">Brand</label>
+                <label htmlFor="productBrand">Thương hiệu</label>
                 <input
                   id="productBrand"
                   type="text"
@@ -477,7 +477,7 @@ const ProductsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="productStock">Stock</label>
+                <label htmlFor="productStock">Số lượng</label>
                 <input
                   id="productStock"
                   type="number"
@@ -497,7 +497,7 @@ const ProductsPage: React.FC = () => {
 
           {/* Price */}
           <div className="form-group">
-            <label htmlFor="productPrice">Price (VND)</label>
+            <label htmlFor="productPrice">Giá tiền (VND)</label>
             <input
               id="productPrice"
               type="number"
@@ -516,7 +516,7 @@ const ProductsPage: React.FC = () => {
 
           {/* Image */}
           <div className="form-group">
-            <label htmlFor="productImage">Product Image</label>
+            <label htmlFor="productImage">Hình ảnh</label>
             <input
               ref={fileInputRef}
               id="productImage"
@@ -534,7 +534,7 @@ const ProductsPage: React.FC = () => {
             )}
           </div>
 
-          <button type="submit">Add Product</button>
+          <button type="submit">Thêm sản phẩm</button>
         </form>
 
         {/* —————————————————————— LIST PRODUCTS —————————————————————— */}
@@ -551,7 +551,7 @@ const ProductsPage: React.FC = () => {
                   <span className="price">
                     {product.price.toLocaleString()} VND
                   </span>
-                  <span className="stock">Stock: {product.stock}</span>
+                  <span className="stock">Số lượng: {product.stock}</span>
                 </div>
               </div>
               <div className="product-actions">
@@ -561,19 +561,19 @@ const ProductsPage: React.FC = () => {
                   }`}
                   onClick={() => handleToggleStatus(product.id)}
                 >
-                  {product.isActive ? "Active" : "Inactive"}
+                  {product.isActive ? "Hiển thị" : "Ẩn"}
                 </button>
                 <button
                   className="edit-btn"
                   onClick={() => handleEditClick(product)}
                 >
-                  Edit
+                  Chỉnh sửa
                 </button>
                 <button
                   className="delete-btn"
                   onClick={() => handleDeleteProduct(product.id)}
                 >
-                  Delete
+                  Xóa
                 </button>
               </div>
             </div>

@@ -120,12 +120,12 @@ const LoginPage: React.FC = () => {
 
       {/* --- LOGIN FORM --- */}
       <div className="login-box">
-        <h2 className="login-title">Login</h2>
+        <h2 className="login-title">Đăng nhập</h2>
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <input
               type="email"
-              placeholder="Enter your email"
+              placeholder="Nhập email"
               onChange={e => setEmail(e.target.value)}
               value={email}
               required
@@ -134,21 +134,21 @@ const LoginPage: React.FC = () => {
           <div className="input-group">
             <input
               type="password"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu"
               onChange={e => setPassword(e.target.value)}
               value={password}
               required
             />
           </div>
-          <button className="login-button">Login</button>
+          <button className="login-button">Đăng nhập</button>
         </form>
         <div className="register-link">
-          <p>Don't have an account?</p>
+          <p>Chưa có tài khoản?</p>
           <button
             className="register-button"
             onClick={() => setShowRegister(true)}
           >
-            Register
+            Đăng ký
           </button>
         </div>
       </div>
@@ -157,13 +157,13 @@ const LoginPage: React.FC = () => {
       {showRegister && (
         <div className="overlay">
           <div className="register-card">
-            <h2 style={{ marginBottom: 20 }}>Register</h2>
+            <h2 style={{ marginBottom: 20 }}>Đăng ký</h2>
             <form onSubmit={handleRegister}>
               {/* Full Name */}
               <div className="input-group">
                 <input
                   type="text"
-                  placeholder="Full Name"
+                  placeholder="Họ tên"
                   value={regName}
                   onChange={e => setRegName(e.target.value)}
                   required
@@ -183,7 +183,7 @@ const LoginPage: React.FC = () => {
               <div className="input-group">
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Mật khẩu"
                   value={regPassword}
                   onChange={e => setRegPassword(e.target.value)}
                   required
@@ -193,7 +193,7 @@ const LoginPage: React.FC = () => {
               <div className="input-group">
                 <input
                   type="password"
-                  placeholder="Confirm Password"
+                  placeholder="Xác nhận mật khẩu"
                   value={regConfirm}
                   onChange={e => setRegConfirm(e.target.value)}
                   required
@@ -203,21 +203,21 @@ const LoginPage: React.FC = () => {
               <div className="input-group">
                 <input
                   type="text"
-                  placeholder="Phone (10 digits)"
+                  placeholder="Số điện thoại (10 chữ số)"
                   value={regPhone}
                   onChange={e => setRegPhone(e.target.value)}
                   required
                 />
               </div>
               <button type="submit" className="signup-button">
-                Sign up
+                Đăng ký
               </button>
             </form>
             <button
               className="close-button"
               onClick={() => setShowRegister(false)}
             >
-              Close
+              Đóng
             </button>
           </div>
         </div>

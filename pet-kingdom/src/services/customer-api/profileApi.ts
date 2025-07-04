@@ -39,3 +39,14 @@ export const changePassword = (
 ): Promise<{ data: { success: boolean; message: string } }> => {
   return axios.put(`/users/profile/${id}/password`, payload);
 };
+
+// PATCH /users/profile/avatar
+export const uploadAvatar = (
+  formData: FormData
+): Promise<{ data: ProfileResponse }> => {
+  return axios.patch('/users/profile/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};

@@ -113,7 +113,7 @@ const CategoriesPage: React.FC = () => {
   return (
     <div className="categories-page">
       <div className="categories-header">
-        <h1>Categories Management</h1>
+        <h1>Quản lí danh mục</h1>
         <button
           className="add-category-btn"
           onClick={() => {
@@ -121,7 +121,7 @@ const CategoriesPage: React.FC = () => {
             setSelectedCategory(null);
           }}
         >
-          Add New Category
+          Thêm danh mục mới
         </button>
       </div>
 
@@ -148,7 +148,7 @@ const CategoriesPage: React.FC = () => {
                 setNewCategory(current => ({ ...current, ...updates }))
               }
               onCancel={() => setIsAddingCategory(false)}
-              submitText="Add Category"
+              submitText="Thêm danh mục mới"
               isNew={true}
             />
           ) : selectedCategory ? (
@@ -162,14 +162,13 @@ const CategoriesPage: React.FC = () => {
                 )
               }
               onCancel={() => setSelectedCategory(null)}
-              submitText="Update Category"
+              submitText="Cập nhật danh mục"
             />
           ) : (
             <div className="no-selection">
-              <h2>No Category Selected</h2>
+              <h2>Chưa chọn danh mục</h2>
               <p>
-                Select a category from the preview to edit it, or click "Add New
-                Category" to create one.
+                Chọn một danh mục để chỉnh sửa, hoặc nhấn "Thêm danh mục mới" để tạo một danh mục mới.
               </p>
             </div>
           )}

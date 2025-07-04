@@ -142,6 +142,8 @@
     width: 24px;
     height: 24px;
     color: #2A292A;
+    margin-top: 8px;
+    margin-right: 16px;
 }
 
 .cart-count {
@@ -328,4 +330,33 @@
     50% {
         opacity: .5;
     }
+}
+
+.header-login-button {
+    padding: 8px 16px;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #575756;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.header-login-button:hover {
+    background-color: #FFC371;
+    color: white;
+    border-color: #FFC371;
+}
+
+.logout-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s;
+}
+
+.logout-icon:hover {
+    color: #ff4444;
 }

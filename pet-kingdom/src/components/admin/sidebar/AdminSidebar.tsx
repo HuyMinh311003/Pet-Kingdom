@@ -23,6 +23,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
   // Hàm xử lý Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.reload();
   };
 
@@ -33,37 +34,37 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
           <>
             <NavLink to="/admin/analytics" className="nav-item">
               <BarChart3 size={20} />
-              <span>Analytics</span>
+              <span>Thống kê</span>
             </NavLink>
 
             <NavLink to="/admin/products" className="nav-item">
               <Package2 size={20} />
-              <span>Products</span>
+              <span>Sản phẩm</span>
             </NavLink>
 
             <NavLink to="/admin/categories" className="nav-item">
               <LayoutGrid size={20} />
-              <span>Categories</span>
+              <span>Danh mục</span>
             </NavLink>
 
             <NavLink to="/admin/orders" className="nav-item">
               <ShoppingBag size={20} />
-              <span>Orders</span>
+              <span>Đơn hàng</span>
             </NavLink>
 
-            <NavLink to="/admin/promotions" className="nav-item">
+            {/* <NavLink to="/admin/promotions" className="nav-item">
               <Tag size={20} />
               <span>Promotions</span>
-            </NavLink>
+            </NavLink> */}
 
             <NavLink to="/admin/staff" className="nav-item">
               <Users size={20} />
-              <span>Staff Management</span>
+              <span>Quản lí nhân viên</span>
             </NavLink>
 
             <NavLink to="/admin/config" className="nav-item">
               <SettingsIcon size={20} />
-              <span>Configuration</span>
+              <span>Thiết lập</span>
             </NavLink>
           </>
         )}
@@ -72,12 +73,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
           <>
             <NavLink to="/admin/assigned-orders" className="nav-item">
               <PackageCheck size={20} />
-              <span>Assigned Orders</span>
+              <span>Đơn hàng đã xác nhận</span>
             </NavLink>
 
             <NavLink to="/admin/shipper-orders" className="nav-item">
               <Truck size={20} />
-              <span>My Orders</span>
+              <span>Đơn hàng của tôi</span>
             </NavLink>
           </>
         )}
@@ -85,7 +86,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ userRole }) => {
       <div className="logout-button-container">
         <button className="logout-button" onClick={handleLogout}>
           <LogOut size={20} />
-          <span>Logout</span>
+          <span>Đăng xuất</span>
         </button>
       </div>
     </aside>

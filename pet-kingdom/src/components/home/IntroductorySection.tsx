@@ -9,16 +9,16 @@ const IntroductorySection: React.FC = () => {
         <div className="intro-grid">
           <div className="intro-item">
             <Paw className="intro-icon" />
-            <h3 className="intro-title">Wide Range of Pets</h3>
+            <h3 className="intro-title">Đa dạng các loài thú cưng</h3>
             <p className="intro-text">
-              Find your perfect companion from our carefully selected variety of breeds.
+              Tìm người bạn đồng hành lí tưởng trong bộ sưu tập giống thú của chúng tôi.
             </p>
           </div>
           <div className="intro-item">
             <ShoppingBag className="intro-icon" />
-            <h3 className="intro-title">Care & Accessories</h3>
+            <h3 className="intro-title">Chăm Sóc & Phụ Kiện</h3>
             <p className="intro-text">
-              Everything your pet needs for a happy and healthy life.
+              Tất cả những gì thú cưng của bạn cần để sống vui vẻ và khỏe mạnh.
             </p>
           </div>
         </div>

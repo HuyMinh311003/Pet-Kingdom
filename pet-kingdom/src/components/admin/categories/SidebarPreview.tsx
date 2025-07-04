@@ -109,8 +109,8 @@ const SidebarPreview: React.FC<SidebarPreviewProps> = ({
   return (
     <div className="sidebar-preview">
       <div className="preview-header">
-        <h2>Category Tree</h2>
-        <p>Click on a category to edit it. Categories are displayed in order.</p>
+        <h2>Cây danh mục</h2>
+        <p>Chọn một danh mục để chỉnh sửa. Các danh mục được hiển thị theo thứ tự</p>
       </div>
       <div className="preview-sidebar">
         {renderMenuItems(staticTabsWithChildren)}

@@ -50,13 +50,13 @@ const AdminLoginPage: React.FC = () => {
   return (
     <div className="admin-login-container">
       <div className="admin-login-box">
-        <h2 className="admin-login-title">Admin Login</h2>
+        <h2 className="admin-login-title">Đăng nhập Admin</h2>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <input
               type="email"
-              placeholder="Enter your email"
+              placeholder="Nhập email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -65,14 +65,14 @@ const AdminLoginPage: React.FC = () => {
           <div className="input-group">
             <input
               type="password"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
           <button type="submit" className="admin-login-button">
-            Login
+            Đăng nhập
           </button>
         </form>
       </div>

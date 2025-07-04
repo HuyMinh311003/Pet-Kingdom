@@ -187,7 +187,7 @@ const AnalyticsPage: React.FC = () => {
 
         {/* Chi phí giao hàng trung bình */}
         <div className="chart-container delivery-chart">
-          <h2>Chi phí giao hàng trung bình</h2>
+          <h2>Chi phí giao hàng trung bình (6 tháng)</h2>
           <div className="chart-wrapper">
             <Line data={deliveryChartData} options={chartOptions} />
           </div>

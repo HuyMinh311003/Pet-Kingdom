@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "./HomeStyle.css";
 import { useNavigate } from "react-router-dom";
+
 export interface HeroSlide {
     image: string;
     title: string;
@@ -32,7 +33,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ heroSlides, currentSlide, set
                             <h1 className="hero-title">{heroSlides[currentSlide].title}</h1>
                             <p className="hero-subtitle">{heroSlides[currentSlide].subtitle}</p>
                             <button onClick={() => navigate('/products')} className="hero-button">
-                                Discover Now
+                                Khám phá ngay
                             </button>
                         </div>
                     </div>

@@ -44,8 +44,6 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
   const [productType, setProductType] = useState<'pet' | 'tool'>('tool');
   const [options, setOptions] = useState<Option[]>([]);
 
-
-
   useEffect(() => {
     console.log("Product:", product);
     console.log("Categories:", categories);
@@ -55,7 +53,10 @@ const ProductEditModal: React.FC<ProductEditModalProps> = ({
     const category = findNode(categories, product.categoryId._id);
     console.log("Resolved category from categoryId:", category);
 
-    setEditedProduct(product);
+    setEditedProduct({
+      ...product,
+      birthday: product.birthday ? String(product.birthday).slice(0, 10) : '',
+    });
     setSelectedCategory(category);
 
     if (category?.type === 'pet' || category?.type === 'tool') {

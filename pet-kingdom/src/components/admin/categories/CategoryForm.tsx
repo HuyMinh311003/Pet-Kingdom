@@ -28,45 +28,45 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   return (
     <form onSubmit={onSubmit} className="category-form">
       <div className="form-header">
-        <h2>{isNew ? 'Add New Category' : 'Edit Category'}</h2>
-        <p>Configure the category settings below</p>
+        <h2>{isNew ? 'Thêm danh mục mới' : 'Chỉnh sửa danh mục'}</h2>
+        <p>Thiết lập cài đặt danh mục phía dưới</p>
       </div>
 
       <div className="form-section">
-        <h3>Basic Information</h3>
+        <h3>Thông tin cơ bản</h3>
         <div className="form-group">
-          <label htmlFor="categoryName">Category Name *</label>
+          <label htmlFor="categoryName">Tên danh mục *</label>
           <input
             id="categoryName"
             type="text"
             required
             value={category.name || ''}
             onChange={e => onChange({ name: e.target.value })}
-            placeholder="Enter category name"
+            placeholder="Nhập tên danh mục"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="categoryType">Category Type *</label>
+          <label htmlFor="categoryType">Loại danh mục *</label>
           <select
             id="categoryType"
             required
             value={category.type}
             onChange={e => onChange({ type: e.target.value as 'pet' | 'tool' })}
           >
-            <option value="pet">Pet</option>
-            <option value="tool">Tool</option>
+            <option value="pet">Thú cưng</option>
+            <option value="tool">Vật dụng</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="categoryParent">Parent Category</label>
+          <label htmlFor="categoryParent">Danh mục cha</label>
           <select
             id="categoryParent"
             value={category.parentId ?? ''}
             onChange={e => onChange({ parentId: e.target.value || null })}
           >
-            <option value="">No Parent (Top Level)</option>
+            <option value="">Không có danh mục cha (Cấp cao nhất)</option>
             {validParents.map(parent => (
               <option key={parent._id} value={parent._id}>
                 {parent.name}
@@ -86,15 +86,15 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                 color="primary"
               />
             }
-            label="Active"
+            label="Kích hoạt danh mục"
           />
-          <small>Inactive categories will not be visible to customers</small>
+          <small>Những danh mục không kích hoạt sẽ không hiển thị với khách hàng</small>
         </div>
       </div>
 
       <div className="form-actions">
         <button type="button" onClick={onCancel} className="cancel-btn">
-          Cancel
+          Hủy
         </button>
         <button type="submit" className="submit-btn">
           {submitText}
