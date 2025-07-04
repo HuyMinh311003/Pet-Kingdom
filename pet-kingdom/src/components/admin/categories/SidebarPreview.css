@@ -106,10 +106,6 @@
   text-align: center;
 }
 
-.preview-menu-item.selected .order-badge {
-  background: rgba(0, 0, 0, 0.1);
-}
-
 .preview-submenu-container {
   overflow: hidden;
   max-height: 0;

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { productApi } from "../../../services/admin-api/productApi";
 import { cartApi } from "../../../services/customer-api/api";
 import { wishlistApi } from "../../../services/customer-api/wishlistApi";
-import { Product } from "../../../types/admin";
+import { Product } from "../../../types/product";
 import { useParams } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
 

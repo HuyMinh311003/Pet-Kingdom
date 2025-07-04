@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './ProductEditModal.css';
-import { Product } from '../../../types/admin';
+import { Product } from '../../../types/product';
 
 interface Category {
   _id: string;

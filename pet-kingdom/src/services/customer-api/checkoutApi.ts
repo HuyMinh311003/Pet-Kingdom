@@ -22,17 +22,16 @@ export interface ZaloQrResponse {
   apptransid: string;
 }
 
-export const createZaloQrPayment = async (
+export const createZaloPayment = async (
   orderId: string,
   paymentChannel: 'APP' | 'CARD'
 ): Promise<ZaloQrResponse> => {
   const bankCode = paymentChannel === 'CARD'
     ? 'CC' : 'zalopayapp';
-  const bankGroup = paymentChannel === 'CARD' ? 'CARD' : undefined;
   const res = await axios.post<{
     success: boolean;
     data: { order_url: string; zp_trans_token: string; apptransid: string };
-  }>('/payments/zalo-qr', { orderId, bankCode, bankGroup });
+  }>('/payments/zalo-qr', { orderId, bankCode });
   const payload = res.data.data;
   return {
     orderUrl: payload.order_url,

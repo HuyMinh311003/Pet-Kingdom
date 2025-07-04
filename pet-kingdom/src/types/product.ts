@@ -14,16 +14,3 @@ export interface Product {
   brand?: string;
   type?: string
 }
-
-export interface Category {
-  _id: string;
-  name: string;
-  type: 'pet' | 'tool';
-  parent?: string | null;
-  isActive: boolean;
-  children?: Category[];
-}
-
-export interface CategoryNode extends Category {
-  children: CategoryNode[];
-}

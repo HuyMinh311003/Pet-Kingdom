@@ -108,8 +108,6 @@ export const cartApi = {
     api.delete(`/cart/${userId}/items`, {
       data: { productId }
     }),
-  clearCart: (userId: string) =>
-    api.delete(`/cart/${userId}`)
 };
 
 export { api };

@@ -1,9 +1,8 @@
+import { Category } from '../../types/category';
 import api from './axiosConfig';
-import { Category } from '../../types/admin';
 
 export const categoryApi = {
-  // Lấy full cây danh mục, với tuỳ chọn includeInactive
-  getCategories: async (includeInactive = false): Promise<{
+  getCategories: async (includeInactive: boolean): Promise<{
     success: boolean;
     data: Category[];
   }> => {

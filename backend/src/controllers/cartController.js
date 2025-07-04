@@ -6,7 +6,7 @@ exports.getCart = async (req, res) => {
     try {
         const userId = req.params.userId;
 
-        // 1. Lấy hoặc tạo cart như trước
+        // 1. Lấy hoặc tạo cart
         let cart = await Cart.findOne({ user: userId })
             .populate({
                 path: 'items.product',
@@ -159,47 +159,4 @@ exports.removeItem = async (req, res) => {
 
 
     return res.json({ data: cart });
-};
-
-exports.clearCart = async (req, res) => {
-    const { userId } = req.params;
-    // xóa toàn bộ cart items
-    const cart = await Cart.findOneAndUpdate({ user: userId }, { items: [] }, { new: true });
-    return res.json({ data: cart });
-};
-
-exports.checkout = async (req, res) => {
-    const { userId } = req.params;
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-        const cart = await Cart.findOne({ user: userId }).populate('items.product').session(session);
-        if (!cart || !cart.items.length) {
-            throw new Error('Cart empty');
-        }
-
-        // 1) Giảm stock trên mỗi sản phẩm
-        for (const item of cart.items) {
-            const updated = await Product.findOneAndUpdate(
-                { _id: item.product._id, stock: { $gte: item.quantity } },
-                { $inc: { stock: -item.quantity } },
-                { new: true, session }
-            );
-            if (!updated) {
-                throw new Error(`Insufficient stock for ${item.product.name}`);
-            }
-        }
-
-        // 2) Clear cart
-        cart.items = [];
-        await cart.save({ session });
-
-        await session.commitTransaction();
-        session.endSession();
-        res.json({ success: true, message: 'Checkout successful' });
-    } catch (err) {
-        await session.abortTransaction();
-        session.endSession();
-        res.status(400).json({ success: false, message: err.message });
-    }
 };

@@ -39,9 +39,7 @@ const Cart: React.FC = () => {
         // 2) Với mỗi item, fetch stock mới nhất
         const items: CartItem[] = await Promise.all(
           resCart.data.data.items.map(async (it: any) => {
-            // giả sử bạn đã có productApi.getById
             const prodRes = await productApi.getProductById(it.product._id);
-            console.log(prodRes);
             const stock = prodRes.data.stock;
             return {
               productId: it.product._id,
@@ -55,7 +53,6 @@ const Cart: React.FC = () => {
           })
         );
         setCartItems(items);
-        // 3) Nếu có overStock nào, show toast cảnh báo
         if (items.some(i => i.overStock)) {
           showToast('Một số sản phẩm trong giỏ đã vượt quá tồn kho, vui lòng điều chỉnh.', 'warning');
         }

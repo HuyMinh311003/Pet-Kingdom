@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Product } from '../../types/admin';
+import { Product } from '../../types/product';
 
 export interface WishlistResponse {
   success: boolean;

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Category } from '../../../types/admin';
 import './CategoryForm.css';
 import { Checkbox, FormControlLabel } from '@mui/material';
+import { Category } from '../../../types/category';
 
 interface CategoryFormProps {
   category: Partial<Category>;
@@ -63,8 +63,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
           <label htmlFor="categoryParent">Danh mục cha</label>
           <select
             id="categoryParent"
-            value={category.parent || ''}
-            onChange={e => onChange({ parent: e.target.value || null })}
+            value={category.parentId ?? ''}
+            onChange={e => onChange({ parentId: e.target.value || null })}
           >
             <option value="">Không có danh mục cha (Cấp cao nhất)</option>
             {validParents.map(parent => (

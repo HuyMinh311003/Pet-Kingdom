@@ -1,4 +1,4 @@
-import { Product } from "../../types/admin";
+import { Product } from "../../types/product";
 import api from "./axiosConfig";
 
 export const productApi = {

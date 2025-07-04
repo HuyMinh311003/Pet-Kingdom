@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { Heart, CheckCircle, XCircle } from "lucide-react";
 
-import { Product } from "../../../types/admin";
+import { Product } from "../../../types/product";
 import { productApi } from "../../../services/admin-api/productApi";
 import { cartApi } from "../../../services/customer-api/api";
 import { wishlistApi } from "../../../services/customer-api/wishlistApi";

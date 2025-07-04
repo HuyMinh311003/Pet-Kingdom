@@ -11,8 +11,8 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min, max, onPriceCh
   const [minVal, setMinVal] = useState(min);
   const [maxVal, setMaxVal] = useState(max);
   const numberOfMarks = 4;
-  const rawStep = (max - min) / numberOfMarks;
-  const stepValue = Math.round(rawStep); // làm tròn để có giá trị step “tròn”
+  const rawStep = max / numberOfMarks;
+  const stepValue = Math.round(rawStep); // làm tròn
   const createMarks = useCallback(() => {
     
     const marks: { value: number; label: string }[] = [];

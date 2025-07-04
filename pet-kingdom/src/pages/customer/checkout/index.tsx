@@ -4,7 +4,7 @@ import BackButton from "../../../components/common/back-button/BackButton";
 import {
   getCheckoutInfo,
   placeOrder,
-  createZaloQrPayment
+  createZaloPayment
 } from "../../../services/customer-api/checkoutApi";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../../contexts/ToastContext";
@@ -66,11 +66,9 @@ const Checkout: React.FC = () => {
         notes,
       });
       const orderId = res.order._id;
-      console.log(orderId);
-
       if (paymentMethod !== 'COD') {
         const channel = paymentMethod === 'Bank Transfer' ? 'APP' : (paymentMethod as 'CARD');
-        const { orderUrl } = await createZaloQrPayment(orderId, channel);
+        const { orderUrl } = await createZaloPayment(orderId, channel);
         window.location.href = orderUrl;
         return;
       }
@@ -161,7 +159,7 @@ const Checkout: React.FC = () => {
               />
               Thanh toán khi nhận hàng (COD)
             </label>
-            <label>
+            {/* <label>
               <input
                 type="radio"
                 name="paymenttype"
@@ -169,8 +167,7 @@ const Checkout: React.FC = () => {
                 onChange={() => setPaymentMethod("Bank Transfer")}
               />
               ZaloPay QR
-            </label>
-
+            </label> */}
             <label>
               <input
                 type="radio"

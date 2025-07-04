@@ -1,11 +1,11 @@
 export interface Category {
-    id: string;
+    _id: string;
     name: string;
-    type: 'pets' | 'tools';
-    slug: string;
+    type: 'pet' | 'tool';
     children?: Category[];
     hasChildren?: boolean;
     parentId?: string | null;
+    isActive: boolean;
 }
 
 export interface CategoryResponse {
