@@ -94,7 +94,7 @@ const ConfigPage = () => {
       // Kiểm tra thứ tự tăng dần của minSubtotal
       if (i > 0 && tier.minSubtotal <= discountTiers[i - 1].minSubtotal) {
         showToast(
-          `Tổng tiền tối thiểu của Tier ${i + 1} phải lớn hơn Tier ${i}`,
+          `Tổng tiền tối thiểu của cấp ${i + 1} phải lớn hơn cấp ${i}`,
           "error"
         );
         return false;
@@ -127,7 +127,7 @@ const ConfigPage = () => {
     setDiscountTiers([
       ...discountTiers,
       {
-        minSubtotal: lastTier.minSubtotal + 1000000, // Tự động tăng 1tr cho tier mới
+        minSubtotal: lastTier.minSubtotal + 1000000, // Tự động tăng 1tr cho cấp mới
         discountPercentage: Math.min(lastTier.discountPercentage + 5, 100), // Tự động tăng 5% nhưng không vượt quá 100%
       },
     ]);
@@ -209,7 +209,7 @@ const ConfigPage = () => {
 
           {discountTiers.map((tier, index) => (
             <div key={index} className="config-discount-tier">
-              <div className="config-tier-number">Tier {index + 1}</div>
+              <div className="config-tier-number">Cấp {index + 1}</div>
               <div className="config-tier-inputs">
                 <div className="config-input-group">
                   <input

@@ -58,7 +58,7 @@ const ProductsPage: React.FC = () => {
   // 1) Load all categories (active only)
   useEffect(() => {
     categoryApi
-      .getCategories()
+      .getCategories(true)
       .then((res) => {
         if (res.success) {
           setCategories(res.data);
