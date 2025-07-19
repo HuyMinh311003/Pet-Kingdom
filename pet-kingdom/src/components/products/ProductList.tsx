@@ -342,7 +342,7 @@ export default function ProductList() {
     <div className="product-list">
       <div className="container">
         <div className="header">
-          <h1 className="title">PRODUCTS</h1>
+          <h1 className="title">SẢN PHẨM</h1>
 
           <div className="header-right">
             <p className="results-count">{products.length} KẾT QUẢ</p>
@@ -360,7 +360,7 @@ export default function ProductList() {
             className={`sidebar ${isMobileFiltersOpen ? "mobile-open" : ""}`}
           >
             <div className="sidebar-header">
-              <h2>Filters</h2>
+              <h2>Bộ lọc</h2>
               <button
                 className="close-filters"
                 onClick={() => setIsMobileFiltersOpen(false)}

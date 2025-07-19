@@ -12,22 +12,21 @@ const Footer: React.FC = () => {
               <Paw className="logo-icon" />
               <span className="footer-logo-title">PetKingdom</span>
             </div>
-            <p className="footer-text">
-              Your trusted partner in finding and caring for the perfect pet
-              companion.
+            <p className="footer-text" style={{ marginTop: "15px" }}>
+              Đối tác tin cậy của bạn trong việc tìm kiếm và chăm sóc người bạn đồng hành hoàn hảo.
             </p>
           </div>
           <div>
-            <h4 className="footer-heading">Quick Links</h4>
+            <h4 className="footer-heading">Liên kết</h4>
             <ul className="footer-links">
               <li>
                 <a href="#" className="footer-link">
-                  Privacy Policy
+                  Chính sách bảo mật
                 </a>
               </li>
               <li>
                 <a href="#" className="footer-link">
-                  Terms of Use
+                  Điều khoản sử dụng
                 </a>
               </li>
               <li>
@@ -38,7 +37,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h4 className="footer-heading">Contact Us</h4>
+            <h4 className="footer-heading">Liên hệ với chúng tôi</h4>
             <ul className="footer-links">
               <li className="footer-text">Email: info@petkingdom.com</li>
               <li className="footer-text">Phone: (555) 123-4567</li>
